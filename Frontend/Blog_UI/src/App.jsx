@@ -6,8 +6,6 @@ import Register from "./Routes/Register/Register.jsx";
 import Profile from "./Routes/Profile/Profile.jsx";
 import AboutPage from "./Routes/AboutPage/AboutPage.jsx";
 import {
-  combinedLoader,
-  fetchAllPosts,
   singlePageLoader,
   usersInfoLoader,
 } from "./Lib/Loaders.js";
@@ -23,12 +21,10 @@ function App() {
     {
       path: "/",
       element: <Layout />,
-      // loader: combinedLoader,
       children: [
         {
           path: "/",
           element: <Homepage />,
-          loader: fetchAllPosts,
         },
         {
           path: "/list",
@@ -47,11 +43,7 @@ function App() {
           path: "/about",
           element: <AboutPage />,
         },
-        {
-          path: "/search",
-          element: <Search />,
-          loader: singlePageLoader,
-        },
+    
         {
           path: "/policy",
           element: <PrivacyPolicy />,
@@ -65,7 +57,7 @@ function App() {
         {
           path: "/profile/:id",
           element: <Profile />,
-          loader: combinedLoader,
+          // loader: combinedLoader,
         },
         {
           path: "/createBlog",
@@ -79,6 +71,10 @@ function App() {
           path: "/bloggers",
           element: <BloggersPage />,
           loader: usersInfoLoader,
+        },
+        {
+          path: "/search",
+          element: <Search />,
         },
       ],
     },

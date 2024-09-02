@@ -21,12 +21,15 @@ model User {
   savedPosts savedPosts[]
   followers  Follows[]    @relation("following")
   following  Follows[]    @relation("follower")
+  comment    comment[]
+  Like       Like[]
+  Unlike     Unlike[]
 }
 
 model Otp {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
-  otp       String
+  otp       Int
   createdAt DateTime @default(now())
 }
 
@@ -42,6 +45,40 @@ model posts {
   User       User?        @relation(fields: [userId], references: [id])
   userId     String?      @db.ObjectId
   savedPosts savedPosts[]
+  comment    comment[]
+  like       Like[]
+  unlike     Unlike[]
+  likes      Int?         @default(0)
+  unlikes    Int?         @default(0)
+}
+
+model Like {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  postId String @db.ObjectId
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  post   posts  @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Unlike {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  postId String @db.ObjectId
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  post   posts  @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model comment {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  post        posts  @relation(fields: [postId], references: [id])
+  user        User   @relation(fields: [commentor], references: [id])
+  postId      String @db.ObjectId
+  commentor   String @db.ObjectId
+  description String
 }
 
 model Follows {

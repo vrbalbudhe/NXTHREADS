@@ -10,7 +10,7 @@ const getUser = asyncHandler(async (req, res) => {
         id: userId,
       },
       include: {
-        password:false,
+        password: false,
         savedPosts: true,
         followers: true,
         following: true,
@@ -41,7 +41,7 @@ const getUserFollowStatus = asyncHandler(async (req, res) => {
         id: userId,
       },
       include: {
-        password:false,
+        password: false,
         followers: true,
       },
     });
@@ -69,7 +69,7 @@ const getUsers = asyncHandler(async (req, res) => {
         avatar: true,
         id: true,
         username: true,
-        fullname:true
+        fullname: true,
       },
     });
 
@@ -104,6 +104,8 @@ const updateUser = asyncHandler(async (req, res) => {
     // console.log("gender: ", gender);
     // console.log("avatar: ", avatar);
 
+    let imageUrls = avatar || [];
+
     const findUser = await prisma.user.findUnique({
       where: {
         id: id,
@@ -124,7 +126,7 @@ const updateUser = asyncHandler(async (req, res) => {
       data: {
         fullname: fullname,
         gender: gender,
-        avatar: avatar,
+        avatar: imageUrls,
       },
     });
 
@@ -142,12 +144,10 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 module.exports = {
   getUser,
   getUsers,
   updateUser,
   deleteUser,
-  getUserFollowStatus
+  getUserFollowStatus,
 };

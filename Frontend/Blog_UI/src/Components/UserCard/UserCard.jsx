@@ -1,15 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
-import { useEffect, useState, useContext } from "react";
-import { io } from "socket.io-client";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
-
-const socket = io("http://localhost:8000", {
-  reconnection: true,
-  withCredentials: true,
-});
 
 const FALLBACK_AVATAR_URL =
   "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg";
@@ -17,24 +11,29 @@ const FALLBACK_AVATAR_URL =
 function UserCard({ user }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const { currentUser } = useContext(AuthContext);
-  // const [followData, setFollowData] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on("connection", (data) => {
-      console.log(data);
-    });
-    socket.on("v", (data) => {
-      console.log("Received 'following' event on client:", data);
-      // setFollowData(data);
-    });
-
-    return () => {
-      socket.off("totalFollowingsUpdate");
+    const checkFollowingStatus = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/userfollow/status`,
+          {
+            params: {
+              followerId: currentUser.userInfo.id,
+              followingId: user.id,
+            },
+            withCredentials: true,
+          }
+        );
+        setIsFollowing(response.data.isFollowing);
+      } catch (error) {
+        console.error("Failed to fetch follow status", error);
+      }
     };
-  }, [io]);
 
-  // console.log(followData);
+    checkFollowingStatus();
+  }, [user.id, currentUser.userInfo.id]);
 
   const handleFollowSwitch = async () => {
     try {
@@ -71,7 +70,7 @@ function UserCard({ user }) {
           onClick={() => navigate(`/profile/${user.id}`)}
           className="text-slate-950 py-1 cursor-pointer hover:text-blue-400 w-full text-center font-semibold text-xs bg-slate-100"
         >
-          @ {user.username}
+          @{user.username}
         </h1>
         <h1 className="text-slate-500 py-1 cursor-pointer w-full text-center font-semibold text-xs">
           {user.fullname}
@@ -81,7 +80,7 @@ function UserCard({ user }) {
         {currentUser.userInfo && (
           <h1
             onClick={handleFollowSwitch}
-            className={`text-white cursor-pointer rounded-md px-3 py-1 font-semibold text-xs ${isFollowing ? "bg-blue-400" : "bg-slate-950"}`}
+            className={`cursor-pointer rounded-md px-3 py-1 font-semibold text-xs ${isFollowing ? "bg-slate-200 " : "bg-slate-950 text-white"}`}
           >
             {isFollowing ? "Unfollow" : "Follow"}
           </h1>

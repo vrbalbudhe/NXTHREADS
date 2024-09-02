@@ -1,0 +1,20 @@
+{
+    "name": "My Awesome App",
+    "short_name": "AwesomeApp",
+    "description": "An awesome app that does amazing things.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "theme_color": "#4A90E2",
+    "background_color": "#FFFFFF",
+    "icons": [
+      {
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  

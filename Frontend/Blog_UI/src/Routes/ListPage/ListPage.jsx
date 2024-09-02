@@ -70,7 +70,7 @@ function ListPage() {
           </Suspense>
         </div>
       </div>
-      <div className="w-[30%] h-full flex flex-col justify-center items-center">
+      <div className="w-[30%] h-full flex flex-col gap-2 justify-center items-center">
         <Filter />
         <HotTopicsCard />
       </div>

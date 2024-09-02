@@ -1,13 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../Context/AuthContext";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { PostContext } from "../../Context/PostContext";
 
 function UpdateCard({ upd }) {
-  const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
-  console.log(upd.data.user.id);
+  const { handleUpdateInfo } = useContext(PostContext);
   const [input, setInput] = useState({
     fullname: "",
     avatar: "",
@@ -15,14 +13,13 @@ function UpdateCard({ upd }) {
     description: "",
   });
 
-  // Set initial input state once currentUser is loaded
   useEffect(() => {
-    if (currentUser && upd.data) {
+    if (currentUser && upd) {
       setInput({
-        fullname: upd.data.user.fullname || "",
-        avatar: upd.data.user.avatar || "",
-        gender: upd.data.user.gender || "",
-        description: upd.data.user.description || "",
+        fullname: upd.fullname || "",
+        avatar: upd.avatar || "",
+        gender: upd.gender || "",
+        description: upd.description || "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -35,16 +32,7 @@ function UpdateCard({ upd }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post(
-        `http://localhost:8000/api/user/${currentUser.userInfo.id}`,
-        input,
-        { withCredentials: true }
-      );
-      navigate(`/profile/${currentUser.userInfo.id}`);
-    } catch (error) {
-      console.log(error);
-    }
+    handleUpdateInfo(input);
   };
 
   return (

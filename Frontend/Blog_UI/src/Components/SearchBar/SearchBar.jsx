@@ -31,7 +31,7 @@ function SearchBar() {
       const userRes = await axios.get("http://localhost:8000/api/user/", {
         withCredentials: true,
       });
-      console.log("Fetched Users:", userRes.data.users); // Debugging line
+      // console.log("Fetched Users:", userRes.data.users); // Debugging line
       setUsers(userRes.data.users || []);
     } catch (error) {
       console.error("Error fetching data:", error);

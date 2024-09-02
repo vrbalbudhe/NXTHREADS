@@ -1,20 +1,26 @@
-// // redisClient.js
-// const redis = require("redis");
+// const { createClient } = require('@redis/client');
+// const redisClient = createClient();
 
-// const redisClient = redis.createClient({
-//   socket: {
-//     host: '127.0.0.1', // or 'localhost'
-//     port: 6379,
-//   }
-// });
-
+// // Handle Redis errors and connection events
 // redisClient.on("error", (err) => {
-//   console.error("Redis Client Error", err);
+//   console.error("Redis client error:", err);
 // });
 
-// (async () => {
-//   await redisClient.connect();
+// redisClient.on("connect", () => {
 //   console.log("Connected to Redis");
-// })();
+// });
+
+// // Ensure Redis connection is established
+// const initializeRedis = async () => {
+//   try {
+//     await redisClient.connect();
+//   } catch (err) {
+//     console.error("Failed to initialize Redis:", err);
+//     process.exit(1);
+//   }
+// };
+
+// // Initialize Redis on startup
+// initializeRedis();
 
 // module.exports = redisClient;

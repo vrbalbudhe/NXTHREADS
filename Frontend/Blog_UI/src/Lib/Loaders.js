@@ -24,27 +24,6 @@ export const profilePageUserOwnPost = async ({ params }) => {
   }
 };
 
-// Loader for fetching all posts
-export const fetchAllPosts = async () => {
-  try {
-    const postPromise = await axios.get("http://localhost:8000/api/post/", {
-      withCredentials: true,
-    });
-    console.log(postPromise);
-    return defer({
-      postResponse: postPromise,
-    });
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      console.error("Unauthorized access - redirecting to login.");
-      throw new Error("Unauthorized access. Please login.");
-    } else {
-      console.error("Error fetching posts:", error);
-      throw error;
-    }
-  }
-};
-
 // Loader for fetching posts based on query parameters
 export const singlePageLoader = async ({ request }) => {
   try {
@@ -113,22 +92,22 @@ export const userProfileInfoUsingURL = async ({ params }) => {
 };
 
 // Combined loader to fetch data from multiple sources
-export const combinedLoader = async ({ params }) => {
-  try {
-    const postPromise = profilePageUserOwnPost({ params });
-    const userInfoPromise = userProfileInfoUsingURL({ params });
-    const allPostsPromise = fetchAllPosts();
+// export const combinedLoader = async ({ params }) => {
+//   try {
+//     const postPromise = profilePageUserOwnPost({ params });
+//     const userInfoPromise = userProfileInfoUsingURL({ params });
 
-    const [postResponse, userInfoResponse, allPostsResponse] =
-      await Promise.all([postPromise, userInfoPromise, allPostsPromise]);
+//     const [postResponse, userInfoResponse] = await Promise.all([
+//       postPromise,
+//       userInfoPromise,
+//     ]);
 
-    return defer({
-      postResponse: postResponse.data.postResponse,
-      userInfoResponse: userInfoResponse.data.UserData,
-      homepageAllPosts: allPostsResponse.data.postResponse,
-    });
-  } catch (error) {
-    console.error("Error in combined loader:", error);
-    throw error;
-  }
-};
+//     return defer({
+//       postResponse: postResponse.data.postResponse,
+//       userInfoResponse: userInfoResponse.data.UserData,
+//     });
+//   } catch (error) {
+//     console.error("Error in combined loader:", error);
+//     throw error;
+//   }
+// };

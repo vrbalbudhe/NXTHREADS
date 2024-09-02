@@ -1,11 +1,23 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 
+// let io;
+
+// const setIoInstance = (socketIo) => {
+//   io = socketIo;
+//   io.on("connection", (socket) => {
+//     console.log(`New client connected: ${socket.id}`);
+//     socket.on("disconnect", () => {
+//       console.log(`Client disconnected: ${socket.id}`);
+//     });
+//   });
+// };
+
 const followUnfollowUser = asyncHandler(async (req, res) => {
   const followerId = req.body.followerId; // It will give me the followerId
   const followingId = req.body.followingId;
-  console.log(followerId);
-  console.log(followingId);
+  // console.log(followerId);
+  // console.log(followingId);
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -109,7 +121,6 @@ const totalFollowing = asyncHandler(async (req, res) => {
         },
       },
     });
-
     return res.status(200).json({
       totalFollowings: totalFollowings,
     });
@@ -149,9 +160,30 @@ const totalFollowers = asyncHandler(async (req, res) => {
   }
 });
 
+const isFollowing = asyncHandler(async (req, res) => {
+  const { followerId, followingId } = req.query;
+
+  try {
+    const followRecord = await prisma.follows.findFirst({
+      where: {
+        followerId: followerId,
+        followingId: followingId,
+      },
+    });
+    // io.emit("isFollowing", followRecord);
+
+    const isFollowing = !!followRecord; // convert to boolean
+    res.status(200).json({ isFollowing });
+  } catch (error) {
+    console.error("Error checking follow status", error);
+    res.status(500).json({ error: "Failed to check follow status" });
+  }
+});
 module.exports = {
   totalFollowing,
   totalFollowers,
   followUnfollowUser,
   checkIsFollwing,
+  // setIoInstance,
+  isFollowing,
 };

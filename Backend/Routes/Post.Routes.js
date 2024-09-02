@@ -14,6 +14,7 @@ const {
   getFavoritePosts,
 } = require("../Controller/Post.Controller");
 const verifyToken = require("../Middleware/verifyToken");
+const { likePost, unlikePost } = require("../Controller/Like.Controller");
 
 router.get("/:id", verifyToken, getPost);
 router.get("/fltr/:id", getPostUrl);
@@ -25,5 +26,8 @@ router.delete("/:id", verifyToken, deletePosts);
 
 router.post("/fav", verifyToken, favUnfavPost);
 router.get("/fav/:id", verifyToken, getFavoritePosts);
+
+router.post("/like/:id", verifyToken, likePost);
+router.post("/unlike/:id", verifyToken, unlikePost);
 
 module.exports = router;

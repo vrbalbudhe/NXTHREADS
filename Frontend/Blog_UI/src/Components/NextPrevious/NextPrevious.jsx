@@ -10,8 +10,11 @@ function NextPrevious({ prev, next }) {
           Prev
         </button>
       </div>
-      <div onClick={next} className="mr-2 text-xs">
-        <button className="px-2 py-1 hover:text-white hover:bg-blue-400 hover:border-none border-2 border-slate-300 rounded-md font-semibold text-slate-800">
+      <div className="mr-2 text-xs">
+        <button
+          onClick={next}
+          className="px-2 py-1 hover:text-white hover:bg-blue-400 hover:border-none border-2 border-slate-300 rounded-md font-semibold text-slate-800"
+        >
           Next
         </button>
       </div>

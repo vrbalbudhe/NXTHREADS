@@ -13,7 +13,10 @@ export const AuthContextProvider = ({ children }) => {
       if (storedUser) {
         setCurrentUser(JSON.parse(storedUser));
       }
-      if (currentUser===null) {
+      if (
+        currentUser.userInfo.id === null ||
+        currentUser.userInfo.id === undefined
+      ) {
         redirect("/login");
       }
     } catch (error) {

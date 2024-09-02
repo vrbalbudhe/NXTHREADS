@@ -17,7 +17,33 @@ const getPostUrl = asyncHandler(async (req, res) => {
         author: author || undefined,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
+      },
+      include: {
+        savedPosts: true,
+        User: {
+          select: {
+            password: false,
+            avatar: true,
+          },
+        },
+        comment: {
+          include: {
+            user: true,
+            post: {
+              include: {
+                User: {
+                  select: {
+                    password: false,
+                    fullname: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     return res.status(200).json({ posts });
@@ -38,6 +64,32 @@ const getPost = asyncHandler(async (req, res) => {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        savedPosts: true,
+        User: {
+          select: {
+            password: false,
+            avatar: true,
+          },
+        },
+        comment: {
+          include: {
+            user: true,
+            post: {
+              include: {
+                User: {
+                  select: {
+                    password: false,
+                    fullname: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     if (!post) {
       return res.status(403).json({
@@ -47,7 +99,7 @@ const getPost = asyncHandler(async (req, res) => {
     }
 
     return res.status(200).json({
-      posts: post,
+      posts: post || [],
     });
   } catch (error) {
     console.log(error);
@@ -59,20 +111,61 @@ const getPost = asyncHandler(async (req, res) => {
 });
 
 /*
- * Get ALL POSTS
- */
+ * Get ALL POSTS Routes */
 const getAllPosts = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
   try {
     const posts = await prisma.posts.findMany({
+      skip: offset,
+      take: limit,
       orderBy: {
         createdAt: "desc",
       },
       include: {
         savedPosts: true,
+        User: {
+          select: {
+            password: false,
+            avatar: true,
+            fullname: true,
+            username: true,
+          },
+        },
+        comment: {
+          include: {
+            user: true,
+            post: {
+              include: {
+                User: {
+                  select: {
+                    password: false,
+                    fullname: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
+
+    // console.log(limit);
+
+    const total = await prisma.posts.count();
+    console.log(total);
+
     return res.status(200).json({
       posts: posts,
+      meta: {
+        total,
+        page,
+        limit,
+        hasMore: offset + posts.length < total,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -264,37 +357,6 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// const searchPosts = asyncHandler(async (req, res) => {
-//   const searchTerms = req.body;
-//   try {
-//     const termsArray = searchTerms
-//       .split(" ")
-//       .filter((term) => term.trim() !== "");
-
-//     // Perform search with multiple terms
-//     const posts = await prisma.posts.findMany({
-//       where: {
-//         OR: termsArray.map((term) => ({
-//           OR: [
-//             { title: { contains: term, mode: "insensitive" } },
-//             { content: { contains: term, mode: "insensitive" } },
-//           ],
-//         })),
-//       },
-//     });
-
-//     return res.status(200).json({
-//       posts: posts,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: "error in search",
-//       success: false,
-//     });
-//   }
-// });
-
 module.exports = {
   // Deployed Routes
   getPost,

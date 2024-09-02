@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
 
 function Login() {
-  const { updateUser,  } = useContext(AuthContext);
+  const { updateUser } = useContext(AuthContext);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const handleLogin = async (e) => {
@@ -38,41 +38,15 @@ function Login() {
 
   return (
     <div className="w-full h-full flex justify-center items-center overflow-hidden">
-      <div className="w-[100%] h-[580px] rounded-xl flex flex-col justify-center items-center mb-5">
-        <div className="w-full h-full flex flex-col flex-wrap justify-center items-center gap-2 mt-5">
+      <div className="w-[100%] h-[650px] rounded-xl flex flex-col justify-center items-center mb-5">
+        <div className="w-full h-full flex flex-wrap justify-center items-center gap-2 mt-5">
           <img
-            className="rounded-xl"
-            src="https://i.pinimg.com/236x/6b/64/52/6b6452ab35737a6327313a3260ffcb03.jpg"
-            alt=""
-          />
-          <img
-            className="rounded-xl"
+            className="rounded-xl w-[99%]"
             src="https://i.pinimg.com/236x/c9/5b/96/c95b9686616a33fc1a85c8c920504a94.jpg"
             alt=""
-          />
-          <img
-            className="rounded-xl"
-            src="https://i.pinimg.com/236x/32/ce/40/32ce40cdf2a8b5e0461c9d8caaab329d.jpg"
-            alt=""
-          />
-          <img
-            className="rounded-xl"
-            src="https://i.pinimg.com/236x/12/ac/c1/12acc17c34d4c5a1d959f127f26c1039.jpg"
-            alt=""
-          />
-          <img
-            className="rounded-xl"
-            src="https://i.pinimg.com/236x/38/be/37/38be3711904d5e7e11d5aa0099d319b1.jpg"
-            alt=""
-          />
-          <img
-            className="rounded-xl"
-            src="https://i.pinimg.com/236x/7c/24/61/7c2461c750b82a77204b3ad7adbf161e.jpg"
-            alt=""
-          />
-          {/* <img className="rounded-xl" src="https://i.pinimg.com/236x/10/13/cd/1013cd054efbe5be0ff44af160c8e104.jpg" alt="" /> */}
+          />{" "}
         </div>
-        <div className="w-[80%] h-[90%] absolute p-2  rounded-lg bg-opacity-50 backdrop-blur-sm flex justify-center items-center">
+        <div className="w-[80%] h-[91%] absolute p-2  rounded-lg bg-opacity-50 flex justify-center items-center">
           <div className="w-[30%] h-full">
             <form
               className="w-full h-full flex flex-col justify-center items-start gap-5"
@@ -100,11 +74,11 @@ function Login() {
               >
                 Login
               </button>
-              <h1 className="text-sm text-slate-700 font-bold">
+              <h1 className="text-sm text-white font-bold">
                 Dont have an account?{" "}
                 <span
                   onClick={handleNvaigateLoginBtn}
-                  className="text-slate-800 font-semibold hover:text-blue-400 cursor-pointer"
+                  className="text-slate-900 font-bold hover:text-blue-400 cursor-pointer"
                 >
                   Register
                 </span>

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { RiHome4Line, RiNotification3Line } from "react-icons/ri";
 import { IoSearchSharp } from "react-icons/io5";
 import { LuUsers2 } from "react-icons/lu";
@@ -10,11 +10,17 @@ import { HiOutlinePencil } from "react-icons/hi";
 
 function Navbar() {
   const { currentUser } = useContext(AuthContext);
-  // const [show, setShow] = useState(false);
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   // Check if currentUser or currentUser.userInfo is undefined
+  //   if (!currentUser?.userInfo?.id) {
+  //     navigate("/login");
+  //   }
+  // }, [currentUser, navigate]); // Add dependencies here
+
   return (
-    <div className="w-full pt-2 pb-2 h-full flex justify-between items-center overflow-hidden border shadow-md">
+    <div className="w-full pt-2 pb-2 h-ful bg-white flex justify-between items-center overflow-hidden">
       <div className="w-[20%] h-full flex justify-start pl-5 items-center">
         <img className="w-7 h-7 rounded-full" src="/favicon.jpg" alt="Logo" />
         <h1
@@ -69,7 +75,7 @@ function Navbar() {
               <RiNotification3Line />
             </h1>
             <div className="w-7 h-7 mr-2 border border-slate-500 rounded-full flex justify-center items-center">
-              {currentUser?.userInfo?.avatar ? (
+              {currentUser.userInfo.avatar ? (
                 <img
                   className="w-7 h-7 rounded-full object-cover"
                   src={currentUser.userInfo.avatar}
@@ -87,7 +93,7 @@ function Navbar() {
               onClick={() => navigate(`/profile/${currentUser.userInfo.id}`)}
               className="bg-transparent border hover:bg-blue-400 mr-5 hover:text-white border-slate-400 px-3 py-1 text-xs rounded-lg text-slate-800 font-bold"
             >
-              {currentUser?.userInfo?.username || "Profile"}
+              {currentUser.userInfo.username || "Profile"}
             </button>
           </>
         ) : (
@@ -108,7 +114,6 @@ function Navbar() {
         )}
       </div>
     </div>
-    // )
   );
 }
 

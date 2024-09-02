@@ -11,14 +11,14 @@ export const Layout = () => {
   // console.log(currentUser);
   return (
     <div className="w-[100%] h-[100vh] bg-white flex flex-col justify-start items-center">
-      <div className="md:w-[80%] md:h-fit w-full h-fit">
+      <div className="md:w-[80%] md:h-fit w-full h-fit shadow-xl border-b border-slate-100">
         {<Navbar />}
       </div>
       <div className="md:w-[80%] md:h-full w-full md:h-fit]">
-        <div className="w-full h-fit">
+        <div className="w-full h-fit bg-white p-2 border-l border-r shadow-lg border-slate-100" >
           <Outlet />
         </div>
-        <div className="w-full h-fit bottom-0 mt-2">
+        <div className="w-full h-fit bg-white bottom-0 mt-2">
           <Footer />
         </div>
       </div>
