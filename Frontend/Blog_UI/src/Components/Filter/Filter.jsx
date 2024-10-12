@@ -54,12 +54,12 @@ function Filter() {
   const [result, setResults] = useState(0);
 
   return (
-    <div className="w-full h-fit flex flex-col p-3 mt-5 rounded-md border border-slate-300  justify-center items-center gap-2">
+    <div className="w-full h-fit dark:border-none flex flex-col p-3 mt-5 rounded-md border border-slate-300  justify-center items-center gap-2">
       <div className="w-full h-fit">
-        <h2 className="text-md font-bold mb-1 text-slate-900">Filter</h2>
+        <h2 className="text-md font-bold mb-1 dark:text-darkText text-slate-900">Filter</h2>
       </div>
       <select
-        className=" w-full text-xs pl-2 font-semibold text-slate-700 h-8 rounded-md border border-slate-200 bg-white"
+        className=" w-full text-xs pl-2 font-semibold dark:bg-darkPostCardBackground dark:border-none text-slate-700 h-8 rounded-md border border-slate-200 bg-white"
         name="category"
         value={query.category}
         onChange={handleInputChange}
@@ -87,7 +87,7 @@ function Filter() {
         <option value="Personal_Development">Personal Development</option>
       </select>
       <select
-        className="pl-2 w-full text-xs font-semibold text-slate-700 h-8 rounded-md border border-slate-200 bg-white"
+        className="pl-2 w-full text-xs font-semibold dark:bg-darkPostCardBackground dark:border-none text-slate-700 h-8 rounded-md border border-slate-200 bg-white"
         name="author"
         value={query.username}
         onChange={handleInputChange}

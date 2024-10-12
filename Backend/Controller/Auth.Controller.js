@@ -156,7 +156,14 @@ const login = asyncHandler(async (req, res) => {
     }
 
     // Generating the Token Data
-    const tokenData = { userId: user.id };
+    const tokenData = {
+      userId: user.id,
+      username: user.username,
+      fullname: user.fullname,
+      email: user.email,
+      avatar: user.avatar,
+      gender: user.gender,
+    };
     const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });

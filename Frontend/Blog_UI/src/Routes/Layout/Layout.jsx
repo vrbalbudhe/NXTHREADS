@@ -10,15 +10,15 @@ export const Layout = () => {
   // console.log(postResponse);
   // console.log(currentUser);
   return (
-    <div className="w-[100%] h-[100vh] bg-white flex flex-col justify-start items-center">
-      <div className="md:w-[80%] md:h-fit w-full h-fit shadow-xl border-b border-slate-100">
+    <div className="w-[100%] scrollable-section  sticky top-0 z-40 h-fit bg-white dark:bg-[#080708] flex flex-col justify-start items-center">
+      <div className="md:w-[90%] sticky top-0 dark:bg-[#080708] md:h-fit w-full h-fit">
         {<Navbar />}
       </div>
-      <div className="md:w-[80%] md:h-full w-full md:h-fit]">
-        <div className="w-full h-fit bg-white p-2 border-l border-r shadow-lg border-slate-100" >
+      <div className="md:w-[90%] md:h-full w-full md:[h-fit]">
+        <div className="w-full h-fit dark:bg-[#080708] bg-white p-2">
           <Outlet />
         </div>
-        <div className="w-full h-fit bg-white bottom-0 mt-2">
+        <div className="w-full h-fit dark:bg-[#080708] bg-white bottom-0">
           <Footer />
         </div>
       </div>
@@ -32,11 +32,11 @@ export const RequiredAuth = () => {
   return !currentUser ? (
     <Navigate to="/login" />
   ) : (
-    <div className="w-[100%] h-[100vh] bg-white flex flex-col justify-start items-center">
-      <div className="md:w-[80%] md:h-[10%] w-full md:h-fit]">
+    <div className="w-[100%] h-fit bg-white dark:bg-[#080708] flex flex-col justify-start items-center">
+      <div className="md:w-[90%] md:h-[10%] w-full md:h-fit]">
         <Navbar />
       </div>
-      <div className="md:w-[80%] md:h-full w-full md:h-fit]">
+      <div className="md:w-[90%] md:h-full w-full md:h-fit]">
         <div className="w-full h-fit">
           <Outlet />
         </div>

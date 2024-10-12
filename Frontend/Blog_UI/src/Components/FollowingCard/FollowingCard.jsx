@@ -25,8 +25,13 @@ function FollowingCard({ userId }) {
   return (
     <div className="w-[90%] h-fit  mt-2 flex justify-start items-start p-1 flex-col rounded-2xl">
       <div className="w-full h-14 flex justify-start items-center pl-2">
-        <h1 className="font-bold text-sm">Following</h1>
+        <h1 className="font-bold text-sm dark:text-white">Following</h1>
       </div>
+      {totalFollowing.length < 0 && (
+        <div className="w-full h-10 flex justify-center items-center dark:border-darkBlue dark:border rounded-2xl">
+          <p className="dark:text-slate-400 text-sm ">No Following</p>
+        </div>
+      )}{" "}
       <div className="w-full h-fit flex justify-start items-start flex-col gap-1">
         {totalFollowing.map((follower, index) => (
           <div

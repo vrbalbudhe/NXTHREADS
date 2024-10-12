@@ -57,7 +57,7 @@ const getPostUrl = asyncHandler(async (req, res) => {
 });
 
 const getPost = asyncHandler(async (req, res) => {
-  const id = req.params.id;
+  const {id} = req.params;
   try {
     const post = await prisma.posts.findMany({
       where: { userId: id },

@@ -10,13 +10,13 @@ function Card1({ isCurrentUser }) {
         onClick={() => navigate("/createBlog")}
         className="w-full h-[100px] cursor-pointer"
       >
-        <div className="w-full h-full flex justify-between items-center rounded-xl border border-slate-300 shadow-md gap-2">
+        <div className="w-full h-full flex justify-between items-center border border-slate-300 shadow-md gap-2">
           <img
             className="w-[70%] h-full object-cover rounded-l-xl"
             src="https://i.pinimg.com/564x/33/1d/5b/331d5b18133dfdb63ef43ccbfdc0fbda.jpg"
             alt="Blog Writing"
           />
-          <h1 className="w-[30%] text-center font-semibold">Write a Blog</h1>
+          <h1 className="w-[30%] text-center font-semibold text-xs flex-wrap">Write a Blog</h1>
         </div>
       </div>
     )

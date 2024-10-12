@@ -67,14 +67,14 @@ function SearchBar() {
     <div className="w-full min-h-[90px] p-1 flex flex-col items-center mt-5">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[90%] p-1 border-2 pl-5 border-slate-300 h-8 rounded-md"
+          className="w-[100%] p-1 border-2 pl-5 dark:bg-darkPostCardBackground dark:border-none border-slate-300 h-8 rounded-md"
           type="search"
           placeholder="Search by title, content, or user"
           value={searchTerm}
           onChange={handleSearch}
         />
         <button
-          className="py-1 text-xl text-black rounded-full shadow-xl border border-slate-300 px-1 hover:text-white hover:bg-slate-500"
+          className="py-1 text-xl dark:border-none dark:text-white text-black rounded-full shadow-xl border border-slate-300 px-1 hover:text-white hover:bg-slate-500"
           onClick={() => handleSearch({ target: { value: searchTerm } })}
         >
           <IoMdSearch />
@@ -104,7 +104,7 @@ function SearchBar() {
           </>
         )}
       </div>
-      <div className="w-[90%] mt-5 border-b-2 border-slate-300"></div>
+
     </div>
   );
 }

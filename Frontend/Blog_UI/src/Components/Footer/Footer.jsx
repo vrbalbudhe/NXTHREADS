@@ -7,7 +7,7 @@ import {
 
 function Footer() {
   return (
-    <footer className="bg-slate-50 border border-slate-300 shadow-lg rounded-t-xl text-white py-6">
+    <footer className="bg-blue-400 border dark:bg-[#01110a] dark:border-none border-slate-100 shadow-lg text-white py-6">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4">
         <div className="flex flex-col items-center md:items-start mb-4 md:mb-0">
           <span>
@@ -16,36 +16,36 @@ function Footer() {
               src="/favicon.jpg"
               alt=""
             />
-            <span className="text-sm text-slate-800 font-bold mb-2">
+            <span className="text-sm text-white ml-2 font-bold mb-2">
               NEXTHREADS
             </span>
           </span>
-          <p className="text-gray-600">
+          <p className="text-white">
             Your go-to platform for creative blogging
           </p>
         </div>
         <div className="flex flex-col md:flex-row gap-6 mb-4 md:mb-0">
           <a
             href="/"
-            className=" text-slate-800 text-xs font-semibold hover:text-gray-400"
+            className=" text-white text-xs font-semibold hover:text-gray-400"
           >
             Home
           </a>
           <a
             href="/search"
-            className=" text-slate-800 text-xs font-semibold hover:text-gray-400"
+            className=" text-white text-xs font-semibold hover:text-gray-400"
           >
             Search
           </a>
           <a
             href="/about"
-            className=" text-slate-800 text-xs font-semibold hover:text-gray-400"
+            className=" text-white text-xs font-semibold hover:text-gray-400"
           >
             About
           </a>
           <a
             href="/policy"
-            className=" text-slate-800 text-xs font-semibold hover:text-gray-400"
+            className=" text-white text-xs font-semibold hover:text-gray-400"
           >
             Privacy Policy
           </a>
@@ -81,8 +81,8 @@ function Footer() {
           </a>
         </div>
       </div>
-      <div className="bg-gray-100 py-2 text-center">
-        <p className="text-xs text-slate-800 font-semibold">
+      <div className="w-full flex justify-center items-center py-2 text-center">
+        <p className="bg-white h-full py-2 text-xs w-[80%] rounded-full text-black font-semibold">
           &copy; 2024 NEXTHREADS. All rights reserved.
         </p>
       </div>

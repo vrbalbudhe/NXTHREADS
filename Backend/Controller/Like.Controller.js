@@ -1,12 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Function to handle liking or un-liking a post
 const likePost = async (req, res) => {
   const { userId, postId } = req.body;
 
   try {
-    // Check if the user has already liked the post
     const existingLike = await prisma.like.findFirst({
       where: {
         postId,
@@ -14,7 +12,6 @@ const likePost = async (req, res) => {
       },
     });
 
-    // Check if the user has already disliked the post
     const existingUnlike = await prisma.unlike.findFirst({
       where: {
         postId,
@@ -23,14 +20,12 @@ const likePost = async (req, res) => {
     });
 
     if (existingLike) {
-      // If the user already liked the post, unlike it
       await prisma.like.delete({
         where: {
           id: existingLike.id,
         },
       });
 
-      // If the post is also disliked, remove the dislike
       if (existingUnlike) {
         await prisma.unlike.delete({
           where: {
@@ -39,7 +34,7 @@ const likePost = async (req, res) => {
         });
         await prisma.posts.update({
           where: { id: postId },
-          data: { likes: { decrement: 1 }, dislikes: { decrement: 1 } },
+          data: { likes: { decrement: 1 }, unlikes: { decrement: 1 } },
         });
       } else {
         await prisma.posts.update({
@@ -52,7 +47,6 @@ const likePost = async (req, res) => {
     }
 
     if (existingUnlike) {
-      // If the user has disliked the post, remove the dislike and add a like
       await prisma.unlike.delete({
         where: {
           id: existingUnlike.id,
@@ -60,7 +54,7 @@ const likePost = async (req, res) => {
       });
       await prisma.posts.update({
         where: { id: postId },
-        data: { dislikes: { decrement: 1 }, likes: { increment: 1 } },
+        data: { unlikes: { decrement: 1 }, likes: { increment: 1 } },
       });
     } else {
       // Create a new like
@@ -83,21 +77,17 @@ const likePost = async (req, res) => {
   }
 };
 
-// Function to handle un-liking a post
 const unlikePost = async (req, res) => {
-  const { postId } = req.params;
+  const { postId } = req.body;
   const { userId } = req.body;
 
   try {
-    // Check if the user has already disliked the post
     const existingUnlike = await prisma.unlike.findFirst({
       where: {
         postId,
         userId,
       },
     });
-
-    // Check if the user has already liked the post
     const existingLike = await prisma.like.findFirst({
       where: {
         postId,
@@ -106,7 +96,6 @@ const unlikePost = async (req, res) => {
     });
 
     if (!existingUnlike) {
-      // If the user has not disliked the post, add a dislike
       await prisma.unlike.create({
         data: {
           postId,
@@ -114,7 +103,6 @@ const unlikePost = async (req, res) => {
         },
       });
 
-      // If the post is already liked, remove the like
       if (existingLike) {
         await prisma.like.delete({
           where: {
@@ -123,19 +111,18 @@ const unlikePost = async (req, res) => {
         });
         await prisma.posts.update({
           where: { id: postId },
-          data: { likes: { decrement: 1 }, dislikes: { increment: 1 } },
+          data: { likes: { decrement: 1 }, unlikes: { increment: 1 } },
         });
       } else {
         await prisma.posts.update({
           where: { id: postId },
-          data: { dislikes: { increment: 1 } },
+          data: { likes: { increment: 1 } },
         });
       }
 
       return res.status(200).json({ message: "Post disliked successfully" });
     }
 
-    // If the user has already disliked the post, remove the dislike
     await prisma.unlike.delete({
       where: {
         id: existingUnlike.id,
@@ -143,7 +130,7 @@ const unlikePost = async (req, res) => {
     });
     await prisma.posts.update({
       where: { id: postId },
-      data: { dislikes: { decrement: 1 } },
+      data: { unlikes: { decrement: 1 } },
     });
 
     return res.status(200).json({ message: "Post un-disliked successfully" });
@@ -153,7 +140,39 @@ const unlikePost = async (req, res) => {
   }
 };
 
+const checkWhetherLike = async (req, res) => {
+  const { userId, postId } = req.body;
+
+  try {
+    // Check if the user has liked the post
+    const isLiked = await prisma.like.findFirst({
+      where: {
+        userId: userId,
+        postId: postId,
+      },
+    });
+
+    // Check if the user has unliked the post
+    const isUnliked = await prisma.unlike.findFirst({
+      where: {
+        userId: userId,
+        postId: postId,
+      },
+    });
+
+    // Return the like status
+    return res.status(200).json({
+      isLiked: isLiked ? true : false,
+      isUnliked: isUnliked ? true : false,
+    });
+  } catch (error) {
+    console.error("Error checking like status:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   likePost,
   unlikePost,
+  checkWhetherLike,
 };

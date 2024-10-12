@@ -91,6 +91,7 @@ export const userProfileInfoUsingURL = async ({ params }) => {
   }
 };
 
+
 // Combined loader to fetch data from multiple sources
 // export const combinedLoader = async ({ params }) => {
 //   try {

@@ -28,13 +28,13 @@ function HotTopicsCard() {
   const navigate = useNavigate("");
   return (
     <div className="w-full h-fit p-4 rounded-lg">
-      <h2 className="text-md font-bold mb-4 text-slate-900">Hot Topics</h2>
+      <h2 className="text-md font-bold mb-4 text-slate-900 dark:text-darkBlue">Hot Topics</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-1">
         {categories.map((category, index) => (
           <div
             key={index}
             onClick={() => navigate(`/list?category=${category}&author=`)}
-            className="bg-white p-3 cursor-pointer rounded-lg border hover:text-white hover:bg-blue-400 text-slate-800 border-slate-200 transition-shadow duration-300"
+            className="bg-white dark:text-[#d6d6d6] dark:bg-[#01110a] dark:border-none p-3 cursor-pointer rounded-lg border hover:text-white hover:bg-blue-400 text-slate-800 border-slate-200 transition-shadow duration-300"
           >
             <h3 className="text-xs font-semibold">{category}</h3>
           </div>

@@ -14,7 +14,7 @@ function ListPage() {
     <div className="w-full h-full flex justify-center items-start gap-5">
       <div className="w-[70%] h-full flex flex-col">
         <div
-          className="w-full mt-5 bg-slate-950 rounded-sm border
+          className="w-full mt-5 bg-black dark:border-none mb-5 rounded-sm border
          h-[150px] flex flex-col justify-center items-center"
         >
           <h1 className="text-4xl font-semibold text-white"># {category}</h1>

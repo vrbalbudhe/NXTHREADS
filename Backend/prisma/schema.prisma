@@ -48,8 +48,8 @@ model posts {
   comment    comment[]
   like       Like[]
   unlike     Unlike[]
-  likes      Int?         @default(0)
-  unlikes    Int?         @default(0)
+  likes      Int          @default(0)
+  unlikes    Int          @default(0)
 }
 
 model Like {
@@ -122,4 +122,23 @@ enum Category {
   Photography
   Sports
   Personal_Development
+}
+
+model Message {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String    @db.ObjectId
+  receiverId String    @db.ObjectId
+  content    String
+  createdAt  DateTime  @default(now())
+  readAt     DateTime?
+  chatId     String    @db.ObjectId
+  chat       Chat?     @relation("ChatMessages", fields: [chatId], references: [id])
+}
+
+model Chat {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  participants String[]
+  messages     Message[] @relation("ChatMessages")
+  lastMessage  String?
+  updatedAt    DateTime  @updatedAt
 }

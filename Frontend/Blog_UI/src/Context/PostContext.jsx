@@ -1,21 +1,25 @@
 /* eslint-disable react/prop-types */
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "./AuthContext";
 
 export const PostContext = createContext();
 
 export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
+  const { currentUser } = useContext(AuthContext);
+  const [userPosts, setUserPosts] = useState([]);
   const [favPosts, setFavPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const userId = currentUser?.userId || {};
 
   useEffect(() => {
     fetchGeneralPosts();
-    fetchUserPosts();
-  }, [page]);
+    fetchUserPosts(userId);
+  }, [page,userId]);
 
   // Function to fetch posts for a specific user
   const fetchUserPosts = async (userId, page = 1, limit = 10) => {
@@ -25,9 +29,9 @@ export const PostProvider = ({ children }) => {
       const response = await axios.get(url, { withCredentials: true });
 
       if (page === 1) {
-        setPosts(response.data.posts);
+        setUserPosts(response.data.posts);
       } else {
-        setPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
+        setUserPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
       }
 
       setHasMore(response.data.meta.hasMore);
@@ -87,7 +91,6 @@ export const PostProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
 
   return (
     <PostContext.Provider
@@ -95,6 +98,8 @@ export const PostProvider = ({ children }) => {
         posts,
         setPosts,
         loading,
+        setUserPosts,
+        userPosts,
         error,
         fetchUserPosts,
         HandleDeleteBlog,

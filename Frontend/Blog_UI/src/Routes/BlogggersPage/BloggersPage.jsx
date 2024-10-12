@@ -36,14 +36,14 @@ function BloggersPage() {
   // }, [io]);
 
   return (
-    <div className="w-full  min-h-[500px] gap-2 mt-5 flex justify-center items-start">
+    <div className="w-full dark:border-none  min-h-[500px] gap-5 flex justify-center items-start border-l-2 border-r-2">
       <div className="w-[70%] min-h-[500px] h-full justify-center items-center">
         <div className="w-[95%] h-fit rounded-lg mt-5 flex flex-col justify-center items-center"></div>
-        <div className="w-full h-fit overflow-auto flex flex-wrap justify-start items-start">
+        <div className="w-full h-fit overflow-auto flex flex-wrap justify-start items-center">
           <OnlyUserSearch />
         </div>
         <div className="w-full h-fit flex justify-center gap-1 items-center mt-5"></div>
-        <div className="w-full h-full flex flex-wrap justify-start items-start gap-3">
+        <div className="w-full h-full flex flex-wrap justify-start p-5 items-start gap-3">
           <Suspense fallback={<p>Loading...</p>}>
             <Await
               resolve={postResponse}

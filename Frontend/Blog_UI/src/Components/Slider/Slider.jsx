@@ -21,7 +21,7 @@ function Slider({ post, onClose }) {
     <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center overflow-hidden z-50">
       {/* Close Button */}
       <div
-        className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-black text-2xl cursor-pointer hover:scale-90 transition-transform duration-300"
+        className="absolute  dark:text-white top-4 right-4 w-10 h-10 flex items-center justify-center text-black text-2xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={() => onClose(false)}
       >
         <FaTimes />
@@ -29,7 +29,7 @@ function Slider({ post, onClose }) {
 
       {/* Previous Button */}
       <div
-        className="absolute top-1/2 left-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
+        className="absolute  dark:text-white top-1/2 left-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={handlePrevClick}
       >
         <FaCaretLeft />
@@ -72,7 +72,7 @@ function Slider({ post, onClose }) {
 
       {/* Next Button */}
       <div
-        className="absolute top-1/2 right-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
+        className="absolute dark:text-white top-1/2 right-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={handleNextClick}
       >
         <FaCaretRight />

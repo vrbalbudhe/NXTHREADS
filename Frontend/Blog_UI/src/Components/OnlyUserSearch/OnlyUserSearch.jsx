@@ -48,14 +48,14 @@ function OnlyUserSearch() {
     <div className="w-full min-h-[10px] p-1 flex flex-col justify-center items-center">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[90%] p-1 border-2 pl-5 border-slate-300 h-8 rounded-md"
+          className="w-[90%] p-1 border-2 dark:bg-darkBackground dark:border-darkBlue pl-5 border-slate-300 h-8 rounded-2xl"
           type="search"
           placeholder="Search by username or email"
           value={searchTerm}
           onChange={handleSearch}
         />
         <button
-          className="py-1 text-xl text-black rounded-full shadow-xl border border-slate-300 px-1 hover:text-white hover:bg-slate-500"
+          className="py-1 dark:text-white dark:border-none text-xl text-black rounded-full shadow-xl border border-slate-300 px-1 hover:text-white hover:bg-slate-500"
           onClick={() => handleSearch({ target: { value: searchTerm } })}
         >
           <IoMdSearch />

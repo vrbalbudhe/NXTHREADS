@@ -20,7 +20,7 @@ function UserCard({ user }) {
           `http://localhost:8000/api/userfollow/status`,
           {
             params: {
-              followerId: currentUser.userInfo.id,
+              followerId: currentUser?.userId,
               followingId: user.id,
             },
             withCredentials: true,
@@ -33,14 +33,14 @@ function UserCard({ user }) {
     };
 
     checkFollowingStatus();
-  }, [user.id, currentUser.userInfo.id]);
+  }, [user.id, currentUser.userId]);
 
   const handleFollowSwitch = async () => {
     try {
       await axios.post(
         "http://localhost:8000/api/userfollow/follow",
         {
-          followerId: currentUser.userInfo.id,
+          followerId: currentUser?.userId,
           followingId: user.id,
         },
         {
@@ -54,10 +54,10 @@ function UserCard({ user }) {
     }
   };
 
-  if (currentUser.userInfo.id === user.id) return null;
+  if (currentUser?.userId === user.id) return null;
 
   return (
-    <div className="w-[130px] h-[180px] hover:scale-105 duration-300 shadow-md border-l border-r border-slate-200 rounded-sm">
+    <div className="w-[130px] dark:border-slate-900 dark:rounded-2xl dark:bg-darkPostCardBackground h-[180px] hover:scale-105 duration-300 shadow-md border-l border-r dark:border border-slate-200 rounded-sm">
       <div className="w-full h-[60%] flex justify-center items-center">
         <img
           className="h-20 w-20 rounded-full object-cover"
@@ -68,7 +68,7 @@ function UserCard({ user }) {
       <div className="w-full h-[20%] flex flex-col justify-center items-center">
         <h1
           onClick={() => navigate(`/profile/${user.id}`)}
-          className="text-slate-950 py-1 cursor-pointer hover:text-blue-400 w-full text-center font-semibold text-xs bg-slate-100"
+          className="text-slate-950 py-1 cursor-pointer dark:bg-darkPostCardBackground dark:text-slate-300 dark:text-[13px] hover:text-blue-400 w-full text-center font-semibold text-xs bg-slate-100"
         >
           @{user.username}
         </h1>
@@ -77,10 +77,10 @@ function UserCard({ user }) {
         </h1>
       </div>
       <div className="w-full h-[20%] flex justify-center items-center">
-        {currentUser.userInfo && (
+        {currentUser && (
           <h1
             onClick={handleFollowSwitch}
-            className={`cursor-pointer rounded-md px-3 py-1 font-semibold text-xs ${isFollowing ? "bg-slate-200 " : "bg-slate-950 text-white"}`}
+            className={`cursor-pointer dark:text-white dark:bg-darkBlue rounded-md px-3 py-1 font-semibold text-xs ${isFollowing ? "bg-slate-200 " : "bg-slate-950 text-white"}`}
           >
             {isFollowing ? "Unfollow" : "Follow"}
           </h1>

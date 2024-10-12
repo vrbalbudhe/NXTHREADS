@@ -8,5 +8,6 @@ body{
 }
 
 #cloudinary_widget {
-  height: 80vh; /* 80% of the viewport height */
+  height: 80vh; 
 }
+

@@ -3,6 +3,7 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
+import { redirect } from "react-router-dom";
 
 export const UserInfoContext = createContext();
 
@@ -18,6 +19,9 @@ export const UserInfoProvider = ({ children }) => {
       const response = await axios.get(`http://localhost:8000/api/user/${id}`, {
         withCredentials: true,
       });
+      if (!response.data || response.data.id === undefined) {
+        redirect("login");
+      }
       setInfo(response.data);
       console.log(response.data);
     } catch (error) {

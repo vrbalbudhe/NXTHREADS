@@ -9,9 +9,10 @@ import UpdateCard from "../../Components/UpdateCard/UpdateCard";
 import SocialMediaCard from "../../Components/SocialMediaCard/SocialMediaCard";
 import Card1 from "../../Components/Card1/Card1";
 import DialogBox from "../../Components/DialogBox/DialogBox";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { UserInfoContext } from "../../Context/UerInfoContext";
 import HotTopicsCard from "../../Components/HotTopicsCard/HotTopicsCard";
+import FollowersCard from "../../Components/FollowersCard/FollowersCard";
 
 function Profile() {
   const {
@@ -19,10 +20,13 @@ function Profile() {
     loading: userInfoLoading,
     fetchUserInfo,
   } = useContext(UserInfoContext);
+  const { id } = useParams();
+  console.log(id);
   const {
     posts,
     fetchUserPosts,
     favPosts,
+    userPosts,
     fetchSavedPosts,
     hasMore,
     loading,
@@ -37,28 +41,31 @@ function Profile() {
   const [favourite, setFavourite] = useState([]);
   const [whatToShow, setWhatToShow] = useState(false);
 
-  const userInfo = currentUser?.userInfo;
   const userInformation = currentUser?.userInfo || {};
-  const isCurrentUser = userInfo?.id === userInformation?.id;
+  const isCurrentUser = info?.user?.id === userInformation?.id;
 
   const navigate = useNavigate();
   console.log(favPosts);
 
   useEffect(() => {
-    if (userInformation?.id) {
-      fetchSavedPosts(userInformation.id);
-      fetchUserPosts(userInformation.id);
-    }
-  }, [userInformation]);
+    const loadData = async () => {
+      await fetchSavedPosts(id);
+      await fetchUserPosts(id);
+      await fetchUserInfo(id);
+      await handleFollowersData();
+      await handleFollowingData();
+    };
+    loadData();
+  }, [id]);
   const handleFollowingData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/following/${userInfo.id}`,
+        `http://localhost:8000/api/userfollow/following/${currentUser?.userId}`,
         {
           withCredentials: true,
         }
       );
-      setTotalFollowing(res.data || 0);
+      setTotalFollowing(res?.data?.totalFollowings?.length || 0);
     } catch (error) {
       console.log(error);
     }
@@ -67,12 +74,13 @@ function Profile() {
   const handleFollowersData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/followers/${userInfo.id}`,
+        `http://localhost:8000/api/userfollow/followers/${currentUser?.userId}`,
         {
           withCredentials: true,
         }
       );
-      setTotalFollowers(res.data || 0);
+      setTotalFollowers(res?.data?.totalFollowers?.length || 0);
+      // console.log(res.data.totalFollowers.length);
     } catch (error) {
       console.log(error);
     }
@@ -107,67 +115,66 @@ function Profile() {
   };
 
   return (
-    <div className="w-full min-h-[500px] p-1 md:flex justify-start items-start">
+    <div className="w-full h-fit p-1 gap-3 md:flex justify-start items-start">
       <div className="w-full md:w-[30%] rounded-3xl p-2 mt-14 lg:w-[30%] h-full flex flex-col justify-start items-start">
-        <div className="w-full h-fit">
-          <div className="w-full h-40 mb-4 rounded-full flex justify-center items-start">
+        <div className="w-full h-fit flex justify-start flex-col items-center">
+          <div className="w-60 h-60 mb-4 rounded-full flex justify-center items-start">
             <img
-              className="w-full h-40 object-cover rounded-lg border-2 border-white"
+              className="w-full h-60 object-cover dark:border-none rounded-full border-2 border-white"
               src={
                 info.user?.avatar ||
-                userInformation.avatar ||
                 "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg"
               }
               alt="User Avatar"
             />
           </div>
 
-          <div className="w-full h-fit border-2 border-slate-200 shadow-md rounded-md mb-2 pb-2 flex flex-col gap-2 justify-center md:justify-start items-start pl-5 pr-2 pt-2 mt-2">
-            {isCurrentUser && (
-              <h1 className="font-bold text-slate-800 border-2 border-slate-300 px-1 py-1 rounded-md text-xs md:text-md -tracking-tighter">
-                <span>{info?.user?.id}</span>
+          <div className="w-full h-fit border-2 dark:border dark:border-slate-800 dark:bg-darkPostCardBackground border-slate-200 shadow-md rounded-xl mb-2 pb-2 flex flex-col gap-2 justify-center md:justify-start items-start pl-5 pr-2 pt-2 mt-2">
+            {currentUser && (
+              <h1 className="font-bold text-slate-800 dark:text-darkBlue border-2 dark:border-none border-slate-300 px-1 py-1 rounded-md text-sm md:text-md -tracking-tighter">
+                <span>{info.user?.userId}</span>
               </h1>
             )}
-            <h1 className="font-semibold text-sm text-slate-800">
+            <h1 className="font-semibold text-sm text-slate-800 dark:text-darkText ">
               Username:{" "}
-              <span className="text-slate-500">{info?.user?.username}</span>
+              <span className="text-slate-500 ">{info.user?.username}</span>
             </h1>
-            <h1 className="font-semibold text-sm text-slate-800">
-              Email: <span className="text-slate-500">{info.user?.email}</span>
+            <h1 className="font-semibold text-sm  text-slate-800 dark:text-darkText">
+              Email: <span className="text-slate-500 ">{info.user?.email}</span>
             </h1>
-            <h1 className="font-semibold text-sm text-slate-800">
+            <h1 className="font-semibold text-sm dark:text-darkText text-slate-800 ">
               Full Name:
-              <span className="text-slate-500">
+              <span className="text-slate-500 ">
                 {info.user?.fullname || (
-                  <span className="text-slate-400 text-xs">Not Provided</span>
+                  <span className="text-slate-400  text-xs">Not Provided</span>
                 )}
               </span>
             </h1>
-            <h1 className="font-bold text-sm text-slate-800">
+            <h1 className="font-bold text-sm dark:text-darkText text-slate-800  ">
               Gender:
               <span className="text-slate-500">
                 {info.user?.gender || (
-                  <span className="text-slate-400 font-semibold text-xs">
+                  <span className="text-slate-400  font-semibold text-xs">
                     Not Provided
                   </span>
                 )}
               </span>
             </h1>
 
-            {isCurrentUser && (
+            {currentUser.userId === id && (
               <div className="w-full h-fit flex flex-wrap justify-start items-center gap-1 mt-2">
                 <button
                   onClick={handleUpdateCard}
-                  className="w-[40%] bg-transparent border border-slate-400 px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
+                  className="w-[40%] bg-transparent border dark:text-darkText border-slate-400 px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
                 >
                   Update
                 </button>
-                <button className="w-[40%] bg-transparent border border-slate-400 px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold">
+                <button className="w-[40%] bg-transparent border border-slate-400 dark:text-darkText px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold">
                   Feedback
                 </button>
                 <button
                   onClick={() => setLogoutCard(true)}
-                  className="w-[40%] bg-transparent hover:bg-red-400 text-slate-800 border border-slate-400 px-2 py-1 text-xs rounded-xl hover:text-white font-bold"
+                  className="w-[40%] bg-transparent hover:bg-red-400 text-slate-800 border border-slate-400 px-2 py-1 text-xs rounded-xl dark:text-darkText hover:text-white font-bold"
                 >
                   Logout
                 </button>
@@ -182,7 +189,7 @@ function Profile() {
             )}
           </div>
         </div>
-        <div className="w-full h-fit mb-2 bg-slate-50 flex flex-col justify-start items-start border border-slate-50">
+        <div className="w-full h-fit mb-2 bg-slate-50 flex flex-col justify-start items-start border border-slate-50 dark:border-none dark:rounded-none">
           <SocialMediaCard />
         </div>
         {showCard && (
@@ -194,17 +201,22 @@ function Profile() {
         <HotTopicsCard />
       </div>
 
-      <div className="w-full md:w-[70%] h-full mt-1">
-        <div className="w-full h-40 flex justify-between pr-5 items-center pl-5">
-          {/* <FollowersCard key={currentUser.userInfo.id} post={posts.posts} totalFollowing={totalFollowing} totalFollowers={totalFollowers} /> */}
+      <div className="w-full md:w-[70%] h-full mt-[68px]">
+        <div className="w-full h-60 flex justify-between items-center">
+          <FollowersCard
+            key={currentUser?.userId}
+            post={userPosts}
+            totalFollowing={info?.user?.followers?.length}
+            totalFollowers={info?.user?.following?.length}
+          />
         </div>
-        <div className="w-full mt-8 border border-slate-100 rounded-sm h-10 flex justify-between pr-5 items-center pl-2">
+        <div className="w-full mt-5 mb-2 border border-slate-100 rounded-xl h-10 flex justify-between pr-5 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-slate-800">
           <div className="flex h-full justify-center items-center gap-2">
             <h1
               onClick={() => setWhatToShow(!whatToShow)}
-              className={`${!whatToShow ? "bg-black text-white" : ""} font-semibold text-xs cursor-pointer rounded-sm px-2 py-1 -tracking-tighter text-slate-800`}
+              className={`${!whatToShow ? " text-slate-800" : ""} font-semibold text-sm cursor-pointer rounded-sm px-2 py-1 -tracking-tighter text-white`}
             >
-              My Blogs
+              My Blogs / Saved
             </h1>
 
             {isCurrentUser && (
@@ -230,13 +242,8 @@ function Profile() {
 
         <div>
           {!whatToShow ? (
-            posts.length > 0 ? (
-              posts.map(
-                (post) =>
-                  post.author === currentUser.userInfo.username && (
-                    <PostCard key={post.id} post={post} />
-                  )
-              )
+            userPosts.length > 0 ? (
+              userPosts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
               <div className=" text-center min-h-[200px]"></div>
             )

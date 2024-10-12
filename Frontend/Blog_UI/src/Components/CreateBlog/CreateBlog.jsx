@@ -22,7 +22,7 @@ function CreateBlog() {
     setBlogData((prevData) => ({
       ...prevData,
       [name]: value,
-      author: currentUser.userInfo.username,
+      author: currentUser.username,
     }));
   };
 
@@ -52,9 +52,9 @@ function CreateBlog() {
     <div className="w-full h-full flex justify-start items-start">
       <div className="w-full h-full flex justify-start items-start gap-2 mt-5">
         <div className="w-[30%] h-full gap-3 flex flex-col">
-          <div className="w-full h-full border border-slate-300 rounded-2xl shadow-md p-5 flex flex-col justify-start items-start gap-3">
+          <div className="w-full h-full border dark:text-darkBlue dark:bg-darkPostCardBackground border-slate-300 dark:border-slate-800 rounded-2xl shadow-md p-5 flex flex-col justify-start items-start gap-3">
             <h1>Upload Images </h1>
-            <ul className="text-xs pl-4 list-decimal">
+            <ul className="text-xs dark:text-white pl-4 list-decimal">
               <li>Camera</li>
               <li>Browse</li>
               <li>Drive</li>
@@ -77,7 +77,7 @@ function CreateBlog() {
               </h1>
             </h1>
           </div>
-          <div className="w-full h-full border border-slate-300 rounded-2xl shadow-md p-5 flex flex-col justify-start items-start gap-3">
+          <div className="w-full h-full border dark:border dark:border-slate-800 dark:text-slate-300 dark:bg-darkPostCardBackground border-slate-300 rounded-2xl shadow-md p-5 flex flex-col justify-start items-start gap-3">
             <h1 className="font-bold text-blue-500">Important Rules</h1>
             <ul className="text-xs list-disc">
               <li>
@@ -124,13 +124,13 @@ function CreateBlog() {
           </div>
         </div>
 
-        <div className="w-[70%] h-full border border-slate-300 rounded-2xl shadow-md p-5">
+        <div className="w-[70%] h-full border dark:border-none border-slate-300 rounded-2xl shadow-md p-5">
           <div className="w-full h-14 flex justify-between items-center pl-5">
-            <h1 className="font-semibold text-slate-900 text-sm">
+            <h1 className="font-semibold text-slate-900 text-sm dark:text-darkBlue">
               Write a Blog
             </h1>
             <button
-              className=" border border-slate-400 px-2 mr-5 py-1 text-xs rounded-lg hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
+              className=" border border-slate-400 px-2 mr-5 py-1 text-xs rounded-lg dark:text-darkText hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
               onClick={handleCreateBlog}
             >
               Post It
@@ -140,7 +140,7 @@ function CreateBlog() {
             <div className="w-full h-fit flex flex-col justify-start items-start gap-2">
               <div>
                 <input
-                  className="w-[690px] h-7 border-2 border-slate-200 pl-2 text-xs"
+                  className="w-[690px] h-10 border-2 dark:text-white dark:bg-darkPostCardBackground rounded-2xl dark:border-slate-800 dark:border border-slate-200 pl-2 text-xs"
                   placeholder="Title"
                   type="text"
                   name="title"
@@ -150,7 +150,7 @@ function CreateBlog() {
               </div>
               <div>
                 <input
-                  className="w-[690px] h-7 border-2 border-slate-200 pl-2 text-xs"
+                  className="w-[690px] h-10 border-2 dark:text-darkText dark:bg-darkPostCardBackground rounded-2xl dark:border-slate-800 border-slate-200 pl-2 text-xs"
                   placeholder="Subtitle"
                   type="text"
                   name="subtitle"
@@ -160,7 +160,7 @@ function CreateBlog() {
               </div>
               <div>
                 <select
-                  className="pl-2 w-[200px] h-7 bg-white border-2 text-xs border-slate-200"
+                  className="pl-2 w-[200px] h-10  dark:bg-darkPostCardBackground dark:border-slate-800 rounded-2xl dark:text-white bg-white border-2 text-xs border-slate-200"
                   name="category"
                   value={blogData.category}
                   onChange={handleInputChange}
@@ -195,7 +195,7 @@ function CreateBlog() {
               </div>
               <div className="w-full h-[300px] overflow-hidden">
                 <textarea
-                  className="h-full w-full pl-2 border border-slate-300 text-sm pt-2"
+                  className="h-full w-full pl-2 dark:text-darkText dark:bg-darkPostCardBackground dark:border-slate-800 border border-slate-300 text-sm pt-2"
                   placeholder="Write a Post..."
                   name="content"
                   value={blogData.content}

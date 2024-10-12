@@ -10,46 +10,46 @@ function SocialMediaCard() {
     <a href={linkAddress}></a>;
   };
   return (
-    <div className="w-full text-2xl h-10 flex justify-center items-center gap-2 border border-slate-200 rounded-md shadow-md bg-white ">
+    <div className="w-full dark:text-darkText dark:bg-darkPostCardBackground dark:border-none text-2xl h-10 flex justify-center items-center gap-2 border border-slate-200 rounded-md shadow-md bg-white dark:rounded-none">
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <RiTwitterXLine />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <FaPinterest />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <CiInstagram />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <FaFacebookSquare />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <FaSnapchat />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <FaSquareGithub />
       </h1>
       <h1
         onClick={handleRoute("")}
-        className="text-slate-800 hover:text-red-400 cursor-pointer"
+        className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"
       >
         <FaStackOverflow />
       </h1>

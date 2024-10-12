@@ -34,8 +34,16 @@ function PostCard({ post }) {
     setComments,
   } = useContext(CommentContext);
 
-  const { likes, setLikes, toggleLike, loading, error, toggleUnLike } =
-    useContext(LikeContext);
+  const {
+    likes,
+    setLikes,
+    toggleLike,
+    checkWhether,
+    isliked,
+    loading,
+    error,
+    toggleUnLike,
+  } = useContext(LikeContext);
   const { HandleDeleteBlog } = useContext(PostContext);
   const [favourite, setFavourite] = useState(false);
   const [cardDelete, setCardDelete] = useState(false);
@@ -47,12 +55,23 @@ function PostCard({ post }) {
   const [commentBtn, setCommentBtn] = useState(false);
   const [commentData, setCommentData] = useState({ description: "" });
   const [deleteCommentId, setDeleteCommentId] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchComments(post.id);
     setCurrentPostId(post.id);
-  }, []);
+
+    const checkLikeStatus = async () => {
+      const status = await checkWhether(post.id, currentUser?.userId);
+      if (status) {
+        setIsLiked(status.isLiked);
+        setIsDisliked(status.isUnliked);
+      }
+    };
+    checkLikeStatus();
+  }, [post.id, currentUser]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -70,18 +89,16 @@ function PostCard({ post }) {
     console.log(info);
   };
 
-  // console.log(post);
-
   const handleLikeButton = () => {
-    toggleLike(post.id, currentUser?.userInfo?.id);
+    toggleLike(post.id, currentUser?.userId);
   };
 
   const handleDislikeButton = () => {
-    toggleUnLike(post?.id, currentUser?.userInfo?.id);
+    toggleUnLike(post?.id, currentUser?.userId);
   };
 
   const handleFavouriteSwitch = async () => {
-    if (!currentUser?.userInfo?.id) {
+    if (!currentUser?.userId) {
       console.error("No user info available.");
       return;
     }
@@ -90,7 +107,7 @@ function PostCard({ post }) {
       const res = await axios.post(
         "http://localhost:8000/api/post/fav",
         {
-          userId: currentUser.userInfo.id,
+          userId: currentUser?.userId,
           postId: post.id,
         },
         {
@@ -147,12 +164,12 @@ function PostCard({ post }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // console.log(comments);
-
   return (
-    <div className="w-full h-fit border-2 mt-1 hover:border-slate-200 rounded-lg duration-300 border-zinc-200 bg-white hover:shadow-lg">
-      <div className="w-full h-10 flex justify-between items-center pl-5 bg-gradient-to-r from-zinc-50 to-slate-50 rounded-t-lg">
-        <h1 className="font-bold text-sm text-slate-900">{post.title}</h1>
+    <div className="w-full h-fit border-2 dark:border-slate-900 dark:bg-darkPostCardBackground dark:rounded-xl flex flex-col mb-3  hover:border-slate-200 duration-300 border-zinc-100   hover:shadow-lg ">
+      <div className="w-full h-10 flex justify-between  items-center pl-5">
+        <h1 className="font-bold text-sm text-slate-900 dark:text-white ">
+          {post.title}
+        </h1>
         <div className="w-fit h-full flex justify-end items-center">
           <div
             onClick={() => {
@@ -160,25 +177,27 @@ function PostCard({ post }) {
               setDislike(false);
               handleLikeButton();
             }}
-            className="hover:text-slate-500 w-fit text-2xl text-slate-900 font-semibold p-2 h-full flex items-center"
-            aria-label={like ? "Unlike post" : "Like post"}
+            className="hover:text-slate-500 dark:text-white w-fit text-2xl text-slate-900 font-semibold p-2 h-full flex items-center"
+            aria-label={isLiked ? "Unlike post" : "Like post"}
           >
-            {like ? <BiSolidLike /> : <BiLike />}
+            {isLiked ? <BiSolidLike /> : <BiLike />}
           </div>
+          <h1 className="dark:text-white">{post.likes || 0}</h1>
           <div
             onClick={() => {
               setDislike((prev) => !prev);
               setLike(false);
               handleDislikeButton();
             }}
-            className="hover:text-slate-500 w-fit text-2xl text-slate-900 font-semibold p-2 h-full flex items-center"
-            aria-label={dislike ? "Undislike post" : "Dislike post"}
+            className="hover:text-slate-500 w-fit text-2xl dark:text-white  text-slate-900 font-semibold p-2 h-full flex items-center"
+            aria-label={isDisliked ? "Undislike post" : "Dislike post"}
           >
-            {dislike ? <BiSolidDislike /> : <BiDislike />}
+            {isDisliked ? <BiSolidDislike /> : <BiDislike />}
           </div>
+          <h1 className="dark:text-white">{post.unlikes || 0}</h1>
           <button
             onClick={handleFavouriteSwitch}
-            className="h-full w-fit text-2xl flex p-2 justify-center items-center pr-2 font-bold text-red-400"
+            className="h-full w-fit text-2xl dark:text-white flex p-2 justify-center items-center pr-2 font-bold text-red-400"
             aria-label={
               favourite ? "Remove from favourites" : "Add to favourites"
             }
@@ -195,19 +214,19 @@ function PostCard({ post }) {
           {currentUser?.userInfo?.id === post.userId && (
             <div
               onClick={() => setCardDelete(true)}
-              className="hover:text-slate-500 w-fit text-slate-900 font-semibold p-2 h-full flex items-center text-xl"
+              className="hover:text-slate-500 dark:text-white  w-fit text-slate-900 font-semibold p-2 h-full flex items-center text-xl"
             >
               <RiDeleteBin3Line />
             </div>
           )}
           <div
             onClick={handleDropDownMenu}
-            className="hover:text-slate-500 w-fit text-slate-900 font-semibold p-2 h-full flex items-center"
+            className="hover:text-slate-500 dark:text-white w-fit text-slate-900 font-semibold p-2 h-full flex items-center"
           >
             <CiMenuKebab />
           </div>
           {isdropdown && (
-            <div className="dropdown-menu h-fit bg-slate-50 ml-20 absolute right-6 mt-12 w-32 border border-gray-400 rounded-lg shadow-lg z-10">
+            <div className="dropdown-menu h-fit bg-slate-50 dark:bg-darkPostCardBackground ml-20 absolute right-6 mt-12 w-32 border border-gray-400 rounded-lg shadow-lg z-10">
               <ul className="pl-3 pr-3 pt-2 pb-2 text-sm flex flex-col justify-center items-center">
                 <li className="w-full cursor-pointer hover:bg-slate-200 h-6 border-b-2 border-slate-300">
                   Report
@@ -223,13 +242,13 @@ function PostCard({ post }) {
           )}
         </div>
       </div>
-      <div className="w-full min-h-8 flex bg-zinc-200 justify-start pl-5 items-center">
-        <h1 className="font-bold text-xs text-slate-900 cursor-pointer hover:text-orange-400 underline -tracking-tight">
+      <div className="w-full min-h-8 flex bg-slate-200 dark:bg-darkPostCardBg2 justify-start pl-5 items-center">
+        <h1 className="font-bold text-xs dark:text-black dark:font-semibold text-slate-900 cursor-pointer hover:text-orange-400 dark:text-sm -tracking-tight">
           {post.subtitle}
         </h1>
       </div>
       <div className="w-full h-fit p-5 flex flex-wrap justify-start items-center">
-        <p className="text-slate-700 flex-wrap overflow-hidden leading-relaxed text-[13px] font-[Poppins] break-words">
+        <p className="text-slate-700 dark:text-[#d6d6d6] flex-wrap overflow-hidden leading-relaxed text-[13px] font-[Poppins] break-words">
           {post.content}
         </p>
       </div>
@@ -275,21 +294,21 @@ function PostCard({ post }) {
           #{post.category}
         </span>
       </div>
-      <div className="w-full h-10 flex justify-between items-center px-5 py-3 bg-white rounded-b-xl">
+      <div className="w-full h-10 flex justify-between items-center px-5 py-3 dark:bg-darkPostCardBackground bg-white rounded-b-xl dark:rounded-none ">
         <div className="flex items-center">
           <img
-            className="w-6 h-6 object-cover rounded-full mr-2 border border-slate-500"
+            className="w-6 h-6 object-cover dark:text-white rounded-full mr-2 border border-slate-500"
             src={
               post?.User?.avatar ||
               "https://static.vecteezy.com/system/resources/previews/020/911/740/non_2x/user-profile-icon-profile-avatar-user-icon-male-icon-face-icon-profile-icon-free-png.png"
             }
             alt={post.author}
           />
-          <span className="text-xs text-slate-700 font-bold">
+          <span className="text-xs text-slate-700 font-bold dark:text-[#d6d6d6]">
             {post.author}
           </span>
         </div>
-        <div className="text-xs flex gap-5 text-slate-600">
+        <div className="text-xs dark:text-[#d6d6d6] flex gap-5 text-slate-600">
           <h1>
             {new Date(post.createdAt).toLocaleDateString(undefined, {
               year: "numeric",
@@ -321,7 +340,7 @@ function PostCard({ post }) {
               name="description"
               value={comments.description}
               onChange={handleInputChange}
-              className="w-[90%] h-14 rounded-md p-2 border border-slate-300"
+              className="w-[90%] h-14 dark:bg-darkPostCardBackground dark:border-darkBlue dark:border-2 rounded-2xl dark:text-darkText outline-none p-2 border border-slate-300"
               placeholder="Add a comment..."
             />
             <button
@@ -335,7 +354,7 @@ function PostCard({ post }) {
             {post.comment.map((com) => (
               <div
                 key={com.id}
-                className="w-full min-h-14 bg-slate-100 border border-slate-200 shadow-sm flex flex-col p-2"
+                className="w-full min-h-14 bg-slate-100 dark:border-slate-800 dark:bg-darkPostCardBackground dark:rounded-xl border border-slate-200 shadow-sm flex flex-col p-2"
               >
                 {/* Comment Header: Avatar and Username */}
                 <div className="w-full flex items-center mb-2">
@@ -348,7 +367,7 @@ function PostCard({ post }) {
                       }
                       alt="User Avatar"
                     />
-                    <h1 className="text-slate-800 text-xs font-semibold">
+                    <h1 className="text-slate-800 dark:text-darkText text-xs font-semibold">
                       {com?.user?.fullname}{" "}
                       <span className="text-xs text-slate-400 cursor-pointer">
                         {com?.user?.username}
@@ -357,13 +376,13 @@ function PostCard({ post }) {
                   </div>
 
                   {/* Delete Icon (conditionally displayed) */}
-                  {com.commentor === currentUser?.userInfo?.id && (
+                  {com?.user?.id === currentUser?.userId && (
                     <button
                       onClick={() => {
                         setCommentDelete(true);
                         setDeleteCommentId(com._id);
                       }}
-                      className="ml-auto text-slate-800 text-xl"
+                      className="ml-auto dark:text-darkText text-slate-800 text-xl"
                     >
                       <RiDeleteBin3Line />
                     </button>
@@ -371,7 +390,7 @@ function PostCard({ post }) {
                 </div>
 
                 {/* Comment Body */}
-                <div className="w-full text-xs text-slate-800">
+                <div className="w-full text-xs dark:text-darkText text-slate-800">
                   {com.description}
                 </div>
 

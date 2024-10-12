@@ -17,7 +17,6 @@ function Search() {
 
   useEffect(() => {
     setTotal(posts.length);
-    console.log(total);
   }, [posts]);
 
   const handlePrev = () => {
@@ -28,10 +27,8 @@ function Search() {
   };
 
   const handleNext = () => {
-    if (next < total) {
-      setPrev((prev) => prev + 3);
-      setNext((next) => next + 3);
-    }
+    setPrev((prev) => prev + 3);
+    setNext((next) => next + 3);
   };
 
   return (
@@ -50,7 +47,7 @@ function Search() {
         </div>
         <div className="w-full h-fit">
           {posts.length === 0 ? (
-            <div className="w-full h-[400px] flex justify-center items-center">
+            <div className="w-full min-h-[400px] flex justify-center items-center">
               <p className="text-lg">No posts found</p>
             </div>
           ) : (

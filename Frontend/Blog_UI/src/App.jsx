@@ -5,16 +5,14 @@ import Login from "./Routes/Login/Login.jsx";
 import Register from "./Routes/Register/Register.jsx";
 import Profile from "./Routes/Profile/Profile.jsx";
 import AboutPage from "./Routes/AboutPage/AboutPage.jsx";
-import {
-  singlePageLoader,
-  usersInfoLoader,
-} from "./Lib/Loaders.js";
+import { singlePageLoader, usersInfoLoader } from "./Lib/Loaders.js";
 import CreateBlog from "./Components/CreateBlog/CreateBlog.jsx";
 import Search from "./Routes/Search/Search.jsx";
 import ListPage from "./Routes/ListPage/ListPage.jsx";
 import PrivacyPolicy from "./Routes/PrivacyPolicy/PrivacyPolicy.jsx";
 import BloggersPage from "./Routes/BlogggersPage/BloggersPage.jsx";
 import SinglePostPage from "./Routes/SinglePostPage/SinglePostPage.jsx";
+import ChatingPage from "./Routes/ChatingPage/ChatingPage.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -36,14 +34,10 @@ function App() {
           element: <Register />,
         },
         {
-          path: "/login",
-          element: <Login />,
-        },
-        {
           path: "/about",
           element: <AboutPage />,
         },
-    
+
         {
           path: "/policy",
           element: <PrivacyPolicy />,
@@ -68,6 +62,11 @@ function App() {
           element: <SinglePostPage />,
         },
         {
+          path: "/chat",
+          element: <ChatingPage />,
+          // loader: AllChattingUsers ,
+        },
+        {
           path: "/bloggers",
           element: <BloggersPage />,
           loader: usersInfoLoader,
@@ -77,6 +76,10 @@ function App() {
           element: <Search />,
         },
       ],
+    },
+    {
+      path: "/login",
+      element: <Login />,
     },
   ]);
 
