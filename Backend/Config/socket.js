@@ -1,13 +1,8 @@
-// sockets/socket.js
 const prisma = require('@prisma/client'); // Import Prisma if needed
 let onlineUsers = {};
-
-// Initialize the Socket.IO logic
 module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-
-    // Join event when a user connects
     socket.on('join', (userId) => {
       onlineUsers[userId] = socket.id;
       console.log(`User ${userId} is online with socket ID: ${socket.id}`);

@@ -7,7 +7,7 @@ import {
 
 function Footer() {
   return (
-    <footer className="bg-blue-400 border dark:bg-[#01110a] dark:border-none border-slate-100 shadow-lg text-white py-6">
+    <footer className="border bg-[#1c2833] dark:border-none border-slate-100 shadow-lg text-white py-6">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4">
         <div className="flex flex-col items-center md:items-start mb-4 md:mb-0">
           <span>
@@ -82,7 +82,7 @@ function Footer() {
         </div>
       </div>
       <div className="w-full flex justify-center items-center py-2 text-center">
-        <p className="bg-white h-full py-2 text-xs w-[80%] rounded-full text-black font-semibold">
+        <p className="h-full py-2 text-xs w-[80%] rounded-full text-white font-semibold">
           &copy; 2024 NEXTHREADS. All rights reserved.
         </p>
       </div>

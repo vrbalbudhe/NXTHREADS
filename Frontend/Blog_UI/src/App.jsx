@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Homepage from "../../Blog_UI/src/Routes/Homepage/Homepage.jsx";
-import { RequiredAuth, Layout } from "/src/Routes/Layout/Layout.jsx";
 import Login from "./Routes/Login/Login.jsx";
 import Register from "./Routes/Register/Register.jsx";
 import Profile from "./Routes/Profile/Profile.jsx";
@@ -13,6 +12,7 @@ import PrivacyPolicy from "./Routes/PrivacyPolicy/PrivacyPolicy.jsx";
 import BloggersPage from "./Routes/BlogggersPage/BloggersPage.jsx";
 import SinglePostPage from "./Routes/SinglePostPage/SinglePostPage.jsx";
 import ChatingPage from "./Routes/ChatingPage/ChatingPage.jsx";
+import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
 
 function App() {
   const router = createBrowserRouter([

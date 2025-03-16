@@ -35,16 +35,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
-io.on("connection", (socket) => {
-  console.log("New client connected");
+// io.on("connection", (socket) => {
+//   // console.log("New client connected");
 
-  socket.emit("message", "welcome to the nexthreads");
+//   socket.emit("message", "welcome to the nexthreads");
 
-  socket.broadcast.emit("message", "A User has joined the chat");
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
+//   socket.broadcast.emit("message", "A User has joined the chat");
+//   socket.on("disconnect", () => {
+//     // console.log("Client disconnected");
+//   });
+// });
 
 app.use("/api/auth", require("./Routes/Auth.Routes"));
 app.use("/api/post", require("./Routes/Post.Routes"));

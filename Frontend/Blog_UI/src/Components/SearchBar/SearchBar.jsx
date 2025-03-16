@@ -67,7 +67,7 @@ function SearchBar() {
     <div className="w-full min-h-[90px] p-1 flex flex-col items-center mt-5">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[100%] p-1 border-2 pl-5 dark:bg-darkPostCardBackground dark:border-none border-slate-300 h-8 rounded-md"
+          className="w-[90%] h-10 border-2 pl-5 dark:text-white dark:outline-none dark:bg-[#01161e] dark:border-gray-800 dark:border-2 border-slate-300 rounded-xl"
           type="search"
           placeholder="Search by title, content, or user"
           value={searchTerm}
@@ -104,7 +104,6 @@ function SearchBar() {
           </>
         )}
       </div>
-
     </div>
   );
 }

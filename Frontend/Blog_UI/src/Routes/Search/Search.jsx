@@ -32,18 +32,14 @@ function Search() {
   };
 
   return (
-    <div className="w-full min-h-[500px] flex justify-start items-start mt-5 gap-2">
-      <div className="w-[70%] h-full p-1 flex flex-col justify-start gap-2 items-start">
+    <div className="w-full min-h-[500px] md:flex justify-start items-start mt-5 gap-2">
+      <div className="w-full md:w-[70%] h-full p-1 flex flex-col justify-start gap-2 items-start">
         <SearchBar />
         <div className="w-full h-fit pl-5 flex flex-col justify-start items-start">
-          <h1 className="flex items-center gap-2 text-xl font-semibold">
+          <h1 className="flex items-center gap-2 text-lg text-gray-800 dark:text-white font-semibold">
             <LuGalleryHorizontalEnd className="text-2xl" />
             <span>All Posts</span>
           </h1>
-          {/* <h1 className="text-sm font-semibold text-red-700">
-            <span className="text-slate-900">Results - {total} </span>
-            <span className="text-slate-800 text-sm"> Blogs Found..!</span>
-          </h1> */}
         </div>
         <div className="w-full h-fit">
           {posts.length === 0 ? (
@@ -58,7 +54,7 @@ function Search() {
         </div>
         <NextPrevious prev={handlePrev} next={handleNext} />
       </div>
-      <div className="w-[30%] h-full flex flex-col gap-2 justify-center items-start">
+      <div className="w-full md:w-[30%] mt-10 md:mt-0 h-full flex flex-col gap-2 justify-center items-start">
         {/* <Filter /> */}
         <HotTopicsCard />
       </div>

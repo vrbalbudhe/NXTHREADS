@@ -10,7 +10,7 @@ function SocialMediaCard() {
     <a href={linkAddress}></a>;
   };
   return (
-    <div className="w-full dark:text-darkText dark:bg-darkPostCardBackground dark:border-none text-2xl h-10 flex justify-center items-center gap-2 border border-slate-200 rounded-md shadow-md bg-white dark:rounded-none">
+    <div className="w-full dark:text-darkText rounded-xl dark:border-none text-2xl h-10 flex justify-center items-center gap-2 border border-slate-200 shadow-md dark:bg-[#01161e]">
       <h1
         onClick={handleRoute("")}
         className="text-slate-800 dark:text-darkText hover:text-red-400 cursor-pointer"

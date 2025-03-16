@@ -57,16 +57,16 @@ function Register() {
   };
 
   return (
-    <div className="w-full min-h-[600px] border flex justify-center items-center">
+    <div className="w-full min-h-[600px] flex justify-center items-center">
       <div className="w-[90%] min-h-[200px] p-5 rounded-3xl flex justify-center items-center">
         <div className="w-[70%] h-full flex flex-col justify-center items-center">
-          <h1 className="text-[50px] font-semibold text-slate-900 font-[Poppins]">
+          <h1 className="text-[50px] font-semibold dark:text-white text-slate-900 font-[Poppins]">
             <span className="text-3xl font-bold text-red-500 font-[lato]">
               NX
             </span>
             THREADS
           </h1>
-          <h1 className="text-sm italic font-bold text-slate-600">
+          <h1 className="text-md font-normal text-slate-600 dark:text-white">
             Sharing Stories, One Post at a Time
           </h1>
         </div>

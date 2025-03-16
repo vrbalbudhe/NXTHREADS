@@ -14,12 +14,16 @@ function ListPage() {
     <div className="w-full h-full flex justify-center items-start gap-5">
       <div className="w-[70%] h-full flex flex-col">
         <div
-          className="w-full mt-5 bg-black dark:border-none mb-5 rounded-sm border
-         h-[150px] flex flex-col justify-center items-center"
+          className="w-full mt-5 dark:border-none border
+         min-h-[150px] flex flex-col justify-center items-start gap-3"
         >
-          <h1 className="text-4xl font-semibold text-white"># {category}</h1>
-          <h1 className="text-sm font-semibold text-slate-400">
-            <span className="text-slate-200">Results - </span>
+          <h1 className="text-6xl tracking-tighter font-semibold text-gray-800 dark:text-white">
+            {category}
+          </h1>
+          <h1 className="text-lg tracking-tighter font-semibold text-blue-400 dark:text-slate-400">
+            <span className="dark:text-slate-200 text-gray-800">
+              Results - {"  "}
+            </span>
             <Suspense fallback={<p>Loading...</p>}>
               <Await
                 resolve={postResponse}
@@ -32,7 +36,7 @@ function ListPage() {
                 {({ data }) => data.posts.length}
               </Await>
             </Suspense>
-            <span className="text-slate-200"> Blogs Found..!</span>
+            <span className="dark:text-slate-200 text-gray-800"> Blogs Found..!</span>
           </h1>
         </div>
         <div className="w-full h-full ">
@@ -70,7 +74,7 @@ function ListPage() {
           </Suspense>
         </div>
       </div>
-      <div className="w-[30%] h-full flex flex-col gap-2 justify-center items-center">
+      <div className="w-[30%] h-full flex flex-col gap-5 justify-center items-center">
         <Filter />
         <HotTopicsCard />
       </div>

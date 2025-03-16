@@ -1,62 +1,102 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { Users } from "lucide-react";
 
-function FollowingCard({ userId }) {
+const FollowingCard = ({ userId }) => {
   const navigate = useNavigate();
   const [totalFollowing, setTotalFollowing] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const handleFollowingData = async () => {
     try {
+      setIsLoading(true);
       const res = await axios.get(
         `http://localhost:8000/api/userfollow/following/${userId}`,
         { withCredentials: true }
       );
       setTotalFollowing(res.data.totalFollowings);
-      // console.log(res.data);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching following:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   useEffect(() => {
     handleFollowingData();
-  });
-  return (
-    <div className="w-[90%] h-fit  mt-2 flex justify-start items-start p-1 flex-col rounded-2xl">
-      <div className="w-full h-14 flex justify-start items-center pl-2">
-        <h1 className="font-bold text-sm dark:text-white">Following</h1>
-      </div>
-      {totalFollowing.length < 0 && (
-        <div className="w-full h-10 flex justify-center items-center dark:border-darkBlue dark:border rounded-2xl">
-          <p className="dark:text-slate-400 text-sm ">No Following</p>
+  }, [userId]);
+
+  const handleProfileClick = (username) => {
+    navigate(`/profile/${username}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-2">
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Following
+          </h2>
         </div>
-      )}{" "}
-      <div className="w-full h-fit flex justify-start items-start flex-col gap-1">
-        {totalFollowing.map((follower, index) => (
-          <div
-            key={follower.id}
-            className="w-full h-14 cursor-pointer border-b hover:bg-gray-200 rounded-sm flex shadow-sm border-slate-300"
-          >
-            <div className="w-[20%] h-full flex justify-center items-center">
-              <img
-                className="w-10 object-cover h-10 rounded-full border-2 border-slate-300"
-                src={follower.following.avatar}
-              />
-            </div>
-            <div className="w-[80%] h-full flex flex-col justify-center items-start pl-5">
-              <h1 className="text-xs font-bold text-slate-900">
-                {follower.following.fullname}
-              </h1>
-              <h1 className="text-xs font-semibold text-slate-600">
-                {follower.following.username}
-              </h1>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center space-x-4 mb-4">
+            <div className="h-12 w-12 bg-gray-300 dark:bg-gray-700 rounded-full animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-4 w-48 bg-gray-300 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-36 bg-gray-300 dark:bg-gray-700 rounded animate-pulse" />
             </div>
           </div>
         ))}
       </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+        <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+          Following
+        </h2>
+      </div>
+      {totalFollowing.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Users className="h-12 w-12 text-gray-400 mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No following yet
+          </p>
+        </div>
+      ) : (
+        <div className="h-[400px] overflow-y-auto pr-2">
+          {totalFollowing.map((follower) => (
+            <div
+              key={follower.id}
+              onClick={() => handleProfileClick(follower.following.username)}
+              className="flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer mb-2"
+            >
+              <div className="relative">
+                <img
+                  src={follower.following.avatar}
+                  alt={follower.following.fullname}
+                  className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                  {follower.following.fullname}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  @{follower.following.username}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default FollowingCard;

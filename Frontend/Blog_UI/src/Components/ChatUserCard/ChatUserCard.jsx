@@ -7,7 +7,7 @@ function ChatUserCard({ user, setUser }) {
   return (
     <div
       onClick={handleSelectedUser}
-      className="w-full h-14 flex justify-start text-slate-300  border border-slate-800 rounded-xl items-center gap-1 p-1 mb-2 bg-darkPostCardBackground hover:bg-darkBlue hover:text-white"
+      className="w-full h-14 flex justify-start dark:text-slate-300 text-slate-800 border-slate-400  border dark:border-slate-800 rounded-xl items-center gap-1 p-1 mb-2 dark:bg-gray-800 hover:bg-darkBlue hover:text-white"
     >
       <div className="w-[20%] h-full flex justify-center items-center">
         <img

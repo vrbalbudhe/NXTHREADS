@@ -115,7 +115,7 @@ function Profile() {
   };
 
   return (
-    <div className="w-full h-fit p-1 gap-3 md:flex justify-start items-start">
+    <div className="w-full min-h-fit p-1 gap-3 md:flex justify-start items-start">
       <div className="w-full md:w-[30%] rounded-3xl p-2 mt-14 lg:w-[30%] h-full flex flex-col justify-start items-start">
         <div className="w-full h-fit flex justify-start flex-col items-center">
           <div className="w-60 h-60 mb-4 rounded-full flex justify-center items-start">
@@ -128,8 +128,16 @@ function Profile() {
               alt="User Avatar"
             />
           </div>
+          <div className="w-full h-24 md:hidden flex justify-between items-center">
+            <FollowersCard
+              key={currentUser?.userId}
+              post={userPosts}
+              totalFollowing={info?.user?.followers?.length}
+              totalFollowers={info?.user?.following?.length}
+            />
+          </div>
 
-          <div className="w-full h-fit border-2 dark:border dark:border-slate-800 dark:bg-darkPostCardBackground border-slate-200 shadow-md rounded-xl mb-2 pb-2 flex flex-col gap-2 justify-center md:justify-start items-start pl-5 pr-2 pt-2 mt-2">
+          <div className="w-full h-fit border-2 dark:border dark:border-none dark:bg-gray-800 border-slate-200 shadow-md rounded-xl mb-2 pb-2 flex flex-col gap-2 justify-center md:justify-start items-start pl-5 pr-2 pt-2 mt-2">
             {currentUser && (
               <h1 className="font-bold text-slate-800 dark:text-darkBlue border-2 dark:border-none border-slate-300 px-1 py-1 rounded-md text-sm md:text-md -tracking-tighter">
                 <span>{info.user?.userId}</span>
@@ -165,16 +173,16 @@ function Profile() {
               <div className="w-full h-fit flex flex-wrap justify-start items-center gap-1 mt-2">
                 <button
                   onClick={handleUpdateCard}
-                  className="w-[40%] bg-transparent border dark:text-darkText border-slate-400 px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
+                  className="w-[40%] bg-transparent border dark:text-darkText border-slate-400 px-2 py-2 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
                 >
                   Update
                 </button>
-                <button className="w-[40%] bg-transparent border border-slate-400 dark:text-darkText px-2 py-1 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold">
+                <button className="w-[40%] bg-transparent border border-slate-400 dark:text-darkText px-2 py-2 text-xs rounded-xl hover:bg-blue-400 hover:text-white text-slate-800 font-bold">
                   Feedback
                 </button>
                 <button
                   onClick={() => setLogoutCard(true)}
-                  className="w-[40%] bg-transparent hover:bg-red-400 text-slate-800 border border-slate-400 px-2 py-1 text-xs rounded-xl dark:text-darkText hover:text-white font-bold"
+                  className="w-[40%] bg-transparent hover:bg-red-400 text-slate-800 border border-slate-400 px-2 py-2 text-xs rounded-xl dark:text-darkText hover:text-white font-bold"
                 >
                   Logout
                 </button>
@@ -189,7 +197,7 @@ function Profile() {
             )}
           </div>
         </div>
-        <div className="w-full h-fit mb-2 bg-slate-50 flex flex-col justify-start items-start border border-slate-50 dark:border-none dark:rounded-none">
+        <div className="w-full h-fit mb-2 flex flex-col justify-start items-start border border-slate-50 dark:border-none dark:rounded-none">
           <SocialMediaCard />
         </div>
         {showCard && (
@@ -198,11 +206,13 @@ function Profile() {
           </div>
         )}
         <Card1 isCurrentUser={isCurrentUser} />
-        <HotTopicsCard />
+        <div className="hidden w-full h-fit md:block">
+          <HotTopicsCard />
+        </div>
       </div>
 
       <div className="w-full md:w-[70%] h-full mt-[68px]">
-        <div className="w-full h-60 flex justify-between items-center">
+        <div className="w-full hidden h-60 md:flex justify-between items-center">
           <FollowersCard
             key={currentUser?.userId}
             post={userPosts}
@@ -210,7 +220,7 @@ function Profile() {
             totalFollowers={info?.user?.following?.length}
           />
         </div>
-        <div className="w-full mt-5 mb-2 border border-slate-100 rounded-xl h-10 flex justify-between pr-5 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-slate-800">
+        <div className="w-full mt-5 mb-2 border border-slate-100 rounded-xl h-10 flex justify-between pr-5 items-center pl-2 dark:bg-[#01161e] dark:border dark:border-slate-800">
           <div className="flex h-full justify-center items-center gap-2">
             <h1
               onClick={() => setWhatToShow(!whatToShow)}
@@ -256,14 +266,6 @@ function Profile() {
                   <PostCard key={post.post.id} post={post.post} />
                 ))
               )}
-            </div>
-          )}
-          {loading && (
-            <div>
-              <img
-                src="https://www.icegif.com/wp-content/uploads/2023/07/icegif-1263.gif"
-                alt=""
-              />
             </div>
           )}
           {!hasMore && !loading && (

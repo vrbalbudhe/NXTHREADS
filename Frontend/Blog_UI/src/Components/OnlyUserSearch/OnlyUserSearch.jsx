@@ -48,7 +48,7 @@ function OnlyUserSearch() {
     <div className="w-full min-h-[10px] p-1 flex flex-col justify-center items-center">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[90%] p-1 border-2 dark:bg-darkBackground dark:border-darkBlue pl-5 border-slate-300 h-8 rounded-2xl"
+          className="w-[90%] h-10 border-2 dark:bg-gray-800 dark:border-none pl-5 border-slate-300 text-gray-800 dark:text-white rounded-lg outline-none"
           type="search"
           placeholder="Search by username or email"
           value={searchTerm}
@@ -71,7 +71,9 @@ function OnlyUserSearch() {
             ) : (
               <div className="w-full min-h-[50px] flex justify-center items-center">
                 <h1 className="text-3xl flex items-center gap-2">
-                  <span className="text-sm font-semibold">No Users Found</span>
+                  <span className="text-sm font-medium dark:text-white text-gray-800">
+                    No Users Found
+                  </span>
                 </h1>
               </div>
             )}
