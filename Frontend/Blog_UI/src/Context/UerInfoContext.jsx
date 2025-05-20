@@ -8,6 +8,7 @@ import { redirect } from "react-router-dom";
 export const UserInfoContext = createContext();
 
 export const UserInfoProvider = ({ children }) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const { currentUser } = useContext(AuthContext);
   const [info, setInfo] = useState({});
   const [error, setError] = useState(null);
@@ -16,7 +17,7 @@ export const UserInfoProvider = ({ children }) => {
   const fetchUserInfo = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8000/api/user/${id}`, {
+      const response = await axios.get(`${baseUrl}/api/user/${id}`, {
         withCredentials: true,
       });
       if (!response.data || response.data.id === undefined) {
@@ -39,7 +40,7 @@ export const UserInfoProvider = ({ children }) => {
   const handleUpdateInfo = async (input) => {
     try {
       await axios.post(
-        `http://localhost:8000/api/user/${currentUser.userInfo.id}`,
+        `${baseUrl}/api/user/${currentUser.userInfo.id}`,
         input,
         { withCredentials: true }
       );

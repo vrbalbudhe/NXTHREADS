@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: default
+data:
+  DATABASE_URL: "mongodb+srv://varun:29112002VrB@cluster0.c81dkme.mongodb.net/Job_Portal?retryWrites=true&w=majority"
+  JWT_SECRET_KEY: "72jhb32hg4i26427y98eadsakjdfwsb3iurywi47r6w@1%hwj"
+  FRONTEND_URL: "http://frontend-nxt-service:5173"

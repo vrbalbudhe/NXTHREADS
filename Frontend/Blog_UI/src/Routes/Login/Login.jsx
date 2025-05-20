@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
 
 function Login() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const { currentUser, setCurrentUser } = useContext(AuthContext);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ function Login() {
     const password = formData.get("password");
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/auth/login",
+        `${baseUrl}/api/auth/login`,
         {
           email,
           password,

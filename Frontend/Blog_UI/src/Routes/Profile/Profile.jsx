@@ -32,6 +32,7 @@ function Profile() {
     loading,
     setPage,
   } = useContext(PostContext);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const { currentUser } = useContext(AuthContext);
   const [reload, setReload] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -60,7 +61,7 @@ function Profile() {
   const handleFollowingData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/following/${currentUser?.userId}`,
+        `${baseUrl}/api/userfollow/following/${currentUser?.userId}`,
         {
           withCredentials: true,
         }
@@ -74,7 +75,7 @@ function Profile() {
   const handleFollowersData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/followers/${currentUser?.userId}`,
+        `${baseUrl}/api/userfollow/followers/${currentUser?.userId}`,
         {
           withCredentials: true,
         }
@@ -89,7 +90,7 @@ function Profile() {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:8000/api/auth/logout",
+        `${baseUrl}/api/auth/logout`,
         {},
         { withCredentials: true }
       );

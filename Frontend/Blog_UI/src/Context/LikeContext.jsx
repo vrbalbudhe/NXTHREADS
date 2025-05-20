@@ -9,6 +9,7 @@ export const LikeContext = createContext();
 
 // Create the provider component
 export const LikeContextProvider = ({ children }) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +21,7 @@ export const LikeContextProvider = ({ children }) => {
     setError(null);
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/post/like/${postId}`,
+        `${baseUrl}/api/post/like/${postId}`,
         { userId, postId },
         { withCredentials: true }
       );
@@ -38,7 +39,7 @@ export const LikeContextProvider = ({ children }) => {
     setError(null);
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/post/unlike/${postId}`,
+        `${baseUrl}/api/post/unlike/${postId}`,
         { userId, postId },
         { withCredentials: true }
       );
@@ -54,7 +55,7 @@ export const LikeContextProvider = ({ children }) => {
   const checkWhether = async (postId, userId) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/post/likecheck",
+        `${baseUrl}/api/post/likecheck`,
         { userId, postId },
         { withCredentials: true }
       );
@@ -65,7 +66,7 @@ export const LikeContextProvider = ({ children }) => {
         isUnliked,
       };
     } catch (error) {
-      console.error("Error fetching like status:", error);
+      // console.error("Error fetching like status:", error);
     }
   };
 

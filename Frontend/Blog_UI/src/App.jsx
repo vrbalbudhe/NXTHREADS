@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Homepage from "../../Blog_UI/src/Routes/Homepage/Homepage.jsx";
+import Homepage from "./Routes/Homepage/Homepage.jsx";
 import Login from "./Routes/Login/Login.jsx";
 import Register from "./Routes/Register/Register.jsx";
 import Profile from "./Routes/Profile/Profile.jsx";
@@ -14,75 +14,34 @@ import SinglePostPage from "./Routes/SinglePostPage/SinglePostPage.jsx";
 import ChatingPage from "./Routes/ChatingPage/ChatingPage.jsx";
 import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      { path: "/", element: <Homepage /> },
+      { path: "/list", element: <ListPage />, loader: singlePageLoader },
+      { path: "/register", element: <Register /> },
+      { path: "/about", element: <AboutPage /> },
+      { path: "/policy", element: <PrivacyPolicy /> },
+    ],
+  },
+  {
+    path: "/",
+    element: <RequiredAuth />,
+    children: [
+      { path: "/profile/:id", element: <Profile /> },
+      { path: "/createBlog", element: <CreateBlog /> },
+      { path: "/:id", element: <SinglePostPage /> },
+      { path: "/chat", element: <ChatingPage /> },
+      { path: "/bloggers", element: <BloggersPage />, loader: usersInfoLoader },
+      { path: "/search", element: <Search /> },
+    ],
+  },
+  { path: "/login", element: <Login /> },
+]);
+
 function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <Layout />,
-      children: [
-        {
-          path: "/",
-          element: <Homepage />,
-        },
-        {
-          path: "/list",
-          element: <ListPage />,
-          loader: singlePageLoader,
-        },
-        {
-          path: "/register",
-          element: <Register />,
-        },
-        {
-          path: "/about",
-          element: <AboutPage />,
-        },
-
-        {
-          path: "/policy",
-          element: <PrivacyPolicy />,
-        },
-      ],
-    },
-    {
-      path: "/",
-      element: <RequiredAuth />,
-      children: [
-        {
-          path: "/profile/:id",
-          element: <Profile />,
-          // loader: combinedLoader,
-        },
-        {
-          path: "/createBlog",
-          element: <CreateBlog />,
-        },
-        {
-          path: "/:id",
-          element: <SinglePostPage />,
-        },
-        {
-          path: "/chat",
-          element: <ChatingPage />,
-          // loader: AllChattingUsers ,
-        },
-        {
-          path: "/bloggers",
-          element: <BloggersPage />,
-          loader: usersInfoLoader,
-        },
-        {
-          path: "/search",
-          element: <Search />,
-        },
-      ],
-    },
-    {
-      path: "/login",
-      element: <Login />,
-    },
-  ]);
-
   return <RouterProvider router={router} />;
 }
 

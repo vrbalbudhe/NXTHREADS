@@ -49,6 +49,7 @@ function PostCard({ post }) {
 
   const { HandleDeleteBlog } = useContext(PostContext);
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   const [favourite, setFavourite] = useState(false);
   const [cardDelete, setCardDelete] = useState(false);
@@ -96,7 +97,7 @@ function PostCard({ post }) {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/post/fav",
+        `${baseUrl}/api/post/fav`,
         {
           userId: currentUser?.userId,
           postId: post.id,
@@ -124,10 +125,9 @@ function PostCard({ post }) {
 
   const handleDeleteComment = async () => {
     try {
-      await axios.delete(
-        `http://localhost:8000/api/comment/delete/${deleteCommentId}`,
-        { withCredentials: true }
-      );
+      await axios.delete(`${baseUrl}/api/comment/delete/${deleteCommentId}`, {
+        withCredentials: true,
+      });
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -144,15 +144,15 @@ function PostCard({ post }) {
     fetchComments(post.id);
     setCurrentPostId(post.id);
 
-    const checkLikeStatus = async () => {
-      const status = await checkWhether(post.id, currentUser?.userId);
-      if (status) {
-        setIsLiked(status.isLiked);
-        setIsDisliked(status.isUnliked);
-      }
-    };
-    checkLikeStatus();
-  }, [post.id, currentUser]);
+    // const checkLikeStatus = async () => {
+    //   const status = await checkWhether(post.id, currentUser?.userId);
+    //   if (status) {
+    //     setIsLiked(status.isLiked);
+    //     setIsDisliked(status.isUnliked);
+    //   }
+    // };
+    // checkLikeStatus();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

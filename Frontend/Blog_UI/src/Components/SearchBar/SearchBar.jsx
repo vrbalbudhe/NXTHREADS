@@ -8,6 +8,7 @@ import PostCard from "../../Components/PostCard/PostCard"; // Ensure this import
 import UserCard from "../../Components/UserCard/UserCard"; // Ensure this import path is correct
 
 function SearchBar() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("");
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -22,13 +23,13 @@ function SearchBar() {
   const dataFetcher = async () => {
     try {
       // Fetch posts
-      const postRes = await axios.get("http://localhost:8000/api/post/", {
+      const postRes = await axios.get(`${baseUrl}/api/post/`, {
         withCredentials: true,
       });
       setPosts(postRes.data.posts || []);
 
       // Fetch users
-      const userRes = await axios.get("http://localhost:8000/api/user/", {
+      const userRes = await axios.get(`${baseUrl}/api/user/`, {
         withCredentials: true,
       });
       // console.log("Fetched Users:", userRes.data.users); // Debugging line

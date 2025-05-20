@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-nxt-deployment
+  labels:
+    app: backend-nxt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-nxt
+  template:
+    metadata:
+      labels:
+        app: backend-nxt
+    spec:
+      containers:
+        - name: backend-nxt-container
+          image: varun029/backend-nxt:02
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [otpWindow, setOtpWindow] = useState(false);
@@ -20,7 +21,7 @@ function Register() {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/auth/register",
+        `${baseUrl}/api/auth/register`,
         { username, email, password },
         { withCredentials: true }
       );
@@ -39,10 +40,10 @@ function Register() {
     setError("");
 
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/auth/verify-otp",
-        { email, otp }
-      );
+      const res = await axios.post(`${baseUrl}/api/auth/verify-otp`, {
+        email,
+        otp,
+      });
 
       if (res.data.success) {
         navigate("/login");

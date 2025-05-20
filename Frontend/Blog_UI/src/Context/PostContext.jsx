@@ -6,6 +6,7 @@ import { AuthContext } from "./AuthContext";
 export const PostContext = createContext();
 
 export const PostProvider = ({ children }) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [posts, setPosts] = useState([]);
   const { currentUser } = useContext(AuthContext);
   const [userPosts, setUserPosts] = useState([]);
@@ -19,13 +20,13 @@ export const PostProvider = ({ children }) => {
   useEffect(() => {
     fetchGeneralPosts();
     fetchUserPosts(userId);
-  }, [page,userId]);
+  }, []);
 
   // Function to fetch posts for a specific user
   const fetchUserPosts = async (userId, page = 1, limit = 10) => {
     try {
       setLoading(true);
-      const url = `http://localhost:8000/api/post/${userId}?page=${page}&limit=${limit}`;
+      const url = `${baseUrl}/api/post/${userId}?page=${page}&limit=${limit}`;
       const response = await axios.get(url, { withCredentials: true });
 
       if (page === 1) {
@@ -46,7 +47,7 @@ export const PostProvider = ({ children }) => {
   const fetchGeneralPosts = async (page = 1, limit = 10) => {
     try {
       setLoading(true);
-      const url = `http://localhost:8000/api/post?page=${page}&limit=${limit}`;
+      const url = `${baseUrl}/api/post?page=${page}&limit=${limit}`;
       const response = await axios.get(url, { withCredentials: true });
 
       if (page === 1) {
@@ -67,7 +68,7 @@ export const PostProvider = ({ children }) => {
   const fetchSavedPosts = async (id) => {
     try {
       setLoading(true);
-      const url = `http://localhost:8000/api/post/fav/${id}`;
+      const url = `${baseUrl}/api/post/fav/${id}`;
       const response = await axios.get(url, { withCredentials: true });
       setFavPosts(response.data.posts);
       setLoading(false);
@@ -80,7 +81,7 @@ export const PostProvider = ({ children }) => {
   const HandleDeleteBlog = async (postId) => {
     try {
       setLoading(true);
-      const url = `http://localhost:8000/api/post/${postId}`;
+      const url = `${baseUrl}/api/post/${postId}`;
       await axios.delete(url, { withCredentials: true });
 
       // Remove the deleted post from the posts state

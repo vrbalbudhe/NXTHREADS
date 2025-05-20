@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import UploadWindow from "../UploadWindow/UploadWindow";
 
 function CreateBlog() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
   const [blogData, setBlogData] = useState({
@@ -33,13 +34,9 @@ function CreateBlog() {
         images: imageUrls, // Adding image URLs to the post data
       };
 
-      const res = await axios.post(
-        "http://localhost:8000/api/post/",
-        postData,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.post(`${baseUrl}/api/post/`, postData, {
+        withCredentials: true,
+      });
       console.log("Blog post created successfully:", res.data);
       navigate(`/profile/${currentUser.userInfo.id}`);
     } catch (error) {

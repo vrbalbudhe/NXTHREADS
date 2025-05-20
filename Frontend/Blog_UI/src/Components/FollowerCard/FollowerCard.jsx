@@ -4,12 +4,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 function FollowerCard({ userId }) {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
   const navigate = useNavigate();
   const [totalFollowers, setTotalFollowers] = useState([]);
   const handleFollowersData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/followers/${userId}`,
+        `${baseUrl}/api/userfollow/followers/${userId}`,
         { withCredentials: true }
       );
       setTotalFollowers(res.data.totalFollowers);

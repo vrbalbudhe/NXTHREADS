@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-nxt-deployment
+  labels:
+    app: frontend-nxt
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend-nxt
+  template:
+    metadata:
+      labels:
+        app: frontend-nxt
+    spec:
+      containers:
+        - name: frontend-nxt-container
+          image: varun029/frontend-nxt:04
+          ports:
+            - containerPort: 5173
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+          env:
+            - name: VITE_BACKEND_URL
+              value: "http://backend-nxt-service:8000"

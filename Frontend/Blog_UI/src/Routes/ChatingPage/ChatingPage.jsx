@@ -1,11 +1,9 @@
 import { useEffect, useState, useContext } from "react";
 import { LuSendHorizonal } from "react-icons/lu";
 import axios from "axios";
-import { io } from "socket.io-client";
 import ChatUserCard from "../../Components/ChatUserCard/ChatUserCard";
 import { AuthContext } from "../../Context/AuthContext";
-
-const socket = io("http://localhost:8000");
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 function ChatingPage() {
   const { currentUser } = useContext(AuthContext);
@@ -18,7 +16,7 @@ function ChatingPage() {
     const getAllUsers = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:8000/api/chat/getUsr",
+          `${baseUrl}/api/chat/getUsr`,
           { userId: currentUser.userId },
           { withCredentials: true }
         );
@@ -35,13 +33,10 @@ function ChatingPage() {
     if (selectUser) {
       const fetchMessages = async () => {
         try {
-          const response = await axios.post(
-            `http://localhost:8000/api/chat/receive`,
-            {
-              senderId: currentUser.userId,
-              receiverId: selectUser.following.id,
-            }
-          );
+          const response = await axios.post(`${baseUrl}/api/chat/receive`, {
+            senderId: currentUser.userId,
+            receiverId: selectUser.following.id,
+          });
           setMessages(response.data.data); // Load chat history
         } catch (error) {
           console.error("Error fetching chat messages:", error);
@@ -49,18 +44,6 @@ function ChatingPage() {
       };
 
       fetchMessages();
-
-      socket.emit("join", {
-        userId: currentUser.userId,
-        receiverId: selectUser.following.id,
-      });
-
-      socket.on("messageReceived", (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      });
-      return () => {
-        socket.off("messageReceived");
-      };
     }
   }, [selectUser, currentUser.userId]);
 
@@ -81,24 +64,12 @@ function ChatingPage() {
     try {
       // Send message to the server to store it in the database
       const response = await axios.post(
-        "http://localhost:8000/api/chat/send",
+        `${baseUrl}/api/chat/send`,
         messageData,
         {
           withCredentials: true,
         }
       );
-
-      if (response.data.success) {
-        socket.emit("sendMessage", response.data.data);
-
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { ...messageData, senderId: currentUser.userId },
-        ]);
-        setNewMessage("");
-      } else {
-        console.error("Failed to send message:", response.data.message);
-      }
     } catch (error) {
       console.error("Error sending message:", error);
     }

@@ -5,6 +5,7 @@ import { IoMdSearch } from "react-icons/io";
 import UserCard from "../../Components/UserCard/UserCard"; // Ensure this import path is correct
 
 function OnlyUserSearch() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -17,7 +18,7 @@ function OnlyUserSearch() {
   const dataFetcher = async () => {
     try {
       // Fetch users
-      const userRes = await axios.get("http://localhost:8000/api/user/", {
+      const userRes = await axios.get(`${baseUrl}/api/user/`, {
         withCredentials: true,
       });
       // console.log("Fetched Users:", userRes.data.users); // Debugging line

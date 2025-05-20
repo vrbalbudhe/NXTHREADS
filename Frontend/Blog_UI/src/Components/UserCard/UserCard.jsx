@@ -9,6 +9,7 @@ const FALLBACK_AVATAR_URL =
   "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg";
 
 function UserCard({ user }) {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [isFollowing, setIsFollowing] = useState(false);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -16,16 +17,13 @@ function UserCard({ user }) {
   useEffect(() => {
     const checkFollowingStatus = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/api/userfollow/status`,
-          {
-            params: {
-              followerId: currentUser?.userId,
-              followingId: user.id,
-            },
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${baseUrl}/api/userfollow/status`, {
+          params: {
+            followerId: currentUser?.userId,
+            followingId: user.id,
+          },
+          withCredentials: true,
+        });
         setIsFollowing(response.data.isFollowing);
       } catch (error) {
         console.error("Failed to fetch follow status", error);
@@ -38,7 +36,7 @@ function UserCard({ user }) {
   const handleFollowSwitch = async () => {
     try {
       await axios.post(
-        "http://localhost:8000/api/userfollow/follow",
+        `${baseUrl}/api/userfollow/follow`,
         {
           followerId: currentUser?.userId,
           followingId: user.id,

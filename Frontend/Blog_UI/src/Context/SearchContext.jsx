@@ -8,6 +8,7 @@ export const SearchContext = createContext();
 
 // Provider Component
 export const SearchPostProvider = ({ children }) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,10 +17,9 @@ export const SearchPostProvider = ({ children }) => {
   const fetchSearchPost = async (query) => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:8000/api/post/fltr/?${query}`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${baseUrl}/api/post/fltr/?${query}`, {
+        withCredentials: true,
+      });
       setPosts(response.data.posts);
     } catch (error) {
       if (error.response && error.response.status === 401) {

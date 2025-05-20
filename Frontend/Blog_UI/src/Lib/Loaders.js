@@ -1,11 +1,12 @@
 import axios from "axios";
 import { defer } from "react-router-dom";
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 // Loader for fetching a single post by ID
 export const profilePageUserOwnPost = async ({ params }) => {
   try {
     const postPromise = axios.get(
-      `http://localhost:8000/api/post/${params.id}`,
+      `${baseUrl}/api/post/${params.id}`,
       {
         withCredentials: true,
       }
@@ -29,7 +30,7 @@ export const singlePageLoader = async ({ request }) => {
   try {
     const query = request.url.split("?")[1];
     const postPromise = axios.get(
-      `http://localhost:8000/api/post/fltr/` + query,
+      `${baseUrl}/api/post/fltr/` + query,
       { withCredentials: true }
     );
 
@@ -50,7 +51,7 @@ export const singlePageLoader = async ({ request }) => {
 // Loader for fetching user information
 export const usersInfoLoader = async () => {
   try {
-    const postPromise = await axios.get("http://localhost:8000/api/user/", {
+    const postPromise = await axios.get(`${baseUrl}/api/user/`, {
       withCredentials: true,
     });
     return defer({
@@ -72,7 +73,7 @@ export const userProfileInfoUsingURL = async ({ params }) => {
   const id = params.id;
   try {
     const postPromise = await axios.get(
-      `http://localhost:8000/api/user/${id}`,
+      `${baseUrl}/api/user/${id}`,
       {
         withCredentials: true,
       }

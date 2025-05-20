@@ -4,6 +4,7 @@ import axios from "axios";
 import { Users } from "lucide-react";
 
 const FollowingCard = ({ userId }) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const [totalFollowing, setTotalFollowing] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +13,7 @@ const FollowingCard = ({ userId }) => {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `http://localhost:8000/api/userfollow/following/${userId}`,
+        `${baseUrl}/api/userfollow/following/${userId}`,
         { withCredentials: true }
       );
       setTotalFollowing(res.data.totalFollowings);

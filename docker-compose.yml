@@ -1,0 +1,19 @@
+services:
+  backend:
+    container_name: backend-nxt-container
+    image: varun029/backend-nxt:02
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    depends_on:
+      - frontend
+  frontend:
+    container_name: frontend-nxt-container
+    image: varun029/frontend-nxt:03
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/Blog_UI/.env
+    restart: unless-stopped

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
 function Filter() {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [searchParams, setSearchParams] = useSearchParams();
   /*
    * if we console.log the searchParams -> returns the object containing the key and values of the url
@@ -35,7 +36,7 @@ function Filter() {
    */
   const handleGetUser = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/user/", {
+      const res = await axios.get(`${baseUrl}/api/user/`, {
         withCredentials: true,
       });
       setUsers(res.data.users.map((user) => user.username));

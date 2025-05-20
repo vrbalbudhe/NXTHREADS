@@ -4,12 +4,13 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 
 function SavedPosts({ postInformation }) {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [savedPosts, setSavedPosts] = useState([]);
 
   const handleSavedPosts = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/post/favourite/${postInformation.id}`,
+        `${baseUrl}/api/post/favourite/${postInformation.id}`,
         { withCredentials: true }
       );
 
