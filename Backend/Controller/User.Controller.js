@@ -3,7 +3,6 @@ const prisma = require("../lib/prisma");
 
 const getUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
-  // console.log(userId);
   try {
     const user = await prisma.user.findUnique({
       where: {

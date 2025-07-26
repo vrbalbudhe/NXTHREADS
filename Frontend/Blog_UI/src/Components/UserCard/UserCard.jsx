@@ -1,64 +1,48 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/prop-types */
-import { useState, useContext, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../Context/AuthContext";
+import { useFollowUnfollowUser } from "../../Loaders/followers/useFollowUnfollowUser";
+import { useCheckIsFollowing } from "../../Loaders/followers/useCheckIsFollowing";
 
 const FALLBACK_AVATAR_URL =
   "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg";
 
-function UserCard({ user }) {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const [isFollowing, setIsFollowing] = useState(false);
-  const { currentUser } = useContext(AuthContext);
+function UserCard({ user, currentUser }) {
   const navigate = useNavigate();
+  const { handleFollowUnfollow } = useFollowUnfollowUser();
+  const { isFollowing, checkFollowing } = useCheckIsFollowing();
 
+  // Always check backend for follow status
   useEffect(() => {
-    const checkFollowingStatus = async () => {
-      try {
-        const response = await axios.get(`${baseUrl}/api/userfollow/status`, {
-          params: {
-            followerId: currentUser?.userId,
-            followingId: user.id,
-          },
-          withCredentials: true,
-        });
-        setIsFollowing(response.data.isFollowing);
-      } catch (error) {
-        console.error("Failed to fetch follow status", error);
-      }
-    };
-
-    checkFollowingStatus();
-  }, [user.id, currentUser.userId]);
+    if (currentUser?.userId && user.id) {
+      checkFollowing({
+        followerId: currentUser.userId,
+        followingId: user.id,
+      });
+    }
+  }, [user.id, currentUser?.userId, checkFollowing]);
 
   const handleFollowSwitch = async () => {
-    try {
-      await axios.post(
-        `${baseUrl}/api/userfollow/follow`,
-        {
-          followerId: currentUser?.userId,
-          followingId: user.id,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-      setIsFollowing((prevState) => !prevState);
-    } catch (error) {
-      console.error("Failed to toggle follow status", error);
-    }
+    if (!currentUser?.userId) return;
+    await handleFollowUnfollow({
+      followerId: currentUser.userId,
+      followingId: user.id,
+      userData: user,
+      isCurrentlyFollowing: isFollowing,
+    });
+    // Refetch follow status from backend after action
+    checkFollowing({
+      followerId: currentUser.userId,
+      followingId: user.id,
+    });
   };
 
   if (currentUser?.userId === user.id) return null;
 
   return (
-    <div className="w-[45%] md:w-[150px] dark:border-slate-900 dark:rounded-md dark:bg-gray-800 min-h-[180px] md:hover:scale-105 duration-300 shadow-md border-l border-r dark:border border-slate-200 rounded-sm">
-      <div className="w-full h-[60%] flex justify-center items-center">
+    <div className="w-[45%] md:w-[150px] dark:border-gray-700 dark:bg-darkPostCardBg min-h-[210px] shadow-md border-l border-r dark:border border-slate-200 rounded-xl">
+      <div className="w-full min-h-[60%] flex justify-center items-center">
         <img
-          className="h-20 w-full rounded-t-md object-cover"
+          className="h-28 w-full rounded-t-md object-cover"
           src={user.avatar || FALLBACK_AVATAR_URL}
           alt={`${user.username}'s avatar`}
         />

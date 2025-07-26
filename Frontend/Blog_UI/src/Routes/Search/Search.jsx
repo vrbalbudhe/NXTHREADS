@@ -5,19 +5,22 @@ import PostCard from "../../Components/PostCard/PostCard";
 import NextPrevious from "../../Components/NextPrevious/NextPrevious";
 import HotTopicsCard from "../../Components/HotTopicsCard/HotTopicsCard";
 import SearchBar from "../../Components/SearchBar/SearchBar";
-import { LuGalleryHorizontalEnd } from "react-icons/lu";
-import { PostContext } from "../../Context/PostContext";
+import { useFetchPosts } from "../../Loaders/posts/useFetchAllPosts";
+import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
 
 function Search() {
-  const { posts, fetchPosts } = useContext(PostContext);
+  const { posts, loadPosts, error } = useFetchPosts();
+  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
 
   const [prev, setPrev] = useState(0);
   const [next, setNext] = useState(3);
   const [total, setTotal] = useState();
 
   useEffect(() => {
+    loadPosts();
+    loadUsers();
     setTotal(posts.length);
-  }, [posts]);
+  }, []);
 
   const handlePrev = () => {
     if (prev > 0) {
@@ -33,15 +36,9 @@ function Search() {
 
   return (
     <div className="w-full min-h-[500px] md:flex justify-start items-start mt-5 gap-2">
-      <div className="w-full md:w-[70%] h-full p-1 flex flex-col justify-start gap-2 items-start">
-        <SearchBar />
-        <div className="w-full h-fit pl-5 flex flex-col justify-start items-start">
-          <h1 className="flex items-center gap-2 text-lg text-gray-800 dark:text-white font-semibold">
-            <LuGalleryHorizontalEnd className="text-2xl" />
-            <span>All Posts</span>
-          </h1>
-        </div>
-        <div className="w-full h-fit">
+      <div className="w-full md:w-[75%] h-full p-1 flex flex-col justify-start gap-2 items-start">
+        <SearchBar posts={posts} users={users} />
+        <div className="w-full h-fit flex flex-col gap-3">
           {posts.length === 0 ? (
             <div className="w-full min-h-[400px] flex justify-center items-center">
               <p className="text-lg">No posts found</p>
@@ -54,8 +51,8 @@ function Search() {
         </div>
         <NextPrevious prev={handlePrev} next={handleNext} />
       </div>
-      <div className="w-full md:w-[30%] mt-10 md:mt-0 h-full flex flex-col gap-2 justify-center items-start">
-        {/* <Filter /> */}
+      <div className="w-full md:w-[25%] h-full flex flex-col gap-5 justify-center items-start">
+        <Filter users={users} />
         <HotTopicsCard />
       </div>
     </div>

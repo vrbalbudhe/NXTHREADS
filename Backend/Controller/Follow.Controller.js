@@ -1,20 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 
-// let io;
-
-// const setIoInstance = (socketIo) => {
-//   io = socketIo;
-//   io.on("connection", (socket) => {
-//     console.log(`New client connected: ${socket.id}`);
-//     socket.on("disconnect", () => {
-//       console.log(`Client disconnected: ${socket.id}`);
-//     });
-//   });
-// };
-
 const followUnfollowUser = asyncHandler(async (req, res) => {
-  const followerId = req.body.followerId; // It will give me the followerId
+  const followerId = req.body.followerId;
   const followingId = req.body.followingId;
   // console.log(followerId);
   // console.log(followingId);
@@ -153,6 +141,7 @@ const totalFollowers = asyncHandler(async (req, res) => {
       totalFollowers: totalFollowings,
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
       message: "Error in total followers",
       success: false,

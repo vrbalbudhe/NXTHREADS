@@ -5,9 +5,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        darkBackground: "#000000",
+        darkBackground: "#231f20",
+        darkPostCardBg: "#231f20",
+        darkPostCardBackground: "#252323",
         darkText: "#d6d6d6",
-        darkPostCardBackground: "#0c0f0a",
         darkPostCardBg2: "#cc8b86",
         darkBlue: "#3a86ff",
       },

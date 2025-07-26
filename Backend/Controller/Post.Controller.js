@@ -6,10 +6,8 @@ const redisClient = require("../Config/redisClient");
  */
 
 const getPostUrl = asyncHandler(async (req, res) => {
-  const query = req.params.id;
-  const params = new URLSearchParams(query);
-  const category = params.get("category");
-  const author = params.get("author");
+  const { category, author } = req.query;
+
   try {
     const posts = await prisma.posts.findMany({
       where: {
@@ -46,8 +44,8 @@ const getPostUrl = asyncHandler(async (req, res) => {
         },
       },
     });
+
     return res.status(200).json({ posts });
-    // console.log(query);
   } catch (error) {
     return res.status(501).json({
       message: "Unable to GET URL POST",
@@ -56,8 +54,9 @@ const getPostUrl = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getPost = asyncHandler(async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
     const post = await prisma.posts.findMany({
       where: { userId: id },

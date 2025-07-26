@@ -3,8 +3,8 @@ import Homepage from "./Routes/Homepage/Homepage.jsx";
 import Login from "./Routes/Login/Login.jsx";
 import Register from "./Routes/Register/Register.jsx";
 import Profile from "./Routes/Profile/Profile.jsx";
-import AboutPage from "./Routes/AboutPage/AboutPage.jsx";
-import { singlePageLoader, usersInfoLoader } from "./Lib/Loaders.js";
+import AboutPage from "./Routes/AboutPage.jsx";
+import { usersInfoLoader } from "./Lib/Loaders.js";
 import CreateBlog from "./Components/CreateBlog/CreateBlog.jsx";
 import Search from "./Routes/Search/Search.jsx";
 import ListPage from "./Routes/ListPage/ListPage.jsx";
@@ -20,7 +20,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <Homepage /> },
-      { path: "/list", element: <ListPage />, loader: singlePageLoader },
+      { path: "/list", element: <ListPage /> },
       { path: "/register", element: <Register /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/policy", element: <PrivacyPolicy /> },

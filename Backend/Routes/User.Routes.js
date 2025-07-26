@@ -11,7 +11,7 @@ const {
 const verifyToken = require("../Middleware/verifyToken");
 
 router.get("/", getUsers);
-router.get("/:id", verifyToken, getUser);
+router.get("/:id", getUser);
 router.get("/foll/:id", verifyToken, getUserFollowStatus);
 router.delete("/:id", verifyToken, deleteUser);
 router.post("/:id", verifyToken, updateUser);

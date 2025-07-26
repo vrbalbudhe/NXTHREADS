@@ -20,8 +20,8 @@ const {
   checkWhetherLike,
 } = require("../Controller/Like.Controller");
 
-router.get("/:id", verifyToken, getPost);
-router.get("/fltr/:id", getPostUrl);
+router.get("/fltr", getPostUrl);
+router.get("/:id", getPost);
 router.get("/", getAllPosts);
 router.post("/", verifyToken, createPosts);
 router.put("/:id", verifyToken, updatePosts);

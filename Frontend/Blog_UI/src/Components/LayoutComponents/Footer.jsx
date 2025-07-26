@@ -5,86 +5,136 @@ import {
   FaLinkedin,
 } from "react-icons/fa";
 
-function Footer() {
+function BrandSection() {
   return (
-    <footer className="border bg-[#1c2833] dark:border-none border-slate-100 shadow-lg text-white py-6">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4">
-        <div className="flex flex-col items-center md:items-start mb-4 md:mb-0">
-          <span>
-            <img
-              className="w-6 h-6 rounded-full inline"
-              src="/favicon.jpg"
-              alt=""
-            />
-            <span className="text-sm text-white ml-2 font-bold mb-2">
-              NEXTHREADS
-            </span>
-          </span>
-          <p className="text-white">
-            Your go-to platform for creative blogging
-          </p>
-        </div>
-        <div className="flex flex-col md:flex-row gap-6 mb-4 md:mb-0">
+    <div className="flex flex-col items-center md:items-start space-y-2">
+      <div className="flex items-center space-x-2">
+        <img
+          className="w-8 h-8 rounded-full object-cover"
+          src="/favicon.jpg"
+          alt="NEXTHREADS Logo"
+        />
+        <span className="text-lg font-bold text-gray-900 dark:text-white">
+          NEXTHREADS
+        </span>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+        Your go-to platform for creative blogging
+      </p>
+    </div>
+  );
+}
+
+function NavLinks() {
+  return (
+    <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+      <a
+        href="/"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      >
+        Home
+      </a>
+      <a
+        href="/search"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      >
+        Search
+      </a>
+      <a
+        href="/bloggers"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      >
+        Bloggers
+      </a>
+      <a
+        href="/about"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      >
+        About
+      </a>
+      <a
+        href="/policy"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      >
+        Privacy Policy
+      </a>
+    </div>
+  );
+}
+
+function SocialLinks() {
+  return (
+    <div className="flex space-x-4">
+      <a
+        href="https://facebook.com"
+        className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        aria-label="Facebook"
+      >
+        <FaFacebookF className="w-5 h-5" />
+      </a>
+      <a
+        href="https://twitter.com"
+        className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        aria-label="Twitter"
+      >
+        <FaTwitter className="w-5 h-5" />
+      </a>
+      <a
+        href="https://instagram.com"
+        className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        aria-label="Instagram"
+      >
+        <FaInstagram className="w-5 h-5" />
+      </a>
+      <a
+        href="https://linkedin.com"
+        className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        aria-label="LinkedIn"
+      >
+        <FaLinkedin className="w-5 h-5" />
+      </a>
+    </div>
+  );
+}
+
+function CopyrightSection() {
+  return (
+    <div className="border-t border-gray-200 dark:border-gray-700 py-4">
+      <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+          &copy; 2024 NEXTHREADS. All rights reserved.
+        </p>
+        <div className="flex space-x-4 text-sm text-gray-600 dark:text-gray-400">
           <a
-            href="/"
-            className=" text-white text-xs font-semibold hover:text-gray-400"
+            href="/terms"
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
-            Home
+            Terms of Service
           </a>
           <a
-            href="/search"
-            className=" text-white text-xs font-semibold hover:text-gray-400"
+            href="/contact"
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
-            Search
-          </a>
-          <a
-            href="/about"
-            className=" text-white text-xs font-semibold hover:text-gray-400"
-          >
-            About
-          </a>
-          <a
-            href="/policy"
-            className=" text-white text-xs font-semibold hover:text-gray-400"
-          >
-            Privacy Policy
-          </a>
-        </div>
-        <div className="flex gap-4">
-          <a
-            href="https://facebook.com"
-            className="text-gray-800 hover:text-white"
-            aria-label="Facebook"
-          >
-            <FaFacebookF />
-          </a>
-          <a
-            href="https://twitter.com"
-            className="text-gray-800 hover:text-white"
-            aria-label="Twitter"
-          >
-            <FaTwitter />
-          </a>
-          <a
-            href="https://instagram.com"
-            className="text-gray-800 hover:text-white"
-            aria-label="Instagram"
-          >
-            <FaInstagram />
-          </a>
-          <a
-            href="https://linkedin.com"
-            className="text-gray-800 hover:text-white"
-            aria-label="LinkedIn"
-          >
-            <FaLinkedin />
+            Contact Us
           </a>
         </div>
       </div>
-      <div className="w-full flex justify-center items-center py-2 text-center">
-        <p className="h-full py-2 text-xs w-[80%] rounded-full text-white font-semibold">
-          &copy; 2024 NEXTHREADS. All rights reserved.
-        </p>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="w-full border dark:border-none border-slate-100 shadow-lg text-white py-6 bg-inherit dark:bg-inherit">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <BrandSection />
+            <NavLinks />
+            <SocialLinks />
+          </div>
+        </div>
+        <CopyrightSection />
       </div>
     </footer>
   );

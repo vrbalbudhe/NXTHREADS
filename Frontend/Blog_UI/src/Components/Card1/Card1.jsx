@@ -10,7 +10,7 @@ function Card1({ isCurrentUser }) {
         onClick={() => navigate("/createBlog")}
         className="w-full h-[100px] cursor-pointer"
       >
-        <div className="w-full h-full flex justify-between items-center border border-slate-300 shadow-md gap-2">
+        <div className="w-full h-full flex justify-between items-center dark:bg-darkPostCardBackground border border-gray-700 rounded-xl shadow-md gap-2">
           <img
             className="w-[70%] h-full object-cover rounded-l-xl"
             src="https://i.pinimg.com/564x/33/1d/5b/331d5b18133dfdb63ef43ccbfdc0fbda.jpg"

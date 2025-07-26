@@ -1,7 +1,6 @@
-/* eslint-disable react/prop-types */
 function NextPrevious({ prev, next }) {
   return (
-    <div className="w-full h-10 bg-white dark:bg-[#01161e] rounded-sm flex justify-between items-center">
+    <div className="w-full h-10 bg-white dark:bg-darkPostCardBg rounded-sm flex justify-between items-center">
       <div className="ml-2 text-xs">
         <button
           onClick={prev}

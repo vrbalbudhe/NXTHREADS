@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "Installing dependencies..."
-cd /home/ec2-user/app || exit
+cd /var/www/myproject || exit
 npm install --prefix backend
 npm install --prefix frontend

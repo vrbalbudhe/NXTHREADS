@@ -1,31 +1,25 @@
-import { useState } from "react";
+const FALLBACK_AVATAR_URL =
+  "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg";
 
-function ChatUserCard({ user, setUser }) {
-  const handleSelectedUser = () => {
-    setUser(user);
-  };
+function ChatUserCard({ user, currentUser }) {
+  if (currentUser?.userId === user.id) return null;
+
   return (
-    <div
-      onClick={handleSelectedUser}
-      className="w-full h-14 flex justify-start dark:text-slate-300 text-slate-800 border-slate-400  border dark:border-slate-800 rounded-xl items-center gap-1 p-1 mb-2 dark:bg-gray-800 hover:bg-darkBlue hover:text-white"
-    >
-      <div className="w-[20%] h-full flex justify-center items-center">
+    <div className="w-[100%] p-2 md:w-full flex flex-wrap justify-between dark:border-gray-700 dark:bg-darkPostCardBg min-h-[10px] shadow-md border-l border-r dark:border border-slate-200 rounded-xl">
+      <div className="w-[20%] flex justify-center items-center">
         <img
-          className="w-8 h-8 object-cover rounded-full border border-slate-900"
-          src={
-            user?.following?.avatar ||
-            "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_1280.png"
-          }
-          alt=""
+          className="h-8 w-8 rounded-full object-cover"
+          src={user.avatar || FALLBACK_AVATAR_URL}
+          alt={`${user.username}'s avatar`}
         />
       </div>
-      <div className="w-[80%] h-full flex flex-col justify-center items-start">
-        <p className="text-sm font-semibold -tracking-tighter">
-          {user?.following?.fullname || "NA"}
-        </p>
-        <p className="text-xs font-semibold -tracking-tighter">
-          {user?.following?.username || "NA"}
-        </p>
+      <div className="w-[80%] min-h-1/2 flex flex-col justify-start items-center">
+        <h1 className="text-slate-950 py-1 cursor-pointer bg-transparent dark:text-slate-300 dark:text-[13px] hover:text-blue-400 w-full text-center font-semibold text-xs bg-slate-100">
+          @{user.username}
+        </h1>
+        <h1 className="text-slate-500 py-1 cursor-pointer w-full text-center font-semibold text-xs">
+          {user.fullname || "Unregistered"}
+        </h1>
       </div>
     </div>
   );

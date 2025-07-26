@@ -1,59 +1,82 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-function FollowerCard({ userId }) {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import { useFetchFollowers } from "../../Loaders/followers/useFetchFollowers";
+import { useSelector, useDispatch } from "react-redux";
+import { clearFollowData } from "../../ReduxThunkSlice/FollowersSlice";
+import { Users } from "lucide-react";
 
-  const navigate = useNavigate();
-  const [totalFollowers, setTotalFollowers] = useState([]);
-  const handleFollowersData = async () => {
-    try {
-      const res = await axios.get(
-        `${baseUrl}/api/userfollow/followers/${userId}`,
-        { withCredentials: true }
-      );
-      setTotalFollowers(res.data.totalFollowers);
-      // console.log(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    handleFollowersData();
-  }, [userId]);
+const FollowerUserCard = ({ follower }) => {
   return (
-    <div className="w-[90%] h-fit flex justify-start items-start p-1 flex-col rounded-2xl shadow-sm ">
-      <div className="w-full h-14 flex justify-start items-center pl-2">
-        <h1 className="font-bold text-sm dark:text-white">Followers</h1>
+    <div
+      key={follower.id}
+      className="flex items-center bg-darkPostCardBackground dark:border-gray-700 border gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-darkBackground cursor-pointer mb-2"
+    >
+      <div className="relative">
+        <img
+          className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+          src={follower.follower.avatar}
+        />
       </div>
-      {totalFollowers.length < 0 && (
-        <div className="w-full h-10 flex justify-center items-center dark:border-darkBlue dark:border rounded-2xl">
-          <p className="dark:text-slate-400 text-sm ">No Following</p>
+      <div className="flex flex-col">
+        <h1 className="font-medium text-sm text-gray-800 dark:text-gray-200">
+          {follower.follower.fullname}
+        </h1>
+        <h1 className="text-sm text-gray-500 dark:text-gray-400">
+          {follower.follower.username}
+        </h1>
+      </div>
+    </div>
+  );
+};
+
+function FollowerCard({ userId }) {
+  const dispatch = useDispatch();
+  const { followers, error, loadFollowers } = useFetchFollowers();
+  const reduxFollowers = useSelector((state) => state.follows.followers);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(clearFollowData());
+      loadFollowers(userId);
+    }
+  }, [userId, loadFollowers, dispatch]);
+
+  const displayFollowers =
+    reduxFollowers.length > 0 ? reduxFollowers : followers;
+
+  const filteredFollowers = displayFollowers.filter((f) => {
+    const name = f.follower.fullname?.toLowerCase() || "";
+    const username = f.follower.username?.toLowerCase() || "";
+    return (
+      name.includes(search.toLowerCase()) ||
+      username.includes(search.toLowerCase())
+    );
+  });
+
+  return (
+    <div className="w-[100%] h-fit flex justify-start items-start p-4 dark:bg-darkPostCardBackground border border-gray-700 flex-col rounded-lg shadow-sm ">
+      <div className="w-full flex justify-between items-center mb-4 gap-2">
+        <div className="flex gap-2 items-center">
+          <Users className="h-5 w-5 text-gray-400 mb-2" />
+          <h1 className="text-sm dark:text-slate-400">Followers</h1>
         </div>
-      )}{" "}
-      <div className="w-full h-fit flex justify-start items-start flex-col gap-1">
-        {totalFollowers.map((follower, index) => (
-          <div
-            key={follower.id}
-            className="w-full h-14 rounded-md flex shadow-sm border-b border-slate-300 cursor-pointer hover:bg-gray-100 "
-          >
-            <div className="w-[20%] h-full flex justify-center items-center">
-              <img
-                className="w-10 h-10 object-cover rounded-full border-2 border-slate-300"
-                src={follower.follower.avatar}
-              />
-            </div>
-            <div className="w-[80%] h-full flex flex-col justify-center items-start pl-5">
-              <h1 className="text-xs font-bold text-slate-900">
-                {follower.follower.fullname}
-              </h1>
-              <h1 className="text-xs font-semibold text-slate-600">
-                {follower.follower.username}
-              </h1>
-            </div>
-          </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search..."
+          className="rounded-md px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-darkPostCardBackground text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          style={{ minWidth: 120 }}
+        />
+      </div>
+      {filteredFollowers.length === 0 && (
+        <div className="w-full h-10 flex justify-center items-center dark:border-darkBlue dark:border rounded-2xl">
+          <p className="dark:text-slate-400 text-sm ">No Followers</p>
+        </div>
+      )}
+      <div className="min-h-[10px] w-full overflow-y-auto pr-2">
+        {filteredFollowers.map((follower) => (
+          <FollowerUserCard follower={follower} />
         ))}
       </div>
     </div>

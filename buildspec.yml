@@ -10,16 +10,16 @@ phases:
 
   pre_build:
     commands:
-      - echo "Installing frontend dependencies..."
-      - cd frontend && npm install && cd ..
+      - echo "Installing Blog_UI frontend dependencies..."
+      - cd frontend/Blog_UI && npm install && cd ../../
       - echo "Installing backend dependencies..."
       - cd backend && npm install && cd ..
 
   build:
     commands:
-      - echo "Running frontend build..."
-      - cd frontend && npm run build && cd ..
-      - echo "Running backend build (if needed)..."
+      - echo "Building Blog_UI frontend..."
+      - cd frontend/Blog_UI && npm run build && cd ../../
+      - echo "Building backend (if needed)..."
       - cd backend && npm run build || echo "No backend build step" && cd ..
       - echo "Zipping deployment package..."
       - zip -r deployment.zip . -x "node_modules/*"
