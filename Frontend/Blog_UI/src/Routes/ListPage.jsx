@@ -1,10 +1,10 @@
 import { useLocation } from "react-router-dom";
-import HotTopicsCard from "../../Components/HotTopicsCard/HotTopicsCard";
-import PostCard from "../../Components/PostCard/PostCard";
 import { useEffect } from "react";
-import Filter from "../../Components/Filter/Filter";
-import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
-import { useFetchQueryPosts } from "../../Loaders/posts/useFetchQueryPosts";
+import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
+import { useFetchQueryPosts } from "../Loaders/posts/useFetchQueryPosts";
+import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
+import PostCard from "../Components/PostCard/PostCard";
+import Filter from "../Components/Filter/Filter";
 
 function PageCategoryHeading({ category, count }) {
   return (

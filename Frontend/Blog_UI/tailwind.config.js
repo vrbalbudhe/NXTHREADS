@@ -4,6 +4,10 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ['"Unbounded"', 'cursive'],
+        body: ['Manrope', 'sans-serif'],
+      },
       colors: {
         darkBackground: "#231f20",
         darkPostCardBg: "#231f20",

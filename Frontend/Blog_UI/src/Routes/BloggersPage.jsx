@@ -1,10 +1,10 @@
 import { Suspense, useContext, useEffect } from "react";
-import UserCard from "../../Components/UserCard/UserCard";
-import OnlyUserSearch from "../../Components/OnlyUserSearch/OnlyUserSearch";
-import FollowerCard from "../../Components/FollowerCard/FollowerCard";
-import { AuthContext } from "../../Context/AuthContext";
-import FollowingCard from "../../Components/FollowingCard/FollowingCard";
-import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
+import UserCard from "../Components/UserCard/UserCard";
+import OnlyUserSearch from "../Components/OnlyUserSearch/OnlyUserSearch";
+import FollowerCard from "../Components/FollowerCard/FollowerCard";
+import { AuthContext } from "../Context/AuthContext";
+import FollowingCard from "../Components/FollowingCard/FollowingCard";
+import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
 
 function BloggersPage() {
   const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
@@ -14,7 +14,7 @@ function BloggersPage() {
     loadUsers();
   });
   return (
-    <div className="w-full dark:border-none min-h-screen gap-5 mt-8 md:flex justify-center items-start">
+    <div className="w-full dark:border-none min-h-screen gap-5 mt-8 flex flex-col md:flex-row justify-center items-start">
       <div className="w-full md:w-[70%] h-full justify-center items-center">
         <div className="w-full h-fit overflow-auto flex flex-wrap justify-start items-center">
           <OnlyUserSearch />

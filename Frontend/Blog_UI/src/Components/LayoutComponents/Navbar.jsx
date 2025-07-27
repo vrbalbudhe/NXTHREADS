@@ -11,11 +11,18 @@ import {
   MessageSquare,
   PenSquare,
   ChevronDown,
+  User2,
+  LogOutIcon,
 } from "lucide-react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import MobileNavbar from "./MobileNavbar";
+
+const Api = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 const NavbarLogo = () => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 select-none">
       {/* <img
         className="w-10 h-10 rounded-full object-cover"
         src="/favicon.jpg"
@@ -66,12 +73,12 @@ const NavbarNavigationTray = ({ currentUser }) => {
       path: "/chat",
       showLoggedIn: true,
     },
-    {
-      icon: <Info className="w-5 h-5" />,
-      label: "About",
-      path: "/about",
-      showAlways: true,
-    },
+    // {
+    //   icon: <Info className="w-5 h-5" />,
+    //   label: "About",
+    //   path: "/about",
+    //   showAlways: true,
+    // },
   ];
 
   const toggleDarkMode = () => {
@@ -79,7 +86,7 @@ const NavbarNavigationTray = ({ currentUser }) => {
     setIsDarkMode(!isDarkMode);
   };
   return (
-    <div className="hidden md:flex items-center space-x-4">
+    <div className="hidden md:flex items-center space-x-3">
       {navItems.map(
         (item) =>
           (item.showAlways || (item.showLoggedIn && currentUser?.userId)) && (
@@ -88,7 +95,7 @@ const NavbarNavigationTray = ({ currentUser }) => {
               onClick={() => navigate(item.path)}
               className="flex items-center text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition"
             >
-              <span className="text-sm font-medium">{item.label}</span>
+              <span className="text-sm font-medium">{item.icon}</span>
             </button>
           )
       )}
@@ -110,6 +117,24 @@ const NavbarNavigationTray = ({ currentUser }) => {
 const NavbarUserProfileSection = ({ currentUser }) => {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(
+        `${Api}/auth/logout`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (res.status === 200) {
+        toast.success("Logout successfully!");
+        navigate("/login");
+      }
+    } catch (error) {
+      toast.error("Logout failed!");
+    }
+  };
+
   return (
     <div className="flex items-center space-x-4">
       {currentUser?.userId ? (
@@ -117,10 +142,10 @@ const NavbarUserProfileSection = ({ currentUser }) => {
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="dark:bg-darkPostCardBackground shadow-sm rounded-full pr-3 flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400"
+              className="dark:bg-darkPostCardBackground border border-gray-700 shadow-sm rounded-full pr-3 flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400"
             >
               <img
-                className="w-10 h-10 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover"
                 src={
                   currentUser?.avatar ||
                   "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg"
@@ -131,25 +156,31 @@ const NavbarUserProfileSection = ({ currentUser }) => {
             </button>
 
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 py-2">
-                <button
-                  onClick={() => {
-                    navigate(`/profile/${currentUser?.userId}`);
-                    setIsProfileOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  {currentUser?.username || "Profile"}
-                </button>
-                <button
-                  onClick={() => {
-                    // Add logout functionality
-                    setIsProfileOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Logout
-                </button>
+              <div className="absolute right-0 mt-2 w-40 px-2 bg-white dark:bg-darkPostCardBackground rounded-lg shadow-lg border dark:border-gray-700 py-2">
+                <div className="w-full px-2 flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <User2 color="white" />
+                  <button
+                    onClick={() => {
+                      navigate(`/profile/${currentUser?.userId}`);
+                      setIsProfileOpen(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm dark:text-white text-gray-800 "
+                  >
+                    {currentUser?.username || "Profile"}
+                  </button>
+                </div>
+                <div className="w-full px-2 flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <LogOutIcon color="white" />
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsProfileOpen(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm dark:text-white text-gray-800 "
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -182,8 +213,13 @@ function Navbar() {
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <NavbarLogo />
-          <NavbarNavigationTray currentUser={currentUser} />
-          <NavbarUserProfileSection currentUser={currentUser} />
+          <div className="flex gap-3">
+            <NavbarNavigationTray currentUser={currentUser} />
+            <div>
+              <MobileNavbar currentUser={currentUser} />
+            </div>
+            <NavbarUserProfileSection currentUser={currentUser} />
+          </div>
         </div>
       </div>
     </nav>

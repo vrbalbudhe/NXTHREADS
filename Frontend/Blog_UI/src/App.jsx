@@ -1,17 +1,18 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Homepage from "./Routes/Homepage/Homepage.jsx";
-import Login from "./Routes/Login/Login.jsx";
-import Register from "./Routes/Register/Register.jsx";
-import Profile from "./Routes/Profile/Profile.jsx";
+import Homepage from "./Routes/Homepage.jsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Login from "./Routes/Login.jsx";
+import Register from "./Routes/Register.jsx";
+import Profile from "./Routes/Profile.jsx";
 import AboutPage from "./Routes/AboutPage.jsx";
-import { usersInfoLoader } from "./Lib/Loaders.js";
 import CreateBlog from "./Components/CreateBlog/CreateBlog.jsx";
-import Search from "./Routes/Search/Search.jsx";
-import ListPage from "./Routes/ListPage/ListPage.jsx";
-import PrivacyPolicy from "./Routes/PrivacyPolicy/PrivacyPolicy.jsx";
-import BloggersPage from "./Routes/BlogggersPage/BloggersPage.jsx";
-import SinglePostPage from "./Routes/SinglePostPage/SinglePostPage.jsx";
-import ChatingPage from "./Routes/ChatingPage/ChatingPage.jsx";
+import Search from "./Routes/Search.jsx";
+import ListPage from "./Routes/ListPage.jsx";
+import PrivacyPolicy from "./Routes/PrivacyPolicy.jsx";
+import BloggersPage from "./Routes/BloggersPage.jsx";
+import SinglePostPage from "./Routes/SinglePostPage.jsx";
+import ChatingPage from "./Routes/ChatingPage.jsx";
 import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
 
 const router = createBrowserRouter([
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
       { path: "/createBlog", element: <CreateBlog /> },
       { path: "/:id", element: <SinglePostPage /> },
       { path: "/chat", element: <ChatingPage /> },
-      { path: "/bloggers", element: <BloggersPage />, loader: usersInfoLoader },
+      { path: "/bloggers", element: <BloggersPage /> },
       { path: "/search", element: <Search /> },
     ],
   },
@@ -42,7 +43,12 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer position="top-center" autoClose={3000} />
+    </>
+  );
 }
 
 export default App;

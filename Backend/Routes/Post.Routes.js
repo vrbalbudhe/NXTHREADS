@@ -1,15 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const {
-  // Deployed Routes
   getPost,
   getPostUrl,
   getAllPosts,
   updatePosts,
   deletePosts,
   createPosts,
-  // searchPosts,
-  // Non-Deployed Routes
   favUnfavPost,
   getFavoritePosts,
 } = require("../Controller/Post.Controller");
@@ -25,14 +22,13 @@ router.get("/:id", getPost);
 router.get("/", getAllPosts);
 router.post("/", verifyToken, createPosts);
 router.put("/:id", verifyToken, updatePosts);
-router.delete("/:id", verifyToken, deletePosts);
-// router.get("/search/:term",savedPosts);
+router.delete("/:id", deletePosts);
 
 router.post("/fav", verifyToken, favUnfavPost);
 router.get("/fav/:id", verifyToken, getFavoritePosts);
 
-router.post("/like/:id", verifyToken, likePost);
-router.post("/unlike/:id", verifyToken, unlikePost);
-router.post("/likecheck", verifyToken, checkWhetherLike);
+router.post("/like", likePost);
+router.post("/unlike", unlikePost);
+router.post("/likecheck", checkWhetherLike);
 
 module.exports = router;

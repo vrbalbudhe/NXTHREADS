@@ -1,15 +1,17 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useContext } from "react";
-import Filter from "../../Components/Filter/Filter";
-import PostCard from "../../Components/PostCard/PostCard";
-import NextPrevious from "../../Components/NextPrevious/NextPrevious";
-import HotTopicsCard from "../../Components/HotTopicsCard/HotTopicsCard";
-import SearchBar from "../../Components/SearchBar/SearchBar";
-import { useFetchPosts } from "../../Loaders/posts/useFetchAllPosts";
-import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
+import Filter from "../Components/Filter/Filter";
+import PostCard from "../Components/PostCard/PostCard";
+import NextPrevious from "../Components/NextPrevious/NextPrevious";
+import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
+import SearchBar from "../Components/SearchBar/SearchBar";
+import { useFetchPosts } from "../Loaders/posts/useFetchAllPosts";
+import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
+import { AuthContext } from "../Context/AuthContext";
 
 function Search() {
   const { posts, loadPosts, error } = useFetchPosts();
+  const { currentUser } = useContext(AuthContext);
   const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
 
   const [prev, setPrev] = useState(0);
@@ -46,7 +48,13 @@ function Search() {
           ) : (
             posts
               .slice(prev, next)
-              .map((post) => <PostCard key={post.id} post={post} />)
+              .map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUser={currentUser?.userId}
+                />
+              ))
           )}
         </div>
         <NextPrevious prev={handlePrev} next={handleNext} />

@@ -186,7 +186,9 @@ function CreateBlog() {
         { withCredentials: true }
       );
       console.log("Blog post created:", res.data);
-      navigate(`/profile/${currentUser.userInfo.id}`);
+      console.log("Submitting blogData:", blogData);
+      console.log("Submitting imageUrls:", imageUrls);
+      navigate(`/profile/${currentUser?.userId}`);
     } catch (error) {
       console.error("Error creating blog:", error);
     }

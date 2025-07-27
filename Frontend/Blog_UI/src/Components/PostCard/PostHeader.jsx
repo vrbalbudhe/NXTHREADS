@@ -43,7 +43,7 @@ const PostHeaderDropDownMenu = () => {
       </button>
 
       {isdropdown && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border dark:bg-darkPostCardBackground dark:border-gray-700 z-20">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border dark:bg-darkPostCardBackground dark:border-gray-700">
           <ul className="py-2">
             <li className="flex items-center px-4 py-2 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
               <Flag className="w-4 h-4 mr-2" />

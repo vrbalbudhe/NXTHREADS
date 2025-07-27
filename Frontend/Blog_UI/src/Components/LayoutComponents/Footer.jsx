@@ -126,7 +126,7 @@ function CopyrightSection() {
 function Footer() {
   return (
     <footer className="w-full border dark:border-none border-slate-100 shadow-lg text-white py-6 bg-inherit dark:bg-inherit">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <BrandSection />

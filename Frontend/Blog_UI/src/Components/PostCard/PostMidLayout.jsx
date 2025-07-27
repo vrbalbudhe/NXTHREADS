@@ -31,21 +31,21 @@ const NavbarMidLayoutImageSection = ({ post }) => {
         <Slider post={post} onClose={() => setShowSlider(false)} />
       ) : (
         post.images?.length > 0 && (
-          <div onClick={() => setShowSlider(true)} className="p-4 space-y-4">
+          <div onClick={() => setShowSlider(true)} className="p-2 space-y-4">
             {post.images.map((image, index) =>
               image.endsWith("mp4") ? (
                 <video
                   key={`${post.id}-${index}`}
                   src={image}
                   controls
-                  className="w-full rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                  className="w-full rounded-sm shadow-md hover:shadow-lg transition-shadow duration-300"
                 />
               ) : (
                 <img
                   key={`${post.id}-${index}`}
                   src={image}
                   alt={`Content ${index + 1}`}
-                  className="w-full rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                  className="w-full rounded-sm shadow-md hover:shadow-lg transition-shadow duration-300"
                 />
               )
             )}
@@ -58,10 +58,10 @@ const NavbarMidLayoutImageSection = ({ post }) => {
 const NavbarMidLayoutHashSection = ({ post }) => {
   const navigate = useNavigate();
   return (
-    <div className="px-4 py-2">
+    <div className="px-2 py-1">
       <button
         onClick={() => navigate(`/list?category=${post.category}&author=`)}
-        className="inline-flex items-center space-x-1 px-3 py-1 bg-darkPostCardBackground dark:border dark:border-gray-700 text-white rounded-xl hover:text-blue-400"
+        className="inline-flex items-center space-x-1 px-3 py-1 rounded-xl text-sky-500 text-sm font-body hover:text-blue-500"
       >
         <Hash className="w-4 h-4" />
         <span>{post.category}</span>
@@ -72,7 +72,7 @@ const NavbarMidLayoutHashSection = ({ post }) => {
 
 function PostMidLayout({ post }) {
   return (
-    <div>
+    <div className="font-heading">
       <NavbarMidLayoutTitleSection post={post} />
       <NavbarMidLayoutImageSection post={post} />
       <NavbarMidLayoutHashSection post={post} />

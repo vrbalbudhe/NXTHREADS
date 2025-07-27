@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="container mx-auto p-8">
+    <div className="container mx-auto p-2 text-gray-200">
       <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
 
       <section className="mb-8">

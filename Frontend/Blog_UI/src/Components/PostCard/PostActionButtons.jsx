@@ -1,148 +1,181 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  ThumbsUp,
-  ThumbsDown,
   Bookmark,
   MessageCircle,
-  Trash2,
   Send,
+  HeartOff,
+  Heart,
+  Trash2,
 } from "lucide-react";
+import {
+  fetchPostLikeStatus,
+  likePostThunk,
+  unlikePostThunk,
+  fetchCommentsByPostId,
+  createCommentThunk,
+  deleteCommentThunk,
+  deletePost,
+  fetchAllPosts,
+} from "../../ReduxThunkSlice/PostSlice";
+import { useNavigate } from "react-router-dom";
+import DialogBox from "../DialogBox/DialogBox";
 
-const LikeUnlikeActions = ({ post }) => {
-  const [like, setLike] = useState(false);
-  const [dislike, setDislike] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isDisliked, setIsDisliked] = useState(false);
+const LikeUnlikeActions = ({ post, currentUser }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const likeState = useSelector((state) => state.post.likedPosts[post?.id]) || {
+    isLiked: false,
+    isUnliked: false,
+  };
+
+  const updatedPost = useSelector((state) =>
+    state.post.posts.find((p) => p.id === post.id)
+  );
 
   const handleLikeButton = () => {
-    toggleLike(post.id, currentUser?.userId);
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    dispatch(likePostThunk({ postId: post.id, userId: currentUser.userId }));
   };
 
   const handleDislikeButton = () => {
-    toggleUnLike(post?.id, currentUser?.userId);
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    dispatch(unlikePostThunk({ postId: post.id, userId: currentUser.userId }));
   };
+
+  useEffect(() => {
+    if (currentUser) {
+      dispatch(
+        fetchPostLikeStatus({ postId: post.id, userId: currentUser.userId })
+      );
+    }
+  }, [post.id]);
+
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center justify-between gap-2">
       <button
-        onClick={() => {
-          setLike((prev) => !prev);
-          setDislike(false);
-          handleLikeButton();
-        }}
-        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+        onClick={handleLikeButton}
+        className={`flex items-center space-x-2 hover:text-white ${
+          likeState.isLiked ? "text-white" : "text-gray-600"
+        }`}
       >
-        {isLiked ? (
-          <ThumbsUp className="w-5 h-5 fill-current" />
-        ) : (
-          <ThumbsUp className="w-5 h-5" />
-        )}
-        <span>{post.likes || 0}</span>
+        <Heart className="w-5 h-5" />
+        <span>{updatedPost?.likes ?? post.likes}</span>
       </button>
 
       <button
-        onClick={() => {
-          setDislike((prev) => !prev);
-          setLike(false);
-          handleDislikeButton();
-        }}
-        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+        onClick={handleDislikeButton}
+        className={`flex items-center space-x-2 hover:text-red-600 ${
+          likeState.isUnliked ? "text-red-500" : "text-gray-600"
+        }`}
       >
-        {isDisliked ? (
-          <ThumbsDown className="w-5 h-5 fill-current" />
-        ) : (
-          <ThumbsDown className="w-5 h-5" />
-        )}
-        <span>{post.unlikes || 0}</span>
+        <HeartOff className="w-5 h-5" />
+        <span>{updatedPost?.unlikes ?? post.unlikes}</span>
       </button>
     </div>
   );
 };
+
 const CommentAndDeleteActions = ({
   post,
   currentUser,
   setOpenCommentSection,
 }) => {
-  const [favourite, setFavourite] = useState(false);
+  const dispatch = useDispatch();
+  const comments = useSelector((state) => state.post.comments[post.id] || []);
+  const [openCardDelete, setOpenCardDelete] = useState(false);
 
-  const handleFavouriteSwitch = async () => {
-    if (!currentUser?.userId) {
-      console.error("No user info available.");
-      return;
-    }
-
-    try {
-      const res = await axios.post(
-        `${baseUrl}/api/post/fav`,
-        {
-          userId: currentUser?.userId,
-          postId: post.id,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-      setFavourite((prev) => !prev);
-    } catch (error) {
-      console.error(
-        "Error updating favourite status:",
-        error.response ? error.response.data : error.message
-      );
-    }
+  const handleDeletePost = () => {
+    dispatch(deletePost({ postId: post.id })).then(() =>
+      dispatch(fetchAllPosts())
+    );
   };
 
   return (
-    <div className=" flex items-center space-x-4">
+    <div className="flex items-center space-x-4">
       <button
         onClick={() => setOpenCommentSection((open) => !open)}
         className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
       >
         <MessageCircle className="w-5 h-5" />
-        <span>{post.comment.length}</span>
+        <span>{comments?.length || post?.comment?.length}</span>
       </button>
-      <button
-        onClick={handleFavouriteSwitch}
+
+      {/* <button
         className={`text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 ${
           favourite ? "text-yellow-500 dark:text-yellow-400" : ""
         }`}
       >
         <Bookmark className={`w-5 h-5 ${favourite ? "fill-current" : ""}`} />
-      </button>
+      </button> */}
 
-      {currentUser?.userInfo?.id === post.userId && (
+      {currentUser?.userId === post?.userId && (
         <button
-          onClick={() => setCardDelete(true)}
+          onClick={() => setOpenCardDelete(true)}
           className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
         >
           <Trash2 className="w-5 h-5" />
         </button>
       )}
+
+      {openCardDelete && (
+        <DialogBox
+          message="Do You Want To Delete The Post?"
+          trigger="Delete"
+          closeDialog={() => setOpenCardDelete(false)}
+          onConfirm={handleDeletePost}
+        />
+      )}
     </div>
   );
 };
+
 const CommentOpenSection = ({ post, currentUser }) => {
+  const dispatch = useDispatch();
+  const comments = useSelector((state) => state.post.comments[post.id] || []);
   const [commentData, setCommentData] = useState("");
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCommentData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setCommentData(e.target.value);
   };
 
-  const handleAddComment = async () => {
-    await addComment(commentData.description, post.id);
-    setCommentData({ description: "" });
+  const handleAddComment = () => {
+    if (!commentData.trim()) return;
+    dispatch(
+      createCommentThunk({
+        postId: post.id,
+        commentor: currentUser.userId,
+        description: commentData,
+      })
+    ).then(() => dispatch(fetchCommentsByPostId(post.id)));
+    setCommentData("");
   };
+
+  const handleDeleteComment = (commentId) => {
+    dispatch(deleteCommentThunk({ commentId, postId: post.id })).then(() =>
+      dispatch(fetchCommentsByPostId(post.id))
+    );
+  };
+
+  useEffect(() => {
+    dispatch(fetchCommentsByPostId(post.id));
+  }, [dispatch, post.id]);
 
   return (
     <div className="w-full p-2 border-t dark:border-gray-700">
-      <div className="flex space-x-2 mb-4">
+      <div className="flex space-x-2 mb-2">
         <textarea
           name="description"
-          value={commentData.description}
+          value={commentData}
           onChange={handleInputChange}
-          className="flex-1 p-3 rounded-lg border dark:border-gray-700 dark:bg-transparent dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 p-3 rounded-b-lg bg-[#1B1B1B] border dark:border-gray-700 dark:text-white"
           placeholder="Add a comment..."
           rows="2"
         />
@@ -155,10 +188,10 @@ const CommentOpenSection = ({ post, currentUser }) => {
       </div>
 
       <div className="space-y-2">
-        {post.comment.map((com) => (
+        {comments.map((com) => (
           <div
             key={com.id}
-            className="bg-gray-50 dark:bg-darkPostCardBackground border border-gray-700 rounded-lg p-4 shadow-sm"
+            className="bg-gray-50 dark:bg-[#494F55] border border-gray-700 rounded-br-xl rounded-tl-xl p-4 shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
@@ -182,10 +215,7 @@ const CommentOpenSection = ({ post, currentUser }) => {
 
               {com?.user?.id === currentUser?.userId && (
                 <button
-                  onClick={() => {
-                    setCommentDelete(true);
-                    setDeleteCommentId(com._id);
-                  }}
+                  onClick={() => handleDeleteComment(com.id)}
                   className="text-gray-400 hover:text-red-500 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -204,10 +234,14 @@ const CommentOpenSection = ({ post, currentUser }) => {
 
 export default function PostActionButtons({ post, currentUser }) {
   const [openCommentSection, setOpenCommentSection] = useState(false);
+  const [addComment, setAddComment] = useState(false);
+
+  useEffect(() => {}, [addComment]);
+
   return (
     <div className="flex flex-col items-center justify-between border-t dark:border-gray-700">
       <div className="w-full flex justify-between items-center pl-4 pr-4 py-2">
-        <LikeUnlikeActions post={post} />
+        <LikeUnlikeActions post={post} currentUser={currentUser} />
         <CommentAndDeleteActions
           post={post}
           currentUser={currentUser}
@@ -215,7 +249,11 @@ export default function PostActionButtons({ post, currentUser }) {
         />
       </div>
       {openCommentSection && (
-        <CommentOpenSection post={post} currentUser={currentUser} />
+        <CommentOpenSection
+          post={post}
+          currentUser={currentUser}
+          isCommentAdded={setAddComment}
+        />
       )}
     </div>
   );

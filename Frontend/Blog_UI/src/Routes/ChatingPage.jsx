@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import { LuSendHorizonal } from "react-icons/lu";
-import ChatUserCard from "../../Components/ChatUserCard/ChatUserCard";
-import { AuthContext } from "../../Context/AuthContext";
-import { useFirebaseChat } from "../../hooks/useFirebaseChat";
-import { useBackendFollowings } from "../../hooks/useBackendFollowings";
+import ChatUserCard from "../Components/ChatUserCard/ChatUserCard";
+import { AuthContext } from "../Context/AuthContext";
+import { useFirebaseChat } from "../hooks/useFirebaseChat";
+import { useBackendFollowings } from "../hooks/useBackendFollowings";
 
 function UserListPanel({ users, handleClickUserData, loading, currentUser }) {
   return (

@@ -27,13 +27,13 @@ const categories = [
 function HotTopicsCard() {
   const navigate = useNavigate("");
   return (
-    <div className="w-full h-fit">
+    <div className="w-full h-fit select-none">
       <div className="w-full flex flex-wrap justify-start items-start gap-2">
         {categories.map((category, index) => (
           <div
             key={index}
             onClick={() => navigate(`/list?category=${category}&author=`)}
-            className="dark:text-white dark:bg-darkPostCardBackground dark:border px-2 py-4 cursor-pointer rounded-md border-2 hover:border-sky-400 border-slate-200"
+            className="dark:text-white dark:bg-darkPostCardBackground dark:border px-2 py-4 cursor-pointer rounded-md border-2 hover:border-sky-400 border-gray-500"
           >
             <h3 className="text-xs font-semibold hover:text-blue-400">
               {category}

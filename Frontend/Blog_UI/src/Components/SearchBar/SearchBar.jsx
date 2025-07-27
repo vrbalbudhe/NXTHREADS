@@ -40,7 +40,7 @@ function SearchBar({ posts, users }) {
     <div className="w-full flex flex-col items-center justify-start">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[100%] h-10 border-2 pl-5 dark:text-white dark:outline-none dark:bg-darkPostCardBg dark:border-gray-800 dark:border-2 border-slate-300 rounded-xl"
+          className="w-[100%] h-10 border-2 pl-5 dark:text-white dark:outline-none dark:bg-darkPostCardBg dark:border-gray-700 dark:border-2 border-slate-300 rounded-xl"
           type="search"
           placeholder="Search by title, content, or user"
           value={searchTerm}

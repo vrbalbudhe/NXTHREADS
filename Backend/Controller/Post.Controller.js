@@ -54,7 +54,6 @@ const getPostUrl = asyncHandler(async (req, res) => {
   }
 });
 
-
 const getPost = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
@@ -109,8 +108,6 @@ const getPost = asyncHandler(async (req, res) => {
   }
 });
 
-/*
- * Get ALL POSTS Routes */
 const getAllPosts = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -181,13 +178,19 @@ const createPosts = asyncHandler(async (req, res) => {
   try {
     // Requesting Post Data
     const { title, subtitle, category, author, content, images } = req.body;
+    console.log(title)
+    console.log(subtitle)
+    console.log(category)
+    console.log(author)
+    console.log(content)
+    console.log(images)
 
-    if (!title || !subtitle || !category || !author || !content) {
-      return res.status(400).json({
-        message: "All fields are mandatory",
-        success: false,
-      });
-    }
+    // if (!title || !subtitle || !category || !author || !content) {
+    //   return res.status(400).json({
+    //     message: "All fields are mandatory",
+    //     success: false,
+    //   });
+    // }
     const imageUrls = images || []; // Default to an empty array if no images are provided
     // Saving the Post
     const newPost = await prisma.posts.create({
@@ -229,17 +232,12 @@ const updatePosts = asyncHandler(async (req, res) => {
   }
 });
 
-/*
- * Delete Route will check whether the Login-User id and delete post id is matching
- * if macthing then deletion is allowwed
- * Otherwise, none
- */
 const deletePosts = asyncHandler(async (req, res) => {
   const postId = req.params.id;
-  const tokenUserId = req.userId;
+  console.log(postId)
   try {
     const post = await prisma.posts.findUnique({
-      where: { id: postId, userId: tokenUserId },
+      where: { id: postId },
     });
     if (!post) {
       return res.status(403).json({
@@ -247,15 +245,8 @@ const deletePosts = asyncHandler(async (req, res) => {
         success: false,
       });
     }
-
-    if (tokenUserId !== post.userId) {
-      return res.status(401).json({
-        message: "U are not authorized to delete the post",
-        success: false,
-      });
-    }
     await prisma.posts.delete({
-      where: { id: postId, userId: tokenUserId },
+      where: { id: postId },
     });
     return res.status(200).json({
       message: "Post Deleted Successfully",
@@ -356,17 +347,14 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
     });
   }
 });
+
 module.exports = {
-  // Deployed Routes
   getPost,
   getAllPosts,
   deletePosts,
   updatePosts,
   createPosts,
   getPostUrl,
-  // searchPosts,
-
-  // Not Deployed Routes
   favUnfavPost,
   getFavoritePosts,
 };
