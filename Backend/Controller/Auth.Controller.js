@@ -172,8 +172,9 @@ const login = asyncHandler(async (req, res) => {
     const CookieOptions = {
       httpOnly: true,
       maxAge: 1000 * 60 * 105, // 105 minutes
-      sameSite: "Strict", // Corrected to "sameSite"
+      sameSite: "None", // Corrected to "sameSite"
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      path: "/"
     };
 
     const { password: userPassword, ...userInfo } = user;

@@ -56,11 +56,6 @@ const MobileNavbar = ({ currentUser }) => {
     },
   ];
 
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDarkMode(!isDarkMode);
-  };
-
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground border-t border-gray-300 dark:border-gray-700 px-4 py-2 flex justify-center gap-5 items-center shadow-md">
       {navItems.map(

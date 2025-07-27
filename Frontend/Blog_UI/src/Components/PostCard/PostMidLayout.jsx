@@ -72,7 +72,7 @@ const NavbarMidLayoutHashSection = ({ post }) => {
 
 function PostMidLayout({ post }) {
   return (
-    <div className="font-heading">
+    <div className="">
       <NavbarMidLayoutTitleSection post={post} />
       <NavbarMidLayoutImageSection post={post} />
       <NavbarMidLayoutHashSection post={post} />
