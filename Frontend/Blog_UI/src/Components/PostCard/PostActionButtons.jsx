@@ -62,8 +62,8 @@ const LikeUnlikeActions = ({ post, currentUser }) => {
     <div className="flex items-center justify-between gap-2">
       <button
         onClick={handleLikeButton}
-        className={`flex items-center space-x-2 hover:text-white ${
-          likeState.isLiked ? "text-white" : "text-gray-600"
+        className={`flex items-center space-x-2 md:hover:text-red-500 ${
+          likeState.isLiked ? "text-red-500" : "text-gray-600"
         }`}
       >
         <Heart className="w-5 h-5" />
@@ -72,8 +72,8 @@ const LikeUnlikeActions = ({ post, currentUser }) => {
 
       <button
         onClick={handleDislikeButton}
-        className={`flex items-center space-x-2 hover:text-red-600 ${
-          likeState.isUnliked ? "text-red-500" : "text-gray-600"
+        className={`flex items-center space-x-2 hover:text-green-600 ${
+          likeState.isUnliked ? "text-green-500" : "text-gray-600"
         }`}
       >
         <HeartOff className="w-5 h-5" />
@@ -102,24 +102,16 @@ const CommentAndDeleteActions = ({
     <div className="flex items-center space-x-4">
       <button
         onClick={() => setOpenCommentSection((open) => !open)}
-        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 md:hover:text-green-500 dark:hover:text-green-400"
       >
         <MessageCircle className="w-5 h-5" />
         <span>{comments?.length || post?.comment?.length}</span>
       </button>
 
-      {/* <button
-        className={`text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 ${
-          favourite ? "text-yellow-500 dark:text-yellow-400" : ""
-        }`}
-      >
-        <Bookmark className={`w-5 h-5 ${favourite ? "fill-current" : ""}`} />
-      </button> */}
-
       {currentUser?.userId === post?.userId && (
         <button
           onClick={() => setOpenCardDelete(true)}
-          className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+          className="text-gray-600 dark:text-gray-400 md:hover:text-red-500 md:dark:hover:text-red-400"
         >
           <Trash2 className="w-5 h-5" />
         </button>

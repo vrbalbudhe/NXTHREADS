@@ -13,6 +13,7 @@ const initialState = {
      comments: {},
      commentLoading: false,
      commentError: undefined,
+     personalizedPosts: []
 };
 
 export const fetchAllPosts = createAsyncThunk(
@@ -70,7 +71,6 @@ export const likePostThunk = createAsyncThunk(
      async ({ postId, userId }, thunkAPI) => {
           try {
                const res = await axios.post(`${Api}/post/like`, { postId, userId });
-               console.log(res);
                return { postId };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -142,6 +142,17 @@ export const deleteCommentThunk = createAsyncThunk(
      }
 );
 
+export const personalizedPostsThunk = createAsyncThunk(
+     "posts/personalizedPosts",
+     async ({ userId }, thunkAPI) => {
+          try {
+               const res = await axios.get(`${Api}/post/gfp/${userId}`);
+               return res.data;
+          } catch (error) {
+               return thunkAPI.rejectWithValue(error.response?.data || error.message);
+          }
+     }
+)
 const postSlice = createSlice({
      name: 'posts',
      initialState,
@@ -256,6 +267,9 @@ const postSlice = createSlice({
                     state.posts = state.posts?.filter(
                          (post) => post.id !== postId
                     );
+               })
+               .addCase(personalizedPostsThunk.fulfilled, (state, action) => {
+                    state.personalizedPosts = action.payload;
                })
      },
 });

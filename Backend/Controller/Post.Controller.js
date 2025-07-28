@@ -1,9 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
-const redisClient = require("../Config/redisClient");
-/*
- * CRUD {Create,Read,Update,Delete} Operation
- */
 
 const getPostUrl = asyncHandler(async (req, res) => {
   const { category, author } = req.query;
@@ -176,23 +172,9 @@ const createPosts = asyncHandler(async (req, res) => {
   const tokenUserId = req.userId;
 
   try {
-    // Requesting Post Data
     const { title, subtitle, category, author, content, images } = req.body;
-    console.log(title)
-    console.log(subtitle)
-    console.log(category)
-    console.log(author)
-    console.log(content)
-    console.log(images)
 
-    // if (!title || !subtitle || !category || !author || !content) {
-    //   return res.status(400).json({
-    //     message: "All fields are mandatory",
-    //     success: false,
-    //   });
-    // }
-    const imageUrls = images || []; // Default to an empty array if no images are provided
-    // Saving the Post
+    const imageUrls = images || [];
     const newPost = await prisma.posts.create({
       data: {
         title,
@@ -348,6 +330,57 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
   }
 });
 
+const getFollowersPost = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  try {
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required in params" });
+    }
+    
+    const followedUsers = await prisma.follows.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+    console.log("Followed users:", followedUsers);
+
+    const followingIds = followedUsers.map(f => f.followingId);
+
+    const allUserIds = [...followingIds, userId];
+    console.log("All user IDs (following + self):", allUserIds);
+
+    const posts = await prisma.posts.findMany({
+      where: {
+        userId: { in: allUserIds },
+      },
+      include: {
+        User: true,
+        comment: true,
+        like: true,
+        unlike: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    console.log("Found posts:", posts.length);
+
+    if (posts.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const shuffled = posts.sort(() => 0.5 - Math.random());
+
+    const limitedPosts = shuffled.slice(0, 20);
+
+    res.status(200).json(limitedPosts);
+
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 module.exports = {
   getPost,
   getAllPosts,
@@ -356,5 +389,6 @@ module.exports = {
   createPosts,
   getPostUrl,
   favUnfavPost,
+  getFollowersPost,
   getFavoritePosts,
 };

@@ -9,6 +9,7 @@ const {
   createPosts,
   favUnfavPost,
   getFavoritePosts,
+  getFollowersPost,
 } = require("../Controller/Post.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 const {
@@ -30,5 +31,7 @@ router.get("/fav/:id", verifyToken, getFavoritePosts);
 router.post("/like", likePost);
 router.post("/unlike", unlikePost);
 router.post("/likecheck", checkWhetherLike);
+
+router.get("/gfp/:userId", getFollowersPost)
 
 module.exports = router;

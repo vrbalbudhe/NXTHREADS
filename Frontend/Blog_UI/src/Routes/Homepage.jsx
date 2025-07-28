@@ -6,14 +6,18 @@ import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import Spinner from "../Components/LayoutComponents/Spinner";
 import BlogWriteBanner from "../Components/UI_Components/BlogWriteBanner";
 import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
+import { useFetchPersonalizedPosts } from "../Loaders/posts/useFetchPersonalizedPosts";
 
 function Homepage() {
-  const { posts, loadPosts, loading, error } = useFetchPosts();
   const { currentUser } = useContext(AuthContext);
+  const { personalizedPosts, error, loading, loadPersonalizedPosts } =
+    useFetchPersonalizedPosts(currentUser?.userId);
+  const { posts, loadPosts } = useFetchPosts();
 
   useEffect(() => {
     loadPosts();
-  }, []);
+    loadPersonalizedPosts();
+  }, [currentUser?.userId]);
 
   return (
     <div className="w-full h-full mt-5 flex gap-3">
@@ -30,8 +34,26 @@ function Homepage() {
       </div>
 
       <div className="w-full md:w-[60%] flex flex-col items-center justify-start gap-3">
+        {/* 1. Show loading spinner */}
         {loading ? (
           <Spinner text="Fetching Posts" />
+        ) : currentUser?.userId ? (
+          personalizedPosts.length > 0 ? (
+            personalizedPosts.map((post) => (
+              <PostCard key={post.id} post={post} currentUser={currentUser} />
+            ))
+          ) : (
+            <div className="w-full h-[500px] select-none pointer-events-none flex flex-col justify-center items-center">
+              <img
+                className="w-20 h-20 md:w-28 md:h-28"
+                src="/sad.png"
+                alt="sad_error_image"
+              />
+              <p className="text-white">
+                Follow Bloggers To Get Personalized Posts!
+              </p>
+            </div>
+          )
         ) : posts.length > 0 ? (
           posts.map((post) => (
             <PostCard key={post.id} post={post} currentUser={currentUser} />
