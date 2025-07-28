@@ -106,7 +106,6 @@ function Login() {
         },
         { withCredentials: true }
       );
-      console.log(res)
       if (res.data.success) {
         setCurrentUser({
           userId: res.data?.userInfo?.id,
@@ -129,7 +128,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center select-none p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center select-none p-4">
       <div className="w-full max-w-5xl bg-white overflow-hidden">
         <div className="grid md:grid-cols-2 min-h-[600px]">
           <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black p-12 flex flex-col justify-center items-center text-white relative overflow-hidden">

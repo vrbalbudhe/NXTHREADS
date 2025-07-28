@@ -165,11 +165,12 @@ const login = asyncHandler(async (req, res) => {
 
     const CookieOptions = {
       httpOnly: true,
-      maxAge: 1000 * 60 * 105,
-      sameSite: "None",
+      maxAge: 1000 * 60 * 105, // 105 minutes
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-      path: "/"
+      secure: process.env.NODE_ENV === "production", // required if SameSite=None
+      path: "/",
     };
+
 
     const { password: userPassword, ...userInfo } = user;
     return res.status(200).cookie("token", token, CookieOptions).json({

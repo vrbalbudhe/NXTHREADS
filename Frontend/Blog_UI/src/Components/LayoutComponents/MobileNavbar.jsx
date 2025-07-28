@@ -57,14 +57,16 @@ const MobileNavbar = ({ currentUser }) => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground  border-gray-300 dark:border-gray-700 pl-10 pr-10 py-3 flex justify-between items-center shadow-md">
+    <div
+      className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground  border-gray-300 dark:border-gray-700 pl-10 pr-10 py-3 flex ${currentUser?" justify-between":" justify-center gap-5"} items-center shadow-md`}
+    >
       {navItems.map(
         (item) =>
           (item.showAlways || (item.showLoggedIn && currentUser?.userId)) && (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition"
+              className="flex flex-col items-center text-gray-600 dark:text-gray-400 md:hover:text-blue-500 md:dark:hover:text-blue-400 transition"
             >
               {item.icon}
               {/* <span className="text-[10px] mt-0.5">{item.label}</span> */}
