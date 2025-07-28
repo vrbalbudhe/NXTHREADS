@@ -30,6 +30,11 @@ function Homepage() {
             navigateTo="/bloggers"
             imageUrl="https://media.licdn.com/dms/image/v2/C4D12AQEUyCwFDse_Kw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1645538181664?e=2147483647&v=beta&t=8U4jIdadXaFgSP9MuCJbCw_UxSWG1jT0kYt3IqZx6eA"
           />
+          <ShowcaseBanner
+            title="Discover Top Blogs"
+            navigateTo="/search"
+            imageUrl="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          />
         </div>
       </div>
 
@@ -37,7 +42,7 @@ function Homepage() {
         {/* 1. Show loading spinner */}
         {loading ? (
           <Spinner text="Fetching Posts" />
-        ) : currentUser?.userId ? (
+        ) : currentUser?.userId && currentUser ? (
           personalizedPosts.length > 0 ? (
             personalizedPosts.map((post) => (
               <PostCard key={post.id} post={post} currentUser={currentUser} />
@@ -72,11 +77,6 @@ function Homepage() {
 
       <div className="w-[20%] hidden md:flex">
         <div className="max-h-[calc(100vh-5rem)] space-y-2">
-          <ShowcaseBanner
-            title="Discover Top Blogs"
-            navigateTo="/search"
-            imageUrl="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          />
           <HotTopicsCard />
         </div>
       </div>
