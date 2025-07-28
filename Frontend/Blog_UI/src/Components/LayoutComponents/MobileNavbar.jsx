@@ -19,37 +19,37 @@ const MobileNavbar = ({ currentUser }) => {
 
   const navItems = [
     {
-      icon: <Home className="w-5 h-5" />,
+      icon: <Home className="w-7 h-7" />,
       label: "Home",
       path: "/",
       showAlways: true,
     },
     {
-      icon: <Search className="w-5 h-5" />,
+      icon: <Search className="w-7 h-7" />,
       label: "Search",
       path: "/search",
       showAlways: true,
     },
     {
-      icon: <PenSquare className="w-5 h-5" />,
+      icon: <PenSquare className="w-7 h-7" />,
       label: "Create",
       path: "/createBlog",
       showLoggedIn: true,
     },
     {
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="w-7 h-7" />,
       label: "Bloggers",
       path: "/bloggers",
       showLoggedIn: true,
     },
     {
-      icon: <MessageSquare className="w-5 h-5" />,
+      icon: <MessageSquare className="w-7 h-7" />,
       label: "Chat",
       path: "/chat",
       showLoggedIn: true,
     },
     {
-      icon: <User2Icon className="w-5 h-5" />,
+      icon: <User2Icon className="w-7 h-7" />,
       label: "Profile",
       path: `profile/${currentUser?.userId}`,
       showLoggedIn: true,
@@ -57,17 +57,17 @@ const MobileNavbar = ({ currentUser }) => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground border-t border-gray-300 dark:border-gray-700 px-4 py-2 flex justify-center gap-5 items-center shadow-md">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground  border-gray-300 dark:border-gray-700 pl-10 pr-10 py-3 flex justify-between items-center shadow-md">
       {navItems.map(
         (item) =>
           (item.showAlways || (item.showLoggedIn && currentUser?.userId)) && (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className="flex flex-col items-center text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition"
+              className="flex flex-col items-center text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition"
             >
               {item.icon}
-              <span className="text-[10px] mt-0.5">{item.label}</span>
+              {/* <span className="text-[10px] mt-0.5">{item.label}</span> */}
             </button>
           )
       )}

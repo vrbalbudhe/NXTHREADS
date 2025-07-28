@@ -19,7 +19,7 @@ function BloggersPage() {
         <div className="w-full h-fit overflow-auto flex flex-wrap justify-start items-center">
           <OnlyUserSearch />
         </div>
-        <div className="w-full h-full flex flex-wrap justify-start items-start gap-3">
+        <div className="w-full h-full flex flex-wrap justify-start items-start gap-2">
           {users?.length > 0 ? (
             users.map((user) => (
               <UserCard key={user.id} user={user} currentUser={currentUser} />

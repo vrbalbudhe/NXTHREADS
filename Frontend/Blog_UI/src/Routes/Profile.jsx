@@ -12,10 +12,10 @@ import { useFetchPostsByUserId } from "../Loaders/posts/useFetchPostsByUserId";
 
 const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
   return (
-    <div className="w-full mt-2 md:mt-5 mb-2 border border-slate-100 rounded-xl h-10 flex justify-between pr-1 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-gray-700">
+    <div className="w-full mt-2 md:mt-5 mb-2 border border-slate-300 rounded-2xl h-10 flex justify-between pr-1 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-gray-700">
       <div className="flex h-full justify-center items-center gap-2">
         <h1
-          className={`${!whatToShow ? " text-slate-800" : ""} font-semibold text-sm cursor-pointer rounded-sm px-2 py-1 -tracking-tighter text-white`}
+          className={`${!whatToShow ? " text-slate-800" : ""} font-semibold text-sm cursor-pointer rounded-sm px-2 py-1 -tracking-tighter dark:text-white`}
         >
           My Blogs
         </h1>
@@ -23,7 +23,7 @@ const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
       {isCurrentUser && (
         <button
           onClick={() => navigate("/createBlog")}
-          className="bg-darkPostCardBackground border border-gray-700 px-3 py-1 text-sm rounded-lg text-white font-bold"
+          className="bg-darkPostCardBackground border border-gray-700 px-3 py-1 text-sm rounded-2xl text-white font-bold"
         >
           Create Blog
         </button>
@@ -33,12 +33,7 @@ const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
 };
 const ProfileUserInformation = ({ currentUser, user, id }) => {
   return (
-    <div className="w-full h-fit select-none border-2 dark:border dark:border-gray-700 dark:bg-darkPostCardBackground  border-slate-200 shadow-md rounded-xl md:mb-2 pb-2 flex flex-col gap-2 justify-center md:justify-start items-start pl-5 pr-2 pt-2 mt-2">
-      {currentUser && (
-        <h1 className="font-bold text-slate-800 dark:text-darkBlue border-2 dark:border-none border-slate-300 px-1 py-1 rounded-md text-sm md:text-md -tracking-tighter">
-          <span>{user?.userId}</span>
-        </h1>
-      )}
+    <div className="w-full h-fit select-none border dark:border dark:border-gray-700 dark:bg-darkPostCardBackground  border-slate-300 rounded-2xl p-4 flex flex-col gap-2 justify-center md:justify-start items-start">
       <h1 className="font-semibold text-sm text-slate-800 dark:text-darkText ">
         Username: <span className="text-slate-500 ">{user?.username}</span>
       </h1>
@@ -172,8 +167,8 @@ function Profile() {
   };
 
   return (
-    <div className="w-full min-h-fit md:p-1 p-2 md:gap-3 md:flex justify-start items-start">
-      <div className="w-full md:w-[25%] rounded-3xl md:p-2 md:mt-14 lg:w-[30%] h-full flex flex-col justify-start items-start">
+    <div className="w-full min-h-fit md:p-1 p-2 md:gap-2 md:flex justify-start items-start">
+      <div className="w-full md:w-[25%] rounded-3xl md:p-2 md:mt-14 lg:w-[30%] gap-2 h-full flex flex-col justify-start items-start">
         <ProfileAvatar user={user} />
         {/* {showCard && (
           <div className="w-full h-full flex flex-col p-5 border border-slate-300 rounded-2xl shadow-md mb-2 justify-start items-center">
@@ -192,7 +187,7 @@ function Profile() {
         <div className="w-full hidden md:block">
           <BlogWriteBanner isCurrentUser={isCurrentUser} />
         </div>
-        <div className="hidden w-full h-fit md:block mt-2">
+        <div className="hidden w-full h-fit md:block">
           <HotTopicsCard />
         </div>
       </div>

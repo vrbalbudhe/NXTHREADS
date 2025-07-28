@@ -37,17 +37,17 @@ function SearchBar({ posts, users }) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-start">
+    <div className="w-full h-full flex flex-col items-center justify-center md:justify-start">
       <div className="flex w-full justify-center gap-2 items-center">
         <input
-          className="w-[100%] h-10 border-2 pl-5 dark:text-white dark:outline-none dark:bg-darkPostCardBg dark:border-gray-700 dark:border-2 border-slate-300 rounded-xl"
+          className="w-[100%] h-10 border pl-5 dark:text-white dark:outline-none dark:bg-darkPostCardBg dark:border-gray-700 dark:border border-gray-300 rounded-2xl"
           type="search"
           placeholder="Search by title, content, or user"
           value={searchTerm}
           onChange={handleSearch}
         />
         <button
-          className="py-1 text-xl dark:border-none dark:text-white text-black rounded-full shadow-xl border border-slate-300 px-1 hover:text-white hover:bg-slate-500"
+          className="py-2 text-xl dark:border-none bg-blue-500 dark:text-white text-black rounded-md shadow-xl border border-slate-300 px-2 hover:text-white hover:bg-slate-500"
           onClick={() => handleSearch({ target: { value: searchTerm } })}
         >
           <IoMdSearch />
@@ -63,11 +63,13 @@ function SearchBar({ posts, users }) {
                   ))
                 : ""}
             </div>
-            {filteredPosts.length > 0
-              ? filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))
-              : ""}
+            <div className="w-full h-fit flex flex-col justify-start items-center gap-2">
+              {filteredPosts.length > 0
+                ? filteredPosts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))
+                : ""}
+            </div>
           </>
         )}
       </div>

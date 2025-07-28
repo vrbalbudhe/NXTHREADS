@@ -8,27 +8,21 @@ function Register() {
   const [error, setError] = useState("");
   const [otpWindow, setOtpWindow] = useState(false);
   const [otp, setOtp] = useState("");
-  const [email, setEmail] = useState(""); // Keep track of email
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleRegistration = async (e) => {
     e.preventDefault();
     setError("");
-
-    const formData = new FormData(e.target);
-    const username = formData.get("username");
-    const email = formData.get("email");
-    const password = formData.get("password");
-
     try {
       const res = await axios.post(
         `${baseUrl}/api/auth/register`,
         { username, email, password },
         { withCredentials: true }
       );
-
       if (res.data.success) {
         setOtpWindow(true);
-        setEmail(email); // Store email to use in OTP submission
       }
     } catch (error) {
       setError(error.response?.data?.message || "An error occurred");
@@ -38,13 +32,11 @@ function Register() {
   const handleOtpVerification = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
       const res = await axios.post(`${baseUrl}/api/auth/verify-otp`, {
         email,
         otp,
       });
-
       if (res.data.success) {
         navigate("/login");
       }
@@ -58,107 +50,148 @@ function Register() {
   };
 
   return (
-    <div className="w-full min-h-[600px] flex justify-center items-center">
-      <div className="w-[90%] min-h-[200px] p-5 rounded-3xl flex justify-center items-center">
-        <div className="w-[70%] h-full flex flex-col justify-center items-center">
-          <h1 className="text-[50px] font-semibold dark:text-white text-slate-900 font-[Poppins]">
-            <span className="text-3xl font-bold text-red-500 font-[lato]">
-              NX
-            </span>
-            THREADS
-          </h1>
-          <h1 className="text-md font-normal text-slate-600 dark:text-white">
-            Sharing Stories, One Post at a Time
-          </h1>
-        </div>
+    <div className="w-full min-h-screen flex bg-white items-center justify-center select-none">
+      <div className="w-full overflow-hidden">
+        <div className="w-full h-full flex justify-center items-center md:flex-row flex-col">
+          <div className=" md:h-screen bg-red-400 bg-gradient-to-br from-gray-900 via-gray-800 to-black p-12 flex flex-col justify-center items-center text-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={`cloud-${i}`}
+                  className="absolute bg-white/20 rounded-full blur-sm animate-drift-clouds"
+                  style={{
+                    width: `${40 + Math.random() * 80}px`,
+                    height: `${20 + Math.random() * 40}px`,
+                    top: `${10 + Math.random() * 30}%`,
+                    left: `-${10 + Math.random() * 20}%`,
+                    animationDelay: `${i * 3}s`,
+                    animationDuration: `${20 + Math.random() * 15}s`,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="relative z-10 text-center">
+              <h2 className="text-2xl font-bold mb-4 text-white">
+                Welcome to NXTHREADS
+              </h2>
+              <p className="text-gray-300 text-center leading-relaxed max-w-sm">
+                Share your stories and connect with creative minds from around
+                the world. Your journey begins here.
+              </p>
+            </div>
+          </div>
 
-        {otpWindow ? (
-          <div className="w-[30%] h-full flex justify-center items-center">
-            <form
-              className="w-full h-full flex flex-col justify-center items-start gap-5"
-              onSubmit={handleOtpVerification}
-            >
-              <div className="w-full h-20 flex justify-start items-center">
-                <h1 className="font-bold text-slate-900 text-3xl">
-                  OTP Verification
+          <div className="p-12 w-2/5 flex flex-col justify-center bg-gray-50">
+            <div className="max-w-sm mx-auto w-full">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                  NXTHREADS
                 </h1>
+                <p className="text-gray-600">Create your account</p>
               </div>
-              <input
-                className="w-[80%] h-[40px] bg-slate-200 border border-slate-200 rounded-md pl-5 text-sm font-semibold text-zinc-700"
-                type="text"
-                name="otp"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                required
-              />
-              {error && <span className="text-red-500 text-sm">{error}</span>}
-              <button
-                type="submit"
-                className="bg-transparent border border-slate-400 px-3 py-1 text-sm rounded-lg hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
-              >
-                Verify OTP
-              </button>
-              <h1>
-                Already have an account?{" "}
-                <span
-                  onClick={handleNavigateRegisterBtn}
-                  className="text-blue-500 font-semibold hover:text-blue-400 cursor-pointer"
-                >
-                  Login
-                </span>
-              </h1>
-            </form>
+
+              {otpWindow ? (
+                <form onSubmit={handleOtpVerification} className="space-y-6">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Enter OTP
+                    </label>
+                    <input
+                      type="text"
+                      name="otp"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
+                      required
+                    />
+                    {error && (
+                      <p className="text-red-500 text-sm mt-1">{error}</p>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg"
+                  >
+                    Verify OTP
+                  </button>
+                  <p className="text-center text-gray-600">
+                    Already have an account?{" "}
+                    <span
+                      onClick={handleNavigateRegisterBtn}
+                      className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium"
+                    >
+                      Login
+                    </span>
+                  </p>
+                </form>
+              ) : (
+                <form onSubmit={handleRegistration} className="space-y-6">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      name="username"
+                      placeholder="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
+                      required
+                    />
+                    {error && (
+                      <p className="text-red-500 text-sm mt-1">{error}</p>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg"
+                  >
+                    Next
+                  </button>
+                  <p className="text-center text-gray-600">
+                    Already have an account?{" "}
+                    <span
+                      onClick={handleNavigateRegisterBtn}
+                      className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium"
+                    >
+                      Login
+                    </span>
+                  </p>
+                </form>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="w-[30%] h-full flex justify-center items-center">
-            <form
-              className="w-full h-full flex flex-col justify-center items-start gap-5"
-              onSubmit={handleRegistration}
-            >
-              <div className="w-full h-20 flex justify-start items-center">
-                <h1 className="font-bold text-slate-900 text-3xl">Register</h1>
-              </div>
-              <input
-                className="w-[80%] h-[40px] bg-slate-200 border border-slate-200 rounded-md pl-5 text-sm font-semibold text-zinc-700"
-                type="text"
-                name="username"
-                placeholder="Username"
-                required
-              />
-              <input
-                className="w-[80%] h-[40px] bg-slate-200 border border-slate-200 rounded-md pl-5 text-sm font-semibold text-zinc-700"
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-              />
-              <input
-                className="w-[80%] h-[40px] bg-slate-200 border border-slate-200 rounded-md pl-5 text-sm font-semibold text-zinc-700"
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-              />
-              {error && <span className="text-red-500 text-sm">{error}</span>}
-              <button
-                type="submit"
-                className="bg-transparent border border-slate-400 px-3 py-1 text-sm rounded-lg hover:bg-blue-400 hover:text-white text-slate-800 font-bold"
-              >
-                Next
-              </button>
-              <h1>
-                Already have an account?{" "}
-                <span
-                  onClick={handleNavigateRegisterBtn}
-                  className="text-blue-500 font-semibold hover:text-blue-400 cursor-pointer"
-                >
-                  Login
-                </span>
-              </h1>
-            </form>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

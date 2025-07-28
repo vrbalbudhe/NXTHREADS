@@ -17,21 +17,23 @@ import {
 import axios from "axios";
 import { toast } from "react-toastify";
 import MobileNavbar from "./MobileNavbar";
+import DarkToggleButton from "./DarkToggleButton";
 
 const Api = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 const NavbarLogo = () => {
+  const navigate = useNavigate();
   return (
-    <div className="flex items-center space-x-2 select-none">
-      {/* <img
-        className="w-10 h-10 rounded-full object-cover"
-        src="/favicon.jpg"
+    <div
+      onClick={() => navigate("/")}
+      className="flex items-center space-x-2 select-none"
+    >
+      <img
+        className="w-8 h-8 text-white rounded-full object-cover"
+        src="/chat_darkmode.png"
         alt="Logo"
-      /> */}
-      <h1
-        onClick={() => navigate("/")}
-        className="text-md font-medium text-blue-600 dark:text-white cursor-pointer hover:underline"
-      >
+      />
+      <h1 className="text-md font-medium text-gray-800 dark:text-white cursor-pointer">
         NXTHREADS
       </h1>
     </div>
@@ -40,7 +42,6 @@ const NavbarLogo = () => {
 
 const NavbarNavigationTray = ({ currentUser }) => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navItems = [
     {
@@ -81,10 +82,6 @@ const NavbarNavigationTray = ({ currentUser }) => {
     // },
   ];
 
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDarkMode(!isDarkMode);
-  };
   return (
     <div className="hidden md:flex items-center space-x-3">
       {navItems.map(
@@ -100,16 +97,7 @@ const NavbarNavigationTray = ({ currentUser }) => {
           )
       )}
 
-      <button
-        onClick={toggleDarkMode}
-        className="flex items-center text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition"
-      >
-        {isDarkMode ? (
-          <Sun className="w-5 h-5" />
-        ) : (
-          <Moon className="w-5 h-5" />
-        )}
-      </button>
+      <DarkToggleButton />
     </div>
   );
 };
@@ -137,6 +125,9 @@ const NavbarUserProfileSection = ({ currentUser }) => {
 
   return (
     <div className="flex items-center space-x-4">
+      <div className="md:hidden block">
+        <DarkToggleButton />
+      </div>
       {currentUser?.userId ? (
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -156,8 +147,8 @@ const NavbarUserProfileSection = ({ currentUser }) => {
             </button>
 
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-40 px-2 bg-white dark:bg-darkPostCardBackground rounded-lg shadow-lg border dark:border-gray-700 py-2">
-                <div className="w-full px-2 flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="absolute right-0 mt-2 w-44 px-2 bg-white dark:bg-darkPostCardBackground rounded-lg shadow-lg border dark:border-gray-700 py-2">
+                <div className="w-full px-3 flex justify-center items-center md:hover:bg-gray-100 rounded-2xl md:dark:hover:bg-gray-700">
                   <User2 color="white" />
                   <button
                     onClick={() => {
@@ -169,7 +160,7 @@ const NavbarUserProfileSection = ({ currentUser }) => {
                     {currentUser?.username || "Profile"}
                   </button>
                 </div>
-                <div className="w-full px-2 flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="w-full px-3 flex justify-center items-center md:hover:bg-gray-100 rounded-2xl md:dark:hover:bg-gray-700">
                   <LogOutIcon color="white" />
                   <button
                     onClick={() => {
@@ -189,13 +180,13 @@ const NavbarUserProfileSection = ({ currentUser }) => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate("/register")}
-            className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-800 transition"
+            className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white border border-gray-700 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-800 transition"
           >
             Register
           </button>
           <button
             onClick={() => navigate("/login")}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 text-sm font-medium bg-darkPostCardBackground text-white dark:text-gray-700 dark:bg-white rounded-lg transition"
           >
             Login
           </button>

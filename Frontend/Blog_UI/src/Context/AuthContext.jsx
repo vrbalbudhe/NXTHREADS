@@ -33,8 +33,8 @@ export const AuthContextProvider = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="spinner">Loading...</div>{" "}
+      <div className="flex items-center select-none pointer-events-none justify-center h-screen">
+        <div className="spinner text-gray-200">Loading...</div>{" "}
       </div>
     );
   }

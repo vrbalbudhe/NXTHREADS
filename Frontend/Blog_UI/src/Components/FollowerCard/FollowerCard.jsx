@@ -8,7 +8,7 @@ const FollowerUserCard = ({ follower }) => {
   return (
     <div
       key={follower.id}
-      className="flex items-center bg-darkPostCardBackground dark:border-gray-700 border gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-darkBackground cursor-pointer mb-2"
+      className="flex items-center dark:bg-darkPostCardBackground border-gray-400 dark:border-gray-700 border gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-darkBackground cursor-pointer mb-2"
     >
       <div className="relative">
         <img
@@ -54,7 +54,7 @@ function FollowerCard({ userId }) {
   });
 
   return (
-    <div className="w-[100%] h-fit flex justify-start items-start p-4 dark:bg-darkPostCardBackground border border-gray-700 flex-col rounded-lg shadow-sm ">
+    <div className="w-[100%] h-fit flex justify-start items-start p-4 dark:bg-darkPostCardBackground border border-gray-400  dark:border-gray-700 flex-col rounded-2xl shadow-sm ">
       <div className="w-full flex justify-between items-center mb-4 gap-2">
         <div className="flex gap-2 items-center">
           <Users className="h-5 w-5 text-gray-400 mb-2" />
@@ -65,13 +65,16 @@ function FollowerCard({ userId }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search..."
-          className="rounded-md px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-darkPostCardBackground text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="rounded-md px-2 py-1 text-sm border border-gray-400 dark:border-gray-700 bg-white dark:bg-darkPostCardBackground text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
           style={{ minWidth: 120 }}
         />
       </div>
       {filteredFollowers.length === 0 && (
-        <div className="w-full h-10 flex justify-center items-center dark:border-darkBlue dark:border rounded-2xl">
-          <p className="dark:text-slate-400 text-sm ">No Followers</p>
+        <div className="w-full flex flex-col items-center justify-center py-8 text-center">
+          <Users className="h-12 w-12 text-gray-400 mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No followers yet
+          </p>
         </div>
       )}
       <div className="min-h-[10px] w-full overflow-y-auto pr-2">

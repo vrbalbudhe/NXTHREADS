@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
 
 const categories = [
   "Technology",
@@ -24,7 +25,8 @@ const categories = [
   "Personal_Development",
 ];
 
-function Filter({ users }) {
+function Filter() {
+  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [query, setQuery] = useState({
@@ -44,22 +46,35 @@ function Filter({ users }) {
     }));
   };
 
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  useEffect(() => {
+    setQuery({
+      category: searchParams.get("category") || "",
+      author: searchParams.get("author") || "",
+    });
+  }, [searchParams]);
+
   return (
-    <div className="w-full h-fit dark:border-none flex flex-col mt-10 rounded-md justify-center items-center gap-2">
+    <div className="w-full h-fit dark:border-none flex flex-col rounded-md justify-center items-center gap-2">
       <select
-        className=" w-full text-xs pl-2 font-semibold dark:text-white dark:bg-darkPostCardBg text-slate-700 h-12 rounded-md border border-gray-200 dark:border-gray-200"
+        className="w-full text-xs pl-2 font-semibold dark:text-white dark:bg-darkPostCardBg text-slate-700 h-12 rounded-2xl border border-gray-200 dark:border-gray-700"
         name="category"
         value={query.category}
         onChange={handleInputChange}
       >
+        <option value="">Select a category</option>
         {categories.map((category) => (
-          <option className="" value="">
-            {category}
+          <option key={category} value={category}>
+            {category.replace(/_/g, " ")}
           </option>
         ))}
       </select>
+
       <select
-        className="pl-2 w-full text-xs font-semibold dark:bg-darkPostCardBg text-slate-700 min-h-12 dark:text-white rounded-lg border border-gray-200 dark:border-gray-200"
+        className="pl-2 w-full text-xs font-semibold dark:bg-darkPostCardBg text-slate-700 min-h-12 dark:text-white rounded-2xl border border-gray-200 dark:border-gray-700"
         name="author"
         value={query.author}
         onChange={handleInputChange}

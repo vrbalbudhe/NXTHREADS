@@ -4,7 +4,7 @@ import PostActionButtons from "./PostActionButtons";
 
 function PostCard({ post, currentUser }) {
   return (
-    <div className="w-full bg-white dark:bg-darkPostCardBg dark:border shadow-lg border border-gray-200 rounded-2xl dark:border-gray-700">
+    <div className="w-full bg-white dark:bg-darkPostCardBg dark:border dark:shadow-lg border border-gray-300 shadow-md rounded-2xl dark:border-gray-700">
       <PostHeader post={post} />
       <PostMidLayout post={post} />
       <PostActionButtons post={post} currentUser={currentUser} />

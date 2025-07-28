@@ -37,8 +37,7 @@ function UserCard({ user, currentUser }) {
   if (currentUser?.userId === user.id) return null;
 
   return (
-    <div className="w-full md:w-[150px] flex md:flex-col items-center justify-between md:justify-start px-3 py-2 md:p-2 bg-white dark:bg-darkPostCardBg border-b md:border dark:border-gray-700 rounded-lg shadow-sm">
-      {/* Avatar */}
+    <div className="w-full md:w-[150px] flex md:flex-col items-center justify-between md:justify-start px-3 py-2 md:p-2 bg-white dark:bg-darkPostCardBg border border-gray-400 dark:border-gray-700 rounded-2xl shadow-md">
       <div
         onClick={() => navigate(`/profile/${user.id}`)}
         className="flex items-center md:flex-col gap-3 md:gap-2 cursor-pointer md:w-full"
@@ -58,7 +57,6 @@ function UserCard({ user, currentUser }) {
         </div>
       </div>
 
-      {/* Follow Button */}
       {currentUser && (
         <button
           onClick={handleFollowSwitch}

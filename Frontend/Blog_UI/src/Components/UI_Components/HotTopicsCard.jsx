@@ -33,7 +33,7 @@ function HotTopicsCard() {
           <div
             key={index}
             onClick={() => navigate(`/list?category=${category}&author=`)}
-            className="dark:text-white dark:bg-darkPostCardBackground dark:border px-2 py-4 cursor-pointer rounded-md border-2 hover:border-sky-400 border-gray-500"
+            className="dark:text-white dark:bg-darkPostCardBackground dark:border px-2 py-4 cursor-pointer rounded-2xl border hover:border-sky-400 border-gray-400 dark:border-gray-600"
           >
             <h3 className="text-xs font-semibold hover:text-blue-400">
               {category}

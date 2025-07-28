@@ -175,7 +175,7 @@ const CommentOpenSection = ({ post, currentUser }) => {
           name="description"
           value={commentData}
           onChange={handleInputChange}
-          className="flex-1 p-3 rounded-b-lg bg-[#1B1B1B] border dark:border-gray-700 dark:text-white"
+          className="flex-1 p-3 rounded-b-lg dark:bg-[#1B1B1B] border border-gray-400 dark:border-gray-700 dark:text-white"
           placeholder="Add a comment..."
           rows="2"
         />
@@ -191,7 +191,7 @@ const CommentOpenSection = ({ post, currentUser }) => {
         {comments.map((com) => (
           <div
             key={com.id}
-            className="bg-gray-50 dark:bg-[#494F55] border border-gray-700 rounded-br-xl rounded-tl-xl p-4 shadow-sm"
+            className="bg-gray-50 dark:bg-[#494F55] border border-gray-400 dark:border-gray-700 rounded-2xl p-4 shadow-md"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
@@ -201,13 +201,13 @@ const CommentOpenSection = ({ post, currentUser }) => {
                     "https://static.vecteezy.com/system/resources/previews/020/911/740/non_2x/user-profile-icon-profile-avatar-user-icon-male-icon-face-icon-profile-icon-free-png.png"
                   }
                   alt="User Avatar"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-8 h-8 border border-gray-400 rounded-full object-cover"
                 />
                 <div>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {com?.user?.fullname}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                  <span className="text-sm text-gray-500 dark:text-white ">
                     @{com?.user?.username}
                   </span>
                 </div>

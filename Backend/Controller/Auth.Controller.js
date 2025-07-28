@@ -6,7 +6,6 @@ const crypto = require("crypto");
 const prisma = require("../lib/prisma");
 const jwt = require("jsonwebtoken");
 
-// Utility function to send OTP email
 const sendOtpEmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -26,7 +25,6 @@ const sendOtpEmail = async (email, otp) => {
   await transporter.sendMail(mailOptions);
 };
 
-// Register function
 const register = asyncHandler(async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -74,7 +72,6 @@ const register = asyncHandler(async (req, res) => {
   }
 });
 
-// OTP finalization function
 const optFinalization = asyncHandler(async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -125,7 +122,6 @@ const optFinalization = asyncHandler(async (req, res) => {
   }
 });
 
-// Login function
 const login = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -155,7 +151,6 @@ const login = asyncHandler(async (req, res) => {
       });
     }
 
-    // Generating the Token Data
     const tokenData = {
       userId: user.id,
       username: user.username,
@@ -168,12 +163,11 @@ const login = asyncHandler(async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Cookie options
     const CookieOptions = {
       httpOnly: true,
-      maxAge: 1000 * 60 * 105, // 105 minutes
-      sameSite: "None", // Corrected to "sameSite"
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 1000 * 60 * 105,
+      sameSite: "None",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       path: "/"
     };
 
@@ -192,7 +186,6 @@ const login = asyncHandler(async (req, res) => {
   }
 });
 
-// Logout function
 const logout = asyncHandler(async (req, res) => {
   try {
     res.clearCookie("token");

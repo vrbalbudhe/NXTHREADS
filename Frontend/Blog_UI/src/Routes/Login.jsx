@@ -106,6 +106,7 @@ function Login() {
         },
         { withCredentials: true }
       );
+      console.log(res)
       if (res.data.success) {
         setCurrentUser({
           userId: res.data?.userInfo?.id,

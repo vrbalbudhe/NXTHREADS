@@ -19,15 +19,13 @@ function Slider({ post, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center overflow-hidden z-50">
-      {/* Close Button */}
       <div
-        className="absolute  dark:text-white top-4 right-4 w-10 h-10 flex items-center justify-center text-black text-2xl cursor-pointer hover:scale-90 transition-transform duration-300"
+        className="absolute  dark:text-white top-2 right-4 w-10 h-10 flex items-center justify-center text-black text-2xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={() => onClose(false)}
       >
         <FaTimes />
       </div>
 
-      {/* Previous Button */}
       <div
         className="absolute  dark:text-white top-1/2 left-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={handlePrevClick}
@@ -35,8 +33,7 @@ function Slider({ post, onClose }) {
         <FaCaretLeft />
       </div>
 
-      {/* Slider Content */}
-      <div className="relative w-[90%] h-full flex items-center justify-center overflow-hidden">
+      <div className="relative w-[90%] h-1/2 md:h-full flex items-center justify-center overflow-hidden">
         {post.images.length > 0 && (
           <>
             {post.images.map((image, index) => (
@@ -70,7 +67,6 @@ function Slider({ post, onClose }) {
         )}
       </div>
 
-      {/* Next Button */}
       <div
         className="absolute dark:text-white top-1/2 right-0 transform -translate-y-1/2 w-16 h-16 flex items-center justify-center text-black text-4xl cursor-pointer hover:scale-90 transition-transform duration-300"
         onClick={handleNextClick}

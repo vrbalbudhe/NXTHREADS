@@ -15,7 +15,7 @@ const FollowingUserCard = ({ follower }) => {
     <div
       key={follower.id}
       onClick={() => handleProfileClick(follower.following.id)}
-      className="flex items-center bg-darkPostCardBackground dark:border-gray-700 border gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-darkBackground cursor-pointer mb-2"
+      className="flex items-center dark:bg-darkPostCardBackground border-gray-400 dark:border-gray-700 border gap-4 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-darkBackground cursor-pointer mb-2"
     >
       <div className="relative">
         <img
@@ -76,7 +76,7 @@ const FollowingCard = ({ userId }) => {
   }
 
   return (
-    <div className="w-full  bg-white dark:bg-darkPostCardBackground border border-gray-700 rounded-lg shadow-md p-4">
+    <div className="w-full  bg-white dark:bg-darkPostCardBackground border border-gray-400 dark:border-gray-700 rounded-2xl shadow-md p-4">
       <div className="flex items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />

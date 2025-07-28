@@ -8,7 +8,7 @@ import Filter from "../Components/Filter/Filter";
 
 function PageCategoryHeading({ category, count }) {
   return (
-    <div className="w-full p-2 md:p-0 mt-5 min-h-[150px] flex flex-col justify-center items-start gap-3">
+    <div className="w-full p-2 md:p-0 min-h-[150px] flex flex-col justify-center items-start gap-3">
       <h1 className="md:text-4xl text-3xl font-medium text-gray-800 dark:text-white">
         {category}
       </h1>
@@ -50,20 +50,20 @@ function ListPage() {
           {Array.isArray(queryPosts) && queryPosts.length > 0 ? (
             queryPosts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (
-            <div className="w-full h-[400px] flex justify-center items-center">
+            <div className="w-full h-[400px] select-none pointer-events-none flex justify-center items-center">
               <img
                 className="w-[100px] h-auto"
-                src="https://cdn-icons-png.flaticon.com/512/7466/7466073.png"
+                src="/sad.png"
                 alt=""
               />
-              <h1 className="text-slate-800 font-semibold text-xl bg-yellow-100 px-2 py-1 rounded-md">
+              <h1 className="text-slate-800 dark:text-gray-200 font-medium text-md px-2 py-1 rounded-md">
                 No Blogs Found!
               </h1>
             </div>
           )}
         </div>
       </div>
-      <div className="md:w-[25%] h-full flex flex-col gap-5 justify-center items-center">
+      <div className="md:w-[25%] h-full hidden  md:flex flex-col gap-5 justify-center items-center">
         <Filter users={users} />
         <HotTopicsCard />
       </div>

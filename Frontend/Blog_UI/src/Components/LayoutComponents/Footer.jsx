@@ -11,11 +11,11 @@ function BrandSection() {
       <div className="flex items-center space-x-2">
         <img
           className="w-8 h-8 rounded-full object-cover"
-          src="/favicon.jpg"
+          src="/chat_darkmode.png"
           alt="NEXTHREADS Logo"
         />
-        <span className="text-lg font-bold text-gray-900 dark:text-white">
-          NEXTHREADS
+        <span className="text-md font-medium text-gray-900 dark:text-white">
+          NXTHREADS
         </span>
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
@@ -125,8 +125,8 @@ function CopyrightSection() {
 
 function Footer() {
   return (
-    <footer className="w-full border dark:border-none border-slate-100 shadow-lg text-white py-6 bg-inherit dark:bg-inherit">
-      <div className="max-w-6xl mx-auto px-4">
+    <footer className="w-full border dark:border-none border-slate-100 text-white py-6 bg-inherit dark:bg-inherit">
+      <div className="w-full mx-auto px-4">
         <div className="py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <BrandSection />

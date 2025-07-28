@@ -1,15 +1,31 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
-const DarkToggleButton = ({ toggleDarkMode }) => {
+const DarkToggleButton = () => {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
+
   return (
     <button
       onClick={toggleDarkMode}
-      className="px-2 py-1 text-xs border rounded-md transition-colors duration-300 
-                 bg-white text-black border-gray-300 
-                 dark:bg-gray-800 dark:text-white dark:border-gray-600 
-                 hover:bg-gray-100 dark:hover:bg-gray-700"
+      className="flex items-center text-gray-700 dark:text-gray-300 md:dark:hover:text-gray-500 transition"
     >
-      Dark Mode
+      {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
     </button>
   );
 };
