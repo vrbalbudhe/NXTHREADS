@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
@@ -29,12 +30,12 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     fetchUser();
-  });
+  }, []); // ✅ Runs only once on mount
 
   if (loading) {
     return (
-      <div className="flex items-center select-none pointer-events-none justify-center h-screen">
-        <div className="spinner text-gray-200">Loading...</div>{" "}
+      <div className="flex items-center justify-center h-screen bg-white dark:bg-black">
+        <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full"></div>
       </div>
     );
   }
