@@ -3,12 +3,13 @@ import { AuthContext } from "../Context/AuthContext";
 import { useContext, useState, useEffect } from "react";
 import PostCard from "../Components/PostCard/PostCard";
 import BlogWriteBanner from "../Components/UI_Components/BlogWriteBanner";
-import DialogBox from "../Components/DialogBox/DialogBox";
+import DialogBox from "../Components/LayoutComponents/DialogBox";
 import { useNavigate, useParams } from "react-router-dom";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import FollowersCard from "../Components/FollowersCard/FollowersCard";
 import { useFetchUserById } from "../Loaders/users/useFetchUserById";
 import { useFetchPostsByUserId } from "../Loaders/posts/useFetchPostsByUserId";
+import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
 
 const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
   return (
@@ -69,7 +70,7 @@ const FollowingAndFollowerCard = ({
 }) => {
   return (
     <div className="w-full md:w-[70%] h-full md:mt-[68px]">
-      <div className="w-full md:h-60 md:flex justify-between items-center">
+      <div className="w-full h-32 md:h-60 md:flex justify-between items-center">
         <FollowersCard
           key={currentUser?.userId}
           post={userPosts}
@@ -98,10 +99,10 @@ const ProfileUserPosts = ({ userPosts, whatToShow, loading }) => {
 };
 const ProfileAvatar = ({ user }) => {
   return (
-    <div className="w-full h-fit flex justify-start flex-col items-center">
+    <div className="w-full h-fit flex justify-start flex-col items-center select-none pointer-events-none">
       <div className=" w-full md:mb-4 rounded-full flex justify-start md:justify-center items-start">
         <img
-          className="w-full h-40 md:w-60 md:h-60 object-cover dark:border-none rounded-xl md:rounded-full border-2 border-white"
+          className="w-full h-44 md:w-60 md:h-60 object-cover dark:border-none rounded-xl md:rounded-full border-2 border-white"
           src={
             user?.avatar ||
             "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg"
@@ -170,12 +171,7 @@ function Profile() {
     <div className="w-full min-h-fit md:p-1 p-2 md:gap-2 md:flex justify-start items-start">
       <div className="w-full md:w-[25%] rounded-3xl md:p-2 md:mt-14 lg:w-[30%] gap-2 h-full flex flex-col justify-start items-start">
         <ProfileAvatar user={user} />
-        {/* {showCard && (
-          <div className="w-full h-full flex flex-col p-5 border border-slate-300 rounded-2xl shadow-md mb-2 justify-start items-center">
-            <UpdateCard upd={info.user} />
-          </div>
-        )} */}
-        <div className="block md:hidden">
+        <div className="w-full block md:hidden select-none pointer-events-none">
           <FollowingAndFollowerCard
             userPosts={userPosts}
             currentUser={currentUser}
@@ -183,6 +179,9 @@ function Profile() {
             totalFollowing={totalFollowing}
           />
         </div>
+        {currentUser?.userId && (
+          <CompleteProfileCard currentUser={currentUser} />
+        )}
         <ProfileUserInformation user={user} currentUser={currentUser} id={id} />
         <div className="w-full hidden md:block">
           <BlogWriteBanner isCurrentUser={isCurrentUser} />

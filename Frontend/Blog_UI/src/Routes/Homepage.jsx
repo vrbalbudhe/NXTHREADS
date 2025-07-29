@@ -7,6 +7,8 @@ import Spinner from "../Components/LayoutComponents/Spinner";
 import BlogWriteBanner from "../Components/UI_Components/BlogWriteBanner";
 import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
 import { useFetchPersonalizedPosts } from "../Loaders/posts/useFetchPersonalizedPosts";
+import FollowSuggestionCard from "../Components/UI_Components/FollowSuggestionCard";
+import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
 
 function Homepage() {
   const { currentUser } = useContext(AuthContext);
@@ -22,24 +24,19 @@ function Homepage() {
   return (
     <div className="w-full h-full mt-5 flex gap-3">
       <div className="w-[20%] hidden md:flex">
-        <div className="max-h-[calc(100vh-5rem)] space-y-2">
-          <BlogWriteBanner isCurrentUser={currentUser?.id} />
+        <div className="min-h-[calc(100vh-5rem)] space-y-2">
+          <BlogWriteBanner isCurrentUser={currentUser?.userId} />
           <ShowcaseBanner
             title="Connect with Top Bloggers"
             subtitle="Follow and engage with creators you love"
             navigateTo="/bloggers"
             imageUrl="https://media.licdn.com/dms/image/v2/C4D12AQEUyCwFDse_Kw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1645538181664?e=2147483647&v=beta&t=8U4jIdadXaFgSP9MuCJbCw_UxSWG1jT0kYt3IqZx6eA"
           />
-          <ShowcaseBanner
-            title="Discover Top Blogs"
-            navigateTo="/search"
-            imageUrl="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          />
+          <FollowSuggestionCard />
         </div>
       </div>
 
       <div className="w-full md:w-[60%] flex flex-col items-center justify-start gap-3">
-        {/* 1. Show loading spinner */}
         {loading ? (
           <Spinner text="Fetching Posts" />
         ) : currentUser?.userId && currentUser ? (
@@ -70,14 +67,22 @@ function Homepage() {
               src="/sad.png"
               alt="sad_error_image"
             />
-            <p className="text-white">No Posts Found!</p>
+            <Spinner text="No Posts Found!" />
           </div>
         )}
       </div>
 
       <div className="w-[20%] hidden md:flex">
         <div className="max-h-[calc(100vh-5rem)] space-y-2">
+          {currentUser.userId && (
+            <CompleteProfileCard currentUser={currentUser} />
+          )}
           <HotTopicsCard />
+          <ShowcaseBanner
+            title="Discover Top Blogs"
+            navigateTo="/search"
+            imageUrl="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          />
         </div>
       </div>
     </div>

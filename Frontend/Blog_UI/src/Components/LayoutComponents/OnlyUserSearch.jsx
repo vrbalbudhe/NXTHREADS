@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
-import UserCard from "../../Components/UserCard/UserCard";
+import UserCard from "../UserCard/UserCard";
 import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
 
 function OnlyUserSearch() {

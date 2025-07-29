@@ -149,7 +149,9 @@ const NavbarUserProfileSection = ({ currentUser }) => {
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-44 px-2 bg-white dark:bg-darkPostCardBackground rounded-lg shadow-lg border dark:border-gray-700 py-2">
                 <div className="w-full px-3 flex justify-center items-center md:hover:bg-gray-100 rounded-2xl md:dark:hover:bg-gray-700">
-                  <User2 color="white" />
+                  <span className="text-gray-800 dark:text-white">
+                    <User2 />
+                  </span>
                   <button
                     onClick={() => {
                       navigate(`/profile/${currentUser?.userId}`);
@@ -161,7 +163,9 @@ const NavbarUserProfileSection = ({ currentUser }) => {
                   </button>
                 </div>
                 <div className="w-full px-3 flex justify-center items-center md:hover:bg-gray-100 rounded-2xl md:dark:hover:bg-gray-700">
-                  <LogOutIcon color="white" />
+                  <span className="text-gray-800 dark:text-white">
+                    <LogOutIcon />
+                  </span>
                   <button
                     onClick={() => {
                       handleLogout();
@@ -200,7 +204,7 @@ function Navbar() {
   const { currentUser } = useContext(AuthContext);
 
   return (
-    <nav className="w-full sticky top-0 bg-gray-50 dark:bg-darkBackground z-50">
+    <nav className="w-full sticky top-0 bg-white dark:bg-darkBackground z-50">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <NavbarLogo />

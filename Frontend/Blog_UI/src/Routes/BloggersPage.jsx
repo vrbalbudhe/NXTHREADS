@@ -1,10 +1,10 @@
 import { Suspense, useContext, useEffect } from "react";
 import UserCard from "../Components/UserCard/UserCard";
-import OnlyUserSearch from "../Components/OnlyUserSearch/OnlyUserSearch";
 import FollowerCard from "../Components/FollowerCard/FollowerCard";
 import { AuthContext } from "../Context/AuthContext";
 import FollowingCard from "../Components/FollowingCard/FollowingCard";
 import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
+import OnlyUserSearch from "../Components/LayoutComponents/OnlyUserSearch";
 
 function BloggersPage() {
   const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();

@@ -4,7 +4,7 @@ import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
 import { useFetchQueryPosts } from "../Loaders/posts/useFetchQueryPosts";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import PostCard from "../Components/PostCard/PostCard";
-import Filter from "../Components/Filter/Filter";
+import Filter from "../Components/LayoutComponents/Filter";
 
 function PageCategoryHeading({ category, count }) {
   return (

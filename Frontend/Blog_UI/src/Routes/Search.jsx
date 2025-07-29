@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useContext } from "react";
-import Filter from "../Components/Filter/Filter";
+import Filter from "../Components/LayoutComponents/Filter";
 import PostCard from "../Components/PostCard/PostCard";
-import NextPrevious from "../Components/NextPrevious/NextPrevious";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import SearchBar from "../Components/SearchBar/SearchBar";
 import { useFetchPosts } from "../Loaders/posts/useFetchAllPosts";
 import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
 import { AuthContext } from "../Context/AuthContext";
 import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
+import NextPrevious from "../Components/LayoutComponents/NextPrevious";
 
 function Search() {
   const { posts, loadPosts, error } = useFetchPosts();

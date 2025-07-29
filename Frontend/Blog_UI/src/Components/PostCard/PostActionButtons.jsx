@@ -19,7 +19,7 @@ import {
   fetchAllPosts,
 } from "../../ReduxThunkSlice/PostSlice";
 import { useNavigate } from "react-router-dom";
-import DialogBox from "../DialogBox/DialogBox";
+import DialogBox from "../LayoutComponents/DialogBox";
 
 const LikeUnlikeActions = ({ post, currentUser }) => {
   const navigate = useNavigate();
