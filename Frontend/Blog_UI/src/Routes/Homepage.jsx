@@ -25,7 +25,9 @@ function Homepage() {
     <div className="w-full h-full mt-5 flex gap-3">
       <div className="w-[20%] hidden md:flex">
         <div className="min-h-[calc(100vh-5rem)] space-y-2">
-          <BlogWriteBanner isCurrentUser={currentUser?.userId} />
+          {currentUser?.userId && (
+            <BlogWriteBanner isCurrentUser={currentUser?.userId} />
+          )}
           <ShowcaseBanner
             title="Connect with Top Bloggers"
             subtitle="Follow and engage with creators you love"

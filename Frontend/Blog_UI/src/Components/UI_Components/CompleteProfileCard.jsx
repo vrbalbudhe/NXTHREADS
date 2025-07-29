@@ -10,7 +10,7 @@ function CompleteProfileCard({ currentUser }) {
   if (isProfileComplete) return null;
 
   return (
-    <div className="border border-gray-300 select-none bg-darkPostCardBackground shadow-md w-full min-h-40 p-1 rounded-2xl dark:border-gray-700">
+    <div className="border border-gray-300 select-none bg-white dark:bg-darkPostCardBackground shadow-md w-full min-h-40 p-1 rounded-2xl dark:border-gray-700">
       <div className="w-full p-1 min-h-12 flex justify-start items-center gap-2 border-b border-gray-300 dark:border-gray-700">
         <span className="text-yellow-500">
           <GemIcon size={20} />
