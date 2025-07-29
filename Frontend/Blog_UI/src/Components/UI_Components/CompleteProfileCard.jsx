@@ -5,9 +5,11 @@ function CompleteProfileCard({ currentUser }) {
   const navigate = useNavigate();
 
   const isProfileComplete =
-    currentUser?.username && currentUser?.avatar && currentUser?.bio;
+    !!currentUser?.username?.trim() &&
+    !!currentUser?.avatar?.trim() &&
+    !!currentUser?.bio?.trim();
 
-  if (isProfileComplete) return null;
+  if (!currentUser || isProfileComplete) return null;
 
   return (
     <div className="border border-gray-300 select-none bg-white dark:bg-darkPostCardBackground shadow-md w-full min-h-40 p-1 rounded-2xl dark:border-gray-700">
@@ -27,7 +29,7 @@ function CompleteProfileCard({ currentUser }) {
         </p>
 
         <button
-          onClick={() => navigate(`/profile/${currentUser?.userId}`)}
+          onClick={() => navigate(`/profile/${currentUser.userId}`)}
           className="w-fit text-xs font-semibold px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-blue-700 transition"
         >
           Complete Now

@@ -17,6 +17,7 @@ function Homepage() {
   const { posts, loadPosts } = useFetchPosts();
 
   useEffect(() => {
+    if (!currentUser?.userId) return;
     loadPosts();
     loadPersonalizedPosts();
   }, [currentUser?.userId]);
@@ -76,7 +77,7 @@ function Homepage() {
 
       <div className="w-[20%] hidden md:flex">
         <div className="max-h-[calc(100vh-5rem)] space-y-2">
-          {currentUser.userId && (
+          {currentUser?.userId && (
             <CompleteProfileCard currentUser={currentUser} />
           )}
           <HotTopicsCard />

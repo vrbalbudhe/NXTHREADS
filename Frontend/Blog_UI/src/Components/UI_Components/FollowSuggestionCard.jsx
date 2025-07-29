@@ -10,7 +10,9 @@ function FollowSuggestionCard() {
   const [visibleCount, setVisibleCount] = useState(4);
 
   useEffect(() => {
-    loadUsers();
+    if (currentUser?.userId && (!users || users.length === 0)) {
+      loadUsers();
+    }
   }, [currentUser?.userId]);
 
   const handleShowMore = () => {

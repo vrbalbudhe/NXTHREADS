@@ -10,18 +10,20 @@ const FALLBACK_AVATAR_URL =
 function SuggestionUserCard({ user, currentUser }) {
   const navigate = useNavigate();
   const { handleFollowUnfollow } = useFollowUnfollowUser();
-  const { isFollowing, checkFollowing } = useCheckIsFollowing();
+  const { checkFollowing } = useCheckIsFollowing();
+
+  const [isFollowing, setIsFollowing] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
 
   useEffect(() => {
     const fetchFollowStatus = async () => {
-      if (currentUser?.userId && user.id) {
-        await checkFollowing({
-          followerId: currentUser.userId,
-          followingId: user.id,
-        });
-        setCheckDone(true);
-      }
+      if (!currentUser?.userId || !user?.id) return;
+      const result = await checkFollowing({
+        followerId: currentUser.userId,
+        followingId: user.id,
+      });
+      setIsFollowing(result === true);
+      setCheckDone(true);
     };
     fetchFollowStatus();
   }, [user.id, currentUser?.userId]);
@@ -34,10 +36,13 @@ function SuggestionUserCard({ user, currentUser }) {
       userData: user,
       isCurrentlyFollowing: isFollowing,
     });
-    await checkFollowing({
+
+    // Re-check follow status after action
+    const result = await checkFollowing({
       followerId: currentUser.userId,
       followingId: user.id,
     });
+    setIsFollowing(result === true);
   };
 
   if (currentUser?.userId === user.id) return null;
@@ -60,7 +65,7 @@ function SuggestionUserCard({ user, currentUser }) {
           </span>
           {user?.fullname && (
             <span className="text-xs font-normal text-gray-900 dark:text-gray-300 truncate">
-              @{user?.fullname}
+              @{user.fullname}
             </span>
           )}
         </div>
