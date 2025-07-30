@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useRef } from "react";
 
-const UploadWindow = ({ setImageUrls }) => {
+const UploadWindow = ({ imageUrls = [], setImageUrls }) => {
   const cloudinaryRef = useRef();
   const widgetRef = useRef();
 
@@ -11,51 +11,84 @@ const UploadWindow = ({ setImageUrls }) => {
       {
         cloudName: "dbbcwngff",
         uploadPreset: "nthreads",
-        multiple: true, // Allow multiple uploads
-        cropping: true, // Enable cropping
-        showAdvancedOptions: true, // Show advanced options
-        theme: "dark", // Change to 'dark' for a dark theme
+        multiple: true,
+        cropping: false,
+        showAdvancedOptions: false,
+        theme: "dark",
         styles: {
           palette: {
-            window: "#ffffff", // White background
-            windowBorder: "#dddddd", // Light grey border
-            tabIcon: "#000000", // Black icon color
-            menuIcons: "#000000", // Black menu icons
-            textDark: "#000000", // Black text for dark mode
-            textLight: "#000000", // Black text
-            link: "#1e90ff", // Bright blue for links
-            action: "#ff4500", // Orange for actions (like delete)
-            inactiveTabIcon: "#aaaaaa", // Light grey for inactive tabs
-            error: "#ff4500", // Orange for error messages
-            inProgress: "#1e90ff", // Bright blue for progress
-            complete: "#32cd32", // Lime green for completed actions
-            empty: "#ffffff", // White background for empty states
-            selected: "#1e90ff", // Bright blue for selected items
-            header: "#1e90ff", // Bright blue for header
-            dropdown: "#1e90ff", // Matching blue for dropdowns
-            blue: "#1e90ff", // Consistent blue throughout
+            window: "#ffffff",
+            windowBorder: "#dddddd",
+            tabIcon: "#000000",
+            menuIcons: "#000000",
+            textDark: "#000000",
+            textLight: "#000000",
+            link: "#1e90ff",
+            action: "#ff4500",
+            inactiveTabIcon: "#aaaaaa",
+            error: "#ff4500",
+            inProgress: "#1e90ff",
+            complete: "#32cd32",
+            empty: "#ffffff",
+            selected: "#1e90ff",
+            header: "#1e90ff",
+            dropdown: "#1e90ff",
+            blue: "#1e90ff",
           },
         },
       },
       (error, result) => {
+        if (error) {
+          console.error("Upload error:", error);
+          return;
+        }
+
         if (result.event === "success") {
           const uploadedImageUrl = result.info.secure_url;
-          console.log("Upload successful:", uploadedImageUrl);
-          setImageUrls((prevUrls) => [...prevUrls, uploadedImageUrl]);
-        } else if (error) {
-          console.error("Upload error:", error);
+          setImageUrls((prev) => [...prev, uploadedImageUrl]);
         }
       }
     );
   }, [setImageUrls]);
 
+  const handleRemoveImage = (urlToRemove) => {
+    setImageUrls((prev) => prev.filter((url) => url !== urlToRemove));
+  };
+
   return (
-    <button
-      className="text-xs px-2 py-2 bg-blue-400 text-white font-semibold rounded hover:bg-blue-500"
-      onClick={() => widgetRef.current.open()}
-    >
-      Upload Pics
-    </button>
+    <div className="w-full flex flex-col gap-4">
+      <button
+        type="button"
+        onClick={() => widgetRef.current.open()}
+        className="w-fit text-xs px-3 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
+      >
+        Upload Images
+      </button>
+
+      {imageUrls.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {imageUrls.map((url, idx) => (
+            <div
+              key={idx}
+              className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-300"
+            >
+              <img
+                src={url}
+                alt={`uploaded-${idx}`}
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(url)}
+                className="absolute top-0 right-0 bg-red-600 text-white text-xs px-[6px] py-[1px] rounded-bl-md hover:bg-red-700 z-10"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

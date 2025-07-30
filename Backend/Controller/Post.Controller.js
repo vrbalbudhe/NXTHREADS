@@ -203,13 +203,45 @@ const createPosts = asyncHandler(async (req, res) => {
   }
 });
 
-const updatePosts = asyncHandler(async (req, res) => {
+const updatePost = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, subtitle, category, author, content, images } = req.body;
+
   try {
+    const existingPost = await prisma.posts.findUnique({
+      where: { id },
+    });
+
+    if (!existingPost) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found.",
+      });
+    }
+
+    const updatedPost = await prisma.posts.update({
+      where: { id },
+      data: {
+        ...(title && { title }),
+        ...(subtitle && { subtitle }),
+        ...(category && { category }),
+        ...(author && { author }),
+        ...(content && { content }),
+        ...(Array.isArray(images) && { images }),
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Post updated successfully.",
+      data: updatedPost,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(501).json({
-      message: "Failed to UpdatePost",
+    console.error("Update Post Error:", error.message);
+    return res.status(500).json({
       success: false,
+      message: "Failed to update post.",
+      error: error.message,
     });
   }
 });
@@ -336,7 +368,7 @@ const getFollowersPost = asyncHandler(async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "User ID is required in params" });
     }
-    
+
     const followedUsers = await prisma.follows.findMany({
       where: { followerId: userId },
       select: { followingId: true },
@@ -380,12 +412,67 @@ const getFollowersPost = asyncHandler(async (req, res) => {
   }
 });
 
+const getPostById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const post = await prisma.posts.findMany({
+      where: { id: id },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        savedPosts: true,
+        User: {
+          select: {
+            password: false,
+            avatar: true,
+          },
+        },
+        comment: {
+          include: {
+            user: true,
+            post: {
+              include: {
+                User: {
+                  select: {
+                    password: false,
+                    fullname: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!post) {
+      return res.status(403).json({
+        message: "Post Not Found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      posts: post || [],
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(501).json({
+      message: "Failed to GetPost",
+      success: false,
+    });
+  }
+});
+
 
 module.exports = {
   getPost,
   getAllPosts,
+  getPostById,
   deletePosts,
-  updatePosts,
+  updatePost,
   createPosts,
   getPostUrl,
   favUnfavPost,

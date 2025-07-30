@@ -12,8 +12,11 @@ import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 
 function Homepage() {
   const { currentUser } = useContext(AuthContext);
-  const { personalizedPosts, loading: loadingPersonalized, loadPersonalizedPosts } =
-    useFetchPersonalizedPosts(currentUser?.userId);
+  const {
+    personalizedPosts,
+    loading: loadingPersonalized,
+    loadPersonalizedPosts,
+  } = useFetchPersonalizedPosts(currentUser?.userId);
   const { posts, loading: loadingPosts, loadPosts } = useFetchPosts();
 
   useEffect(() => {
@@ -26,7 +29,7 @@ function Homepage() {
   return (
     <div className="w-full h-full mt-5 flex gap-3">
       <div className="w-[20%] hidden md:flex">
-        <div className="min-h-[calc(100vh-5rem)] space-y-2">
+        <div className="w-full min-h-[calc(100vh-5rem)] space-y-2">
           {currentUser?.userId && (
             <BlogWriteBanner isCurrentUser={currentUser?.userId} />
           )}

@@ -12,10 +12,8 @@ export const useFetchPostsByUserId = (id) => {
           setUserPostsLoading(true);
           try {
                const response = await dispatch(fetchPostsByUserId(id)).unwrap();
-               console.log(response)
                setUserPosts(response);
           } catch (err) {
-               console.error("Error loading user:", err);
                setError(err);
           } finally {
                setUserPostsLoading(false);

@@ -4,10 +4,13 @@ import { useNavigate } from "react-router-dom";
 function CompleteProfileCard({ currentUser }) {
   const navigate = useNavigate();
 
-  const isProfileComplete =
-    !!currentUser?.username?.trim() &&
-    !!currentUser?.avatar?.trim() &&
-    !!currentUser?.bio?.trim();
+  const missingFields = [];
+
+  if (!currentUser?.avatar?.trim()) missingFields.push("Avatar");
+  if (!currentUser?.fullname?.trim()) missingFields.push("Fullname");
+  if (!currentUser?.gender?.trim()) missingFields.push("Gender");
+
+  const isProfileComplete = missingFields.length === 0;
 
   if (!currentUser || isProfileComplete) return null;
 
@@ -24,9 +27,14 @@ function CompleteProfileCard({ currentUser }) {
 
       <div className="w-full p-2 flex flex-col gap-3">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          To get the most out of your experience, complete your profile with an
-          avatar, bio, and username.
+          To get the most out of your experience, please complete your profile:
         </p>
+
+        <ul className="list-disc list-inside text-xs text-red-500">
+          {missingFields.map((field) => (
+            <li key={field}>{field}</li>
+          ))}
+        </ul>
 
         <button
           onClick={() => navigate(`/profile/${currentUser.userId}`)}

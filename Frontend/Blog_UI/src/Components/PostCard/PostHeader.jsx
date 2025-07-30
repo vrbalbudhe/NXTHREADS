@@ -1,5 +1,14 @@
-import { Ban, Calendar, Clock, Flag, Info, MoreVertical } from "lucide-react";
-import React, { useState } from "react";
+import {
+  Ban,
+  Calendar,
+  Clock,
+  Edit,
+  Flag,
+  Info,
+  MoreVertical,
+} from "lucide-react";
+import React, { useContext, useState } from "react";
+import { AuthContext } from "../../Context/AuthContext";
 
 const UserHeadingSection = ({ post }) => {
   const UndefinedImage =
@@ -64,11 +73,25 @@ const PostHeaderDropDownMenu = () => {
   );
 };
 
-function PostHeader({ post }) {
+const UpdateButton = ({ onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="text-gray-800 dark:text-gray-300 select-none hover:text-blue-600 transition"
+    >
+      <Edit size={18} />
+    </button>
+  );
+};
+
+function PostHeader({ post, setShowEditor }) {
+  const { currentUser } = useContext(AuthContext);
   return (
     <div className="p-4 flex items-center justify-between border-b dark:border-gray-700">
       <UserHeadingSection post={post} />
-      <PostHeaderDropDownMenu />
+      {currentUser?.userId === post?.userId && (
+        <UpdateButton onClick={() => setShowEditor(true)} />
+      )}
     </div>
   );
 }

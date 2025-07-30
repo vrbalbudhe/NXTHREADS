@@ -38,7 +38,7 @@ function Search() {
   };
 
   return (
-    <div className="w-full min-h-[500px] md:flex justify-start items-start mt-5 gap-2">
+    <div className="w-full min-h-screen md:flex justify-start items-start mt-5 gap-2">
       <div className="w-full md:w-[20%] h-full hidden  md:flex flex-col gap-5 justify-center items-start">
         <HotTopicsCard />
       </div>
@@ -49,8 +49,10 @@ function Search() {
         </div>
         <div className="w-full h-fit flex flex-col gap-3">
           {posts.length === 0 ? (
-            <div className="w-full min-h-[400px] flex justify-center items-center">
-              <p className="text-lg">No posts found</p>
+            <div className="w-full min-h-[500px] flex justify-center items-center">
+              <p className="text-lg dark:text-white text-gray-800">
+                No posts found
+              </p>
             </div>
           ) : (
             posts
@@ -67,7 +69,7 @@ function Search() {
         <NextPrevious prev={handlePrev} next={handleNext} />
       </div>
       <div className="w-full md:w-[20%] h-full hidden  md:flex flex-col gap-5 justify-center items-start">
-        <Filter/>
+        <Filter />
         <ShowcaseBanner
           title="Discover Top Blogs"
           navigateTo="/search"

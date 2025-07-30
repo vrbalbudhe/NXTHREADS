@@ -188,7 +188,9 @@ function CreateBlog() {
       console.log("Blog post created:", res.data);
       console.log("Submitting blogData:", blogData);
       console.log("Submitting imageUrls:", imageUrls);
-      navigate(`/profile/${currentUser?.userId}`);
+      if (res?.data) {
+        navigate(`/profile/${currentUser?.userId}`);
+      }
     } catch (error) {
       console.error("Error creating blog:", error);
     }
@@ -196,7 +198,7 @@ function CreateBlog() {
 
   return (
     <form className="w-full h-full p-2 md:p-0" onSubmit={handleCreateBlog}>
-      <div className="w-full h-full flex flex-col-reverse gap-4 md:gap-0 md:flex-row justify-center items-start">
+      <div className="w-full h-full flex flex-col-reverse gap-4 md:gap-3 md:flex-row justify-center items-start">
         <LeftSideContainer setImageUrls={setImageUrls} />
         <BlogForm blogData={blogData} handleInputChange={handleInputChange} />
       </div>

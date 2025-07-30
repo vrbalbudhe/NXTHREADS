@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
+const bcrypt = require("bcrypt");
 
 const getUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
@@ -95,48 +96,48 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { fullname, gender, avatar } = req.body;
-
+  const {
+    password,
+    fullname,
+    gender,
+    avatar,
+    verified,
+  } = req.body;
   try {
-    // console.log("fullname: ", fullname);
-    // console.log("id: ", id);
-    // console.log("gender: ", gender);
-    // console.log("avatar: ", avatar);
-
-    let imageUrls = avatar || [];
-
-    const findUser = await prisma.user.findUnique({
-      where: {
-        id: id,
-      },
-    });
+    const findUser = await prisma.user.findUnique({ where: { id } });
 
     if (!findUser) {
-      return res.status(401).json({
-        message: "Unable to find the user",
+      return res.status(404).json({
+        message: "User not found",
         success: false,
       });
     }
 
-    const updateUser = await prisma.user.update({
-      where: {
-        id: id,
-      },
-      data: {
-        fullname: fullname,
-        gender: gender,
-        avatar: imageUrls,
-      },
+    let updatedFields = {
+      ...(fullname !== undefined && { fullname }),
+      ...(gender !== undefined && { gender }),
+      ...(avatar !== undefined && { avatar }),
+      ...(typeof verified === "boolean" && { verified }),
+    };
+
+    if (password && password.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedFields.password = hashedPassword;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: updatedFields,
     });
 
     return res.status(200).json({
       message: "User updated successfully",
       success: true,
-      data: updateUser,
+      data: updatedUser,
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Failed to Update_User",
+      message: "Failed to update user",
       success: false,
       error: error.message,
     });

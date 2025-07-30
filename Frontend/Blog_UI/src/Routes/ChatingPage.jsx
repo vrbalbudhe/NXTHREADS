@@ -20,7 +20,11 @@ function UserListPanel({ users, handleClickUserData, loading, currentUser }) {
           </p>
         ) : users?.length > 0 ? (
           users.map((user) => (
-            <div className="w-fit md:w-full" key={user.id} onClick={() => handleClickUserData(user)}>
+            <div
+              className="w-fit md:w-full"
+              key={user.id}
+              onClick={() => handleClickUserData(user)}
+            >
               <ChatUserCard user={user} currentUser={currentUser} />
             </div>
           ))

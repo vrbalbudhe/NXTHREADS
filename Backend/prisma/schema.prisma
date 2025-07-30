@@ -8,22 +8,22 @@ datasource db {
 }
 
 model User {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  username   String       @unique
-  email      String       @unique
-  password   String
-  fullname   String?
-  gender     String?
-  avatar     String?
-  verified   Boolean      @default(false)
-  createdAt  DateTime     @default(now())
-  posts      posts[]
-  savedPosts savedPosts[]
-  followers  Follows[]    @relation("following")
-  following  Follows[]    @relation("follower")
-  comment    comment[]
-  Like       Like[]
-  Unlike     Unlike[]
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  username    String       @unique
+  email       String       @unique
+  password    String
+  fullname    String?
+  gender      String?
+  avatar      String?
+  verified    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  posts       posts[]
+  savedPosts  savedPosts[]
+  followers   Follows[]    @relation("following")
+  following   Follows[]    @relation("follower")
+  comment     comment[]
+  Like        Like[]
+  Unlike      Unlike[]
 }
 
 model Otp {

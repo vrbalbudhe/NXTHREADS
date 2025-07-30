@@ -4,12 +4,13 @@ const {
   getPost,
   getPostUrl,
   getAllPosts,
-  updatePosts,
+  updatePost,
   deletePosts,
   createPosts,
   favUnfavPost,
   getFavoritePosts,
   getFollowersPost,
+  getPostById,
 } = require("../Controller/Post.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 const {
@@ -22,11 +23,13 @@ router.get("/fltr", getPostUrl);
 router.get("/:id", getPost);
 router.get("/", getAllPosts);
 router.post("/", verifyToken, createPosts);
-router.put("/:id", verifyToken, updatePosts);
+router.put("/upd/:id", updatePost);
 router.delete("/:id", deletePosts);
 
 router.post("/fav", verifyToken, favUnfavPost);
 router.get("/fav/:id", verifyToken, getFavoritePosts);
+
+router.get("/get/:id", getPostById);
 
 router.post("/like", likePost);
 router.post("/unlike", unlikePost);

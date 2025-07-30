@@ -14,6 +14,7 @@ import BloggersPage from "./Routes/BloggersPage.jsx";
 import SinglePostPage from "./Routes/SinglePostPage.jsx";
 import ChatingPage from "./Routes/ChatingPage.jsx";
 import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
+import Blog from "./Routes/Blog.jsx";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/profile/:id", element: <Profile /> },
       { path: "/createBlog", element: <CreateBlog /> },
+      { path: "/blog/:id", element: <Blog /> },
       { path: "/:id", element: <SinglePostPage /> },
       { path: "/chat", element: <ChatingPage /> },
       { path: "/bloggers", element: <BloggersPage /> },

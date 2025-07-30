@@ -14,6 +14,6 @@ router.get("/", getUsers);
 router.get("/:id", getUser);
 router.get("/foll/:id", verifyToken, getUserFollowStatus);
 router.delete("/:id", verifyToken, deleteUser);
-router.post("/:id", verifyToken, updateUser);
+router.put("/upd/:id", updateUser);
 
 module.exports = router;
