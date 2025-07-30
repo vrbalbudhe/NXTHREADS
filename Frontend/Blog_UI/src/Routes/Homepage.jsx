@@ -1,26 +1,27 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { useFetchPosts } from "../Loaders/posts/useFetchAllPosts";
+import { useFetchPersonalizedPosts } from "../Loaders/posts/useFetchPersonalizedPosts";
 import PostCard from "../Components/PostCard/PostCard";
-import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import Spinner from "../Components/LayoutComponents/Spinner";
 import BlogWriteBanner from "../Components/UI_Components/BlogWriteBanner";
 import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
-import { useFetchPersonalizedPosts } from "../Loaders/posts/useFetchPersonalizedPosts";
 import FollowSuggestionCard from "../Components/UI_Components/FollowSuggestionCard";
 import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
+import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 
 function Homepage() {
   const { currentUser } = useContext(AuthContext);
-  const { personalizedPosts, error, loading, loadPersonalizedPosts } =
+  const { personalizedPosts, loading: loadingPersonalized, loadPersonalizedPosts } =
     useFetchPersonalizedPosts(currentUser?.userId);
-  const { posts, loadPosts } = useFetchPosts();
+  const { posts, loading: loadingPosts, loadPosts } = useFetchPosts();
 
   useEffect(() => {
-    if (!currentUser?.userId) return;
-    loadPosts();
-    loadPersonalizedPosts();
+    currentUser?.userId ? loadPersonalizedPosts() : loadPosts();
   }, [currentUser?.userId]);
+
+  const isLoading = currentUser?.userId ? loadingPersonalized : loadingPosts;
+  const postList = currentUser?.userId ? personalizedPosts : posts;
 
   return (
     <div className="w-full h-full mt-5 flex gap-3">
@@ -40,27 +41,10 @@ function Homepage() {
       </div>
 
       <div className="w-full md:w-[60%] flex flex-col items-center justify-start gap-3">
-        {loading ? (
+        {isLoading ? (
           <Spinner text="Fetching Posts" />
-        ) : currentUser?.userId && currentUser ? (
-          personalizedPosts.length > 0 ? (
-            personalizedPosts.map((post) => (
-              <PostCard key={post.id} post={post} currentUser={currentUser} />
-            ))
-          ) : (
-            <div className="w-full h-[500px] select-none pointer-events-none flex flex-col justify-center items-center">
-              <img
-                className="w-20 h-20 md:w-28 md:h-28"
-                src="/sad.png"
-                alt="sad_error_image"
-              />
-              <p className="text-white">
-                Follow Bloggers To Get Personalized Posts!
-              </p>
-            </div>
-          )
-        ) : posts.length > 0 ? (
-          posts.map((post) => (
+        ) : postList.length > 0 ? (
+          postList.map((post) => (
             <PostCard key={post.id} post={post} currentUser={currentUser} />
           ))
         ) : (
@@ -70,7 +54,11 @@ function Homepage() {
               src="/sad.png"
               alt="sad_error_image"
             />
-            <Spinner text="No Posts Found!" />
+            <p className="text-white">
+              {currentUser?.userId
+                ? "Follow Bloggers To Get Personalized Posts!"
+                : "No Posts Found!"}
+            </p>
           </div>
         )}
       </div>
