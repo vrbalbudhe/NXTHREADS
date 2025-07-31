@@ -81,7 +81,7 @@ function Register() {
             </div>
           </div>
 
-          <div className="p-12 w-2/5 flex flex-col justify-center bg-gray-50">
+          <div className="p-12 w-full md:w-2/5 flex flex-col justify-center bg-gray-50">
             <div className="max-w-sm mx-auto w-full">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
