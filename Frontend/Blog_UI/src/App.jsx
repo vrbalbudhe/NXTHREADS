@@ -25,6 +25,7 @@ const router = createBrowserRouter([
       { path: "/list", element: <ListPage /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/policy", element: <PrivacyPolicy /> },
+      { path: "/blog/:id", element: <Blog /> },
     ],
   },
   {
@@ -33,7 +34,6 @@ const router = createBrowserRouter([
     children: [
       { path: "/profile/:id", element: <Profile /> },
       { path: "/createBlog", element: <CreateBlog /> },
-      { path: "/blog/:id", element: <Blog /> },
       { path: "/:id", element: <SinglePostPage /> },
       { path: "/chat", element: <ChatingPage /> },
       { path: "/bloggers", element: <BloggersPage /> },

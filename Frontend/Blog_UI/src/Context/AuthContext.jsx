@@ -30,7 +30,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []); // ✅ Runs only once on mount
+  }, []); 
 
   if (loading) {
     return (
