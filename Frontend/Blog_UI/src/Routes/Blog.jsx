@@ -88,7 +88,9 @@ export default function Blog() {
     const fetchBlog = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
-        const res = await axios.get(`${baseUrl}/api/post/get/${id}`);
+        const res = await axios.get(`${baseUrl}/api/post/get/${id}`, {
+          withCredentials: true
+        });
         setBlog(res?.data?.posts[0]);
       } catch (err) {
         setError("Failed to load the blog.");
