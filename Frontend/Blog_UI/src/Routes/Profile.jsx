@@ -12,6 +12,8 @@ import { useFetchPostsByUserId } from "../Loaders/posts/useFetchPostsByUserId";
 import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
 import UpdateCard from "../Components/LayoutComponents/UpdateCard";
 import { X } from "lucide-react";
+import Spinner from "../Components/LayoutComponents/Spinner";
+import PostSkeleton from "../Components/PostCard/PostSkeleton";
 
 const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
   return (
@@ -111,18 +113,21 @@ const FollowingAndFollowerCard = ({
 const ProfileUserPosts = ({ userPosts, whatToShow, loading, currentUser }) => {
   return (
     <div className="w-full flex flex-wrap gap-2">
-      {!whatToShow ? (
-        userPosts ? (
+      {loading ? (
+        [...Array(4)].map((_, i) => <PostSkeleton key={i} />)
+      ) : !whatToShow ? (
+        userPosts && userPosts.length > 0 ? (
           userPosts.map((post) => (
             <PostCard key={post.id} post={post} currentUser={currentUser} />
           ))
         ) : (
-          <div className=" text-center min-h-[200px]"></div>
+          <div className="w-full text-center min-h-[200px] text-gray-500 dark:text-gray-300">
+            No posts available
+          </div>
         )
-      ) : (
-        ""
-      )}
-      {!loading && <div className="text-center min-h-[500px] w-full"></div>}
+      ) : null}
+
+      {!loading && userPosts?.length > 4 && <Spinner />}
     </div>
   );
 };

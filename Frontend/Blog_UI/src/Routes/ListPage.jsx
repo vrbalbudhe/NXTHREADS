@@ -51,11 +51,7 @@ function ListPage() {
             queryPosts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (
             <div className="w-full h-[400px] select-none pointer-events-none flex justify-center items-center">
-              <img
-                className="w-[100px] h-auto"
-                src="/sad.png"
-                alt=""
-              />
+              <img className="w-[100px] h-auto" src="/sad.png" alt="" />
               <h1 className="text-slate-800 dark:text-gray-200 font-medium text-md px-2 py-1 rounded-md">
                 No Blogs Found!
               </h1>

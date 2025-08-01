@@ -9,6 +9,7 @@ import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
 import FollowSuggestionCard from "../Components/UI_Components/FollowSuggestionCard";
 import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
+import PostSkeleton from "../Components/PostCard/PostSkeleton";
 
 function Homepage() {
   const { currentUser } = useContext(AuthContext);
@@ -45,7 +46,11 @@ function Homepage() {
 
       <div className="w-full md:w-[60%] flex flex-col items-center justify-start gap-3">
         {isLoading ? (
-          <Spinner text="Fetching Posts" />
+          <>
+            {[...Array(5)].map((_, index) => (
+              <PostSkeleton key={index} />
+            ))}
+          </>
         ) : postList.length > 0 ? (
           postList.map((post) => (
             <PostCard key={post.id} post={post} currentUser={currentUser} />

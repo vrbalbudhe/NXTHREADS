@@ -26,6 +26,7 @@ const router = createBrowserRouter([
       { path: "/about", element: <AboutPage /> },
       { path: "/policy", element: <PrivacyPolicy /> },
       { path: "/blog/:id", element: <Blog /> },
+      { path: "/search", element: <Search /> },
     ],
   },
   {
@@ -37,7 +38,6 @@ const router = createBrowserRouter([
       { path: "/:id", element: <SinglePostPage /> },
       { path: "/chat", element: <ChatingPage /> },
       { path: "/bloggers", element: <BloggersPage /> },
-      { path: "/search", element: <Search /> },
     ],
   },
   { path: "/register", element: <Register /> },
