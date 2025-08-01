@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const getUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
