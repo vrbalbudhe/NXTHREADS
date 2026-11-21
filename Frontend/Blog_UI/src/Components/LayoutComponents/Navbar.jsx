@@ -57,12 +57,6 @@ const NavbarNavigationTray = ({ currentUser }) => {
       showAlways: true,
     },
     {
-      icon: <PenSquare className="w-5 h-5" />,
-      label: "Create",
-      path: "/createBlog",
-      showLoggedIn: true,
-    },
-    {
       icon: <Users className="w-5 h-5" />,
       label: "Bloggers",
       path: "/bloggers",

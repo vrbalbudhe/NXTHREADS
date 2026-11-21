@@ -1,10 +1,11 @@
 import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
 import { useFetchQueryPosts } from "../Loaders/posts/useFetchQueryPosts";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import PostCard from "../Components/PostCard/PostCard";
 import Filter from "../Components/LayoutComponents/Filter";
+import { AuthContext } from "../Context/AuthContext";
 
 function PageCategoryHeading({ category, count }) {
   return (
@@ -25,6 +26,7 @@ function PageCategoryHeading({ category, count }) {
 }
 
 function ListPage() {
+  const { currentUser } = useContext(AuthContext);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const queryParamsObj = Object.fromEntries([...queryParams.entries()]);
@@ -48,7 +50,9 @@ function ListPage() {
         />
         <div className="w-full h-full flex flex-col gap-4">
           {Array.isArray(queryPosts) && queryPosts.length > 0 ? (
-            queryPosts.map((post) => <PostCard key={post.id} post={post} />)
+            queryPosts.map((post) => (
+              <PostCard key={post.id} post={post} currentUser={currentUser} />
+            ))
           ) : (
             <div className="w-full h-[400px] select-none pointer-events-none flex justify-center items-center">
               <img className="w-[100px] h-auto" src="/sad.png" alt="" />

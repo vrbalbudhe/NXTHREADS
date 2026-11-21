@@ -16,6 +16,7 @@ import Spinner from "../Components/LayoutComponents/Spinner";
 import PostSkeleton from "../Components/PostCard/PostSkeleton";
 
 const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
+  const navigate = useNavigate();
   return (
     <div className="w-full mt-2 md:mt-5 mb-2 border border-slate-300 rounded-2xl h-10 flex justify-between pr-1 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-gray-700">
       <div className="flex h-full justify-center items-center gap-2">

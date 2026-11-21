@@ -17,9 +17,8 @@ export const syncUsersToFirebase = async (currentUserId) => {
 
           console.log("Making request to:", `${baseUrl}/api/userfollow/following/${currentUserId}`);
 
-          const response = await axios.post(
+          const response = await axios.get(
                `${baseUrl}/api/userfollow/following/${currentUserId}`,
-               {},
                { withCredentials: true }
           );
 

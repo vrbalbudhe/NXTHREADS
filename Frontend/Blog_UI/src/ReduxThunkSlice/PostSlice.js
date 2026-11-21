@@ -20,7 +20,7 @@ export const fetchAllPosts = createAsyncThunk(
      "posts/fetchAllPosts",
      async (_, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/post`);
+               const res = await axios.get(`${Api}/post`, { withCredentials: true });
                return res?.data?.posts;
           } catch (error) {
                const message =
@@ -35,7 +35,7 @@ export const fetchQueryPosts = createAsyncThunk(
      async (queryParams, thunkAPI) => {
           try {
                const query = new URLSearchParams(queryParams).toString();
-               const res = await axios.get(`${Api}/post/fltr?${query}`);
+               const res = await axios.get(`${Api}/post/fltr?${query}`, { withCredentials: true });
                return res.data.posts;
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -46,7 +46,7 @@ export const fetchQueryPosts = createAsyncThunk(
 export const fetchPostsByUserId = createAsyncThunk("posts/fetchPostsByUserId",
      async (id, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/post/${id}`);
+               const res = await axios.get(`${Api}/post/${id}`, { withCredentials: true });
                return res.data.posts;
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -58,7 +58,7 @@ export const deletePost = createAsyncThunk(
      "posts/deletePost",
      async ({ postId }, thunkAPI) => {
           try {
-               await axios.delete(`${Api}/post/${postId}`);
+               await axios.delete(`${Api}/post/${postId}`, { withCredentials: true });
                return { postId };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -70,7 +70,7 @@ export const likePostThunk = createAsyncThunk(
      'posts/likePost',
      async ({ postId, userId }, thunkAPI) => {
           try {
-               const res = await axios.post(`${Api}/post/like`, { postId, userId });
+               const res = await axios.post(`${Api}/post/like`, { postId, userId }, { withCredentials: true });
                return { postId };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -82,7 +82,7 @@ export const unlikePostThunk = createAsyncThunk(
      'posts/unlikePost',
      async ({ postId, userId }, thunkAPI) => {
           try {
-               const res = await axios.post(`${Api}/post/unlike`, { postId, userId });
+               const res = await axios.post(`${Api}/post/unlike`, { postId, userId }, { withCredentials: true });
                return { postId };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -94,7 +94,7 @@ export const fetchPostLikeStatus = createAsyncThunk(
      'posts/fetchLikeStatus',
      async ({ postId, userId }, thunkAPI) => {
           try {
-               const res = await axios.post(`${Api}/post/likecheck`, { postId, userId });
+               const res = await axios.post(`${Api}/post/likecheck`, { postId, userId }, { withCredentials: true });
                return { postId, isLiked: res.data.isLiked, isUnliked: res.data.isUnliked };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -106,7 +106,7 @@ export const fetchCommentsByPostId = createAsyncThunk(
      "posts/fetchCommentsByPostId",
      async (postId, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/comment/${postId}`);
+               const res = await axios.get(`${Api}/comment/${postId},`, { withCredentials: true });
                return { postId, comments: res.data.data };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -122,7 +122,7 @@ export const createCommentThunk = createAsyncThunk(
                     postId,
                     commentor,
                     description,
-               });
+               }, { withCredentials: true });
                return { postId, comment: res.data.newComment };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -134,7 +134,7 @@ export const deleteCommentThunk = createAsyncThunk(
      "posts/deleteComment",
      async ({ commentId, postId }, thunkAPI) => {
           try {
-               await axios.delete(`${Api}/comment/delete/${commentId}`);
+               await axios.delete(`${Api}/comment/delete/${commentId}`, { withCredentials: true });
                return { commentId, postId };
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
@@ -146,7 +146,7 @@ export const personalizedPostsThunk = createAsyncThunk(
      "posts/personalizedPosts",
      async ({ userId }, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/post/gfp/${userId}`);
+               const res = await axios.get(`${Api}/post/gfp/${userId}`, { withCredentials: true });
                return res.data;
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);

@@ -6,7 +6,10 @@ const {
   sendMessage,
   receiveMessage,
 } = require("../Controller/Chat.Controller");
-// Get, Send and Receive Routes
+const verifyToken = require("../Middleware/verifyToken");
+
+router.use(verifyToken);
+
 router.post("/getUsr", getUsers);
 router.post("/send", sendMessage);
 router.post("/receive", receiveMessage);

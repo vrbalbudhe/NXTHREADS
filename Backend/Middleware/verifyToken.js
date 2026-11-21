@@ -1,23 +1,30 @@
 const jwt = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
-const verifyToken = asyncHandler(async (req, res, next, err) => {
-  const token = req.cookies.token;
+const { jwtSecret } = require("../Config/env");
+
+const readSession = (req) => {
+  const token = req.cookies?.token;
   if (!token) {
+    return null;
+  }
+  try {
+    return jwt.verify(token, jwtSecret, { algorithms: ["HS256"] });
+  } catch {
+    return null;
+  }
+};
+
+const verifyToken = (req, res, next) => {
+  const payload = readSession(req);
+  if (!payload?.userId) {
     return res.status(401).json({
-      message: "User is Not Authenticated",
       success: false,
+      message: "Authentication required",
     });
   }
-  jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, payload) => {
-    if (err) {
-      return res.status(401).json({
-        message: "User is Not Authenticated",
-        success: false,
-      });
-    }
-    req.userId = payload.userId; // Important Statement
-    next();
-  });
-});
+  req.userId = payload.userId;
+  req.session = payload;
+  return next();
+};
 
 module.exports = verifyToken;
+module.exports.readSession = readSession;

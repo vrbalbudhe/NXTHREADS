@@ -14,7 +14,7 @@ export const fetchAllUsers = createAsyncThunk(
      "users/fetchAllUsers",
      async (_, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/user`);
+               const res = await axios.get(`${Api}/user`, { withCredentials: true });
                return res?.data?.users;
           } catch (error) {
                const message =
@@ -28,7 +28,7 @@ export const fetchAllUsers = createAsyncThunk(
 export const fetchUserById = createAsyncThunk("posts/fetchUserById",
      async (id, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/user/${id}`);
+               const res = await axios.get(`${Api}/user/${id}`, { withCredentials: true });
                return res.data.user;
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);

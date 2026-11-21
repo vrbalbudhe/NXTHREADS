@@ -1,99 +1,89 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
+const { publicUserSelect } = require("../lib/selects");
+const { isObjectId, cleanString, invalidId } = require("../lib/validators");
 
-// Create Comment
+const MAX_COMMENT_LENGTH = 2000;
+
 const createComment = asyncHandler(async (req, res) => {
-  const { commentor, postId, description } = req.body;
+  const postId = req.body?.postId;
+  const description = cleanString(req.body?.description);
 
-  if (!commentor || !postId || !description) {
+  if (!isObjectId(postId)) {
+    return invalidId(res, "post id");
+  }
+  if (!description || description.length > MAX_COMMENT_LENGTH) {
     return res.status(400).json({
-      message: "All fields are required",
       success: false,
+      message: `Comment must be 1-${MAX_COMMENT_LENGTH} characters`,
     });
   }
 
-  try {
-    const newComment = await prisma.comment.create({
-      data: {
-        postId,
-        commentor,
-        description,
-      },
-    });
-
-    // Emit event to all connected clients
-    const io = req.app.get("socketio");
-    io.emit("commentCreated", newComment);
-    console.log("comment emitted");
-
-    return res.status(200).json({
-      message: "Comment Created Successfully",
-      success: true,
-      newComment,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Unable to create comment",
-      success: false,
-    });
+  const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
+  if (!post) {
+    return res.status(404).json({ success: false, message: "Post not found" });
   }
+
+  const newComment = await prisma.comment.create({
+    data: { postId, commentor: req.userId, description },
+    include: { user: { select: publicUserSelect } },
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: "Comment created successfully",
+    newComment,
+  });
 });
 
-// Delete Comment
 const deleteComment = asyncHandler(async (req, res) => {
-  const id = req.params.id;
-  try {
-    const deletedComment = await prisma.comment.delete({
-      where: {
-        id: id,
-      },
-    });
+  const { id } = req.params;
+  if (!isObjectId(id)) {
+    return invalidId(res, "comment id");
+  }
 
-    // Emit event to all connected clients
-    const io = req.app.get("socketio");
-    io.emit("commentDeleted", deletedComment);
+  const comment = await prisma.comment.findUnique({
+    where: { id },
+    include: { post: { select: { userId: true } } },
+  });
+  if (!comment) {
+    return res.status(404).json({ success: false, message: "Comment not found" });
+  }
 
-    return res.status(200).json({
-      message: "Comment Deleted Successfully",
-      success: true,
-      deletedComment,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Unable to delete comment",
+  const isAuthor = comment.commentor === req.userId;
+  const isPostOwner = comment.post?.userId === req.userId;
+  if (!isAuthor && !isPostOwner) {
+    return res.status(403).json({
       success: false,
+      message: "You can only delete your own comments or comments on your posts",
     });
   }
+
+  await prisma.comment.delete({ where: { id } });
+
+  return res.status(200).json({
+    success: true,
+    message: "Comment deleted successfully",
+    deletedComment: { id, postId: comment.postId },
+  });
 });
 
-// Get Comments
 const getComments = asyncHandler(async (req, res) => {
-  const postId = req.params.id;
-  try {
-    const allComments = await prisma.comment.findMany({
-      where: {
-        postId,
-      },
-      include: {
-        post: true,
-        user: true,
-      },
-    });
-
-    return res.status(200).json({
-      message: "Successfully Comments Fetched",
-      success: true,
-      data: allComments,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Unable to fetch the comments",
-      success: false,
-    });
+  const postId = cleanString(req.params.id).split(",")[0].trim();
+  if (!isObjectId(postId)) {
+    return invalidId(res, "post id");
   }
+
+  const allComments = await prisma.comment.findMany({
+    where: { postId },
+    include: { user: { select: publicUserSelect } },
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Comments fetched successfully",
+    data: allComments,
+  });
 });
 
 module.exports = {

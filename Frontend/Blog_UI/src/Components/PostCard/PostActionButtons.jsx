@@ -228,8 +228,6 @@ export default function PostActionButtons({ post, currentUser }) {
   const [openCommentSection, setOpenCommentSection] = useState(false);
   const [addComment, setAddComment] = useState(false);
 
-  useEffect(() => {}, [addComment]);
-
   return (
     <div className="flex flex-col items-center justify-between border-t dark:border-gray-700">
       <div className="w-full flex justify-between items-center pl-4 pr-4 py-2">
