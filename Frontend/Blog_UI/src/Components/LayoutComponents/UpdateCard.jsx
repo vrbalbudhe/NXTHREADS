@@ -8,31 +8,31 @@ import "react-toastify/dist/ReactToastify.css";
 function UpdateCard({ upd }) {
   const { currentUser } = useContext(AuthContext);
   const [input, setInput] = useState({
+    currentPassword: "",
     password: "",
     fullname: "",
     avatar: "",
     gender: "",
-    verified: false,
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (currentUser && upd) {
       setInput({
+        currentPassword: "",
         password: "",
         fullname: upd.fullname || "",
         avatar: upd.avatar || "",
         gender: upd.gender || "",
-        verified: upd.verified || false,
       });
     }
   }, [currentUser]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setInput((prevData) => ({
       ...prevData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -41,9 +41,18 @@ function UpdateCard({ upd }) {
     setLoading(true);
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const payload = {
+        fullname: input.fullname,
+        avatar: input.avatar,
+        gender: input.gender,
+        ...(input.password && {
+          password: input.password,
+          currentPassword: input.currentPassword,
+        }),
+      };
       const res = await axios.put(
         `${baseUrl}/api/user/upd/${currentUser?.userId}`,
-        input,
+        payload,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -53,8 +62,7 @@ function UpdateCard({ upd }) {
         toast.error("Failed to update profile.");
       }
     } catch (err) {
-      toast.error("An error occurred while updating.");
-      console.error(err);
+      toast.error(err.response?.data?.message || "An error occurred while updating.");
     } finally {
       setLoading(false);
     }
@@ -79,12 +87,24 @@ function UpdateCard({ upd }) {
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md"
-          placeholder="Password"
+          placeholder="New password (leave empty to keep current)"
           type="password"
           name="password"
+          autoComplete="new-password"
           value={input.password}
           onChange={handleInputChange}
         />
+        {input.password && (
+          <input
+            className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md"
+            placeholder="Current password"
+            type="password"
+            name="currentPassword"
+            autoComplete="current-password"
+            value={input.currentPassword}
+            onChange={handleInputChange}
+          />
+        )}
         <input
           className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md"
           placeholder="Fullname"
@@ -96,7 +116,7 @@ function UpdateCard({ upd }) {
         <input
           className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md"
           placeholder="Avatar URL"
-          type="text"
+          type="url"
           name="avatar"
           value={input.avatar}
           onChange={handleInputChange}
@@ -111,15 +131,6 @@ function UpdateCard({ upd }) {
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
-        <label className="flex items-center gap-2 text-xs">
-          <input
-            type="checkbox"
-            name="verified"
-            checked={input.verified}
-            onChange={handleInputChange}
-          />
-          Verified
-        </label>
       </form>
       <ToastContainer position="top-center" />
     </div>

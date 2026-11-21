@@ -20,7 +20,6 @@ export const useBackendFollowings = (currentUserId) => {
           try {
                const res = await axios.get(
                     `${baseUrl}/api/userfollow/following/${currentUserId}`,
-                    {},
                     { withCredentials: true }
                );
                const followings = res.data.totalFollowings || [];

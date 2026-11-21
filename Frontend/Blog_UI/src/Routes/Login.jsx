@@ -84,8 +84,8 @@ const DotsIndicator = () => {
 function Login() {
   const navigate = useNavigate();
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const [email, setEmail] = useState("example@gmail.com");
-  const [password, setPassword] = useState("••••••••");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -119,7 +119,7 @@ function Login() {
         navigate(`/`);
       }
     } catch (error) {
-      toast.error("Login failed!");
+      toast.error(error.response?.data?.message || "Login failed!");
     }
   };
 

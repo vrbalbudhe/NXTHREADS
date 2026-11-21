@@ -1,471 +1,292 @@
 const asyncHandler = require("express-async-handler");
+const { Category } = require("@prisma/client");
 const prisma = require("../lib/prisma");
+const { publicUserSelect, postInclude } = require("../lib/selects");
+const { isObjectId, cleanString, isHttpUrl, invalidId } = require("../lib/validators");
+
+const MAX_PAGE_SIZE = 50;
+const MAX_IMAGES = 10;
+const FEED_POOL_SIZE = 100;
+const FEED_SIZE = 20;
+const categories = new Set(Object.values(Category));
+
+const shuffle = (items) => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
+const parseImages = (images) => {
+  if (images === undefined) {
+    return { ok: true, value: undefined };
+  }
+  if (!Array.isArray(images) || images.length > MAX_IMAGES || !images.every(isHttpUrl)) {
+    return { ok: false };
+  }
+  return { ok: true, value: images };
+};
 
 const getPostUrl = asyncHandler(async (req, res) => {
-  const { category, author } = req.query;
+  const category = cleanString(req.query.category);
+  const author = cleanString(req.query.author);
 
-  try {
-    const posts = await prisma.posts.findMany({
-      where: {
-        category: category || undefined,
-        author: author || undefined,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        savedPosts: true,
-        User: {
-          select: {
-            password: false,
-            avatar: true,
-          },
-        },
-        comment: {
-          include: {
-            user: true,
-            post: {
-              include: {
-                User: {
-                  select: {
-                    password: false,
-                    fullname: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+  const posts = await prisma.posts.findMany({
+    where: {
+      ...(categories.has(category) && { category }),
+      ...(author && author !== "All" && { author }),
+    },
+    orderBy: { createdAt: "desc" },
+    include: postInclude,
+  });
 
-    return res.status(200).json({ posts });
-  } catch (error) {
-    return res.status(501).json({
-      message: "Unable to GET URL POST",
-      success: false,
-    });
-  }
+  return res.status(200).json({ posts });
 });
 
 const getPost = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  try {
-    const post = await prisma.posts.findMany({
-      where: { userId: id },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        savedPosts: true,
-        User: {
-          select: {
-            password: false,
-            avatar: true,
-          },
-        },
-        comment: {
-          include: {
-            user: true,
-            post: {
-              include: {
-                User: {
-                  select: {
-                    password: false,
-                    fullname: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (!post) {
-      return res.status(403).json({
-        message: "Post Not Found",
-        success: false,
-      });
-    }
-
-    return res.status(200).json({
-      posts: post || [],
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).json({
-      message: "Failed to GetPost",
-      success: false,
-    });
+  if (!isObjectId(id)) {
+    return invalidId(res, "user id");
   }
+
+  const posts = await prisma.posts.findMany({
+    where: { userId: id },
+    orderBy: { createdAt: "desc" },
+    include: postInclude,
+  });
+
+  return res.status(200).json({ posts });
 });
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), MAX_PAGE_SIZE);
   const offset = (page - 1) * limit;
-  try {
-    const posts = await prisma.posts.findMany({
+
+  const [posts, total] = await Promise.all([
+    prisma.posts.findMany({
       skip: offset,
       take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        savedPosts: true,
-        User: {
-          select: {
-            password: false,
-            avatar: true,
-            fullname: true,
-            username: true,
-          },
-        },
-        comment: {
-          include: {
-            user: true,
-            post: {
-              include: {
-                User: {
-                  select: {
-                    password: false,
-                    fullname: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+      orderBy: { createdAt: "desc" },
+      include: postInclude,
+    }),
+    prisma.posts.count(),
+  ]);
 
-    // console.log(limit);
-
-    const total = await prisma.posts.count();
-    console.log(total);
-
-    return res.status(200).json({
-      posts: posts,
-      meta: {
-        total,
-        page,
-        limit,
-        hasMore: offset + posts.length < total,
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).json({
-      message: "Failed to GetPosts",
-      success: false,
-    });
-  }
+  return res.status(200).json({
+    posts,
+    meta: {
+      total,
+      page,
+      limit,
+      hasMore: offset + posts.length < total,
+    },
+  });
 });
 
 const createPosts = asyncHandler(async (req, res) => {
-  const tokenUserId = req.userId;
+  const title = cleanString(req.body?.title);
+  const subtitle = cleanString(req.body?.subtitle);
+  const content = cleanString(req.body?.content);
+  const category = cleanString(req.body?.category);
+  const images = parseImages(req.body?.images ?? []);
 
-  try {
-    const { title, subtitle, category, author, content, images } = req.body;
-
-    const imageUrls = images || [];
-    const newPost = await prisma.posts.create({
-      data: {
-        title,
-        subtitle,
-        category,
-        author,
-        content,
-        images: imageUrls,
-        userId: tokenUserId,
-      },
-    });
-
-    if (newPost) {
-      return res.status(200).json({
-        message: "Post created successfully",
-        success: true,
-        post: newPost,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Failed to create post",
+  if (!title || !subtitle || !content) {
+    return res.status(400).json({
       success: false,
+      message: "Title, subtitle and content are required",
     });
   }
+  if (!categories.has(category)) {
+    return res.status(400).json({ success: false, message: "Invalid category" });
+  }
+  if (!images.ok) {
+    return res.status(400).json({
+      success: false,
+      message: `Images must be up to ${MAX_IMAGES} http(s) URLs`,
+    });
+  }
+
+  const newPost = await prisma.posts.create({
+    data: {
+      title,
+      subtitle,
+      category,
+      content,
+      author: req.session?.username || "",
+      images: images.value,
+      userId: req.userId,
+    },
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: "Post created successfully",
+    post: newPost,
+  });
 });
 
-const updatePost = asyncHandler(async (req, res) => {
+const findOwnedPost = async (req, res) => {
   const { id } = req.params;
-  const { title, subtitle, category, author, content, images } = req.body;
+  if (!isObjectId(id)) {
+    invalidId(res, "post id");
+    return null;
+  }
+  const post = await prisma.posts.findUnique({ where: { id } });
+  if (!post) {
+    res.status(404).json({ success: false, message: "Post not found" });
+    return null;
+  }
+  if (post.userId !== req.userId) {
+    res.status(403).json({ success: false, message: "You can only change your own posts" });
+    return null;
+  }
+  return post;
+};
 
-  try {
-    const existingPost = await prisma.posts.findUnique({
-      where: { id },
-    });
+const updatePost = asyncHandler(async (req, res) => {
+  const post = await findOwnedPost(req, res);
+  if (!post) {
+    return undefined;
+  }
 
-    if (!existingPost) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found.",
-      });
-    }
+  const title = cleanString(req.body?.title);
+  const subtitle = cleanString(req.body?.subtitle);
+  const content = cleanString(req.body?.content);
+  const category = cleanString(req.body?.category);
+  const images = parseImages(req.body?.images);
 
-    const updatedPost = await prisma.posts.update({
-      where: { id },
-      data: {
-        ...(title && { title }),
-        ...(subtitle && { subtitle }),
-        ...(category && { category }),
-        ...(author && { author }),
-        ...(content && { content }),
-        ...(Array.isArray(images) && { images }),
-      },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Post updated successfully.",
-      data: updatedPost,
-    });
-  } catch (error) {
-    console.error("Update Post Error:", error.message);
-    return res.status(500).json({
+  if (category && !categories.has(category)) {
+    return res.status(400).json({ success: false, message: "Invalid category" });
+  }
+  if (!images.ok) {
+    return res.status(400).json({
       success: false,
-      message: "Failed to update post.",
-      error: error.message,
+      message: `Images must be up to ${MAX_IMAGES} http(s) URLs`,
     });
   }
+
+  const updatedPost = await prisma.posts.update({
+    where: { id: post.id },
+    data: {
+      ...(title && { title }),
+      ...(subtitle && { subtitle }),
+      ...(content && { content }),
+      ...(category && { category }),
+      ...(images.value && { images: images.value }),
+    },
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Post updated successfully",
+    data: updatedPost,
+  });
 });
 
 const deletePosts = asyncHandler(async (req, res) => {
-  const postId = req.params.id;
-  console.log(postId)
-  try {
-    const post = await prisma.posts.findUnique({
-      where: { id: postId },
-    });
-    if (!post) {
-      return res.status(403).json({
-        message: "Post Not Found",
-        success: false,
-      });
-    }
-    await prisma.posts.delete({
-      where: { id: postId },
-    });
-    return res.status(200).json({
-      message: "Post Deleted Successfully",
-      success: true,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).json({
-      message: "Failed to DeletePost",
-      success: false,
-    });
+  const post = await findOwnedPost(req, res);
+  if (!post) {
+    return undefined;
   }
+
+  await prisma.$transaction([
+    prisma.comment.deleteMany({ where: { postId: post.id } }),
+    prisma.like.deleteMany({ where: { postId: post.id } }),
+    prisma.unlike.deleteMany({ where: { postId: post.id } }),
+    prisma.savedPosts.deleteMany({ where: { postId: post.id } }),
+    prisma.posts.delete({ where: { id: post.id } }),
+  ]);
+
+  return res.status(200).json({ success: true, message: "Post deleted successfully" });
 });
 
 const favUnfavPost = asyncHandler(async (req, res) => {
   const userId = req.userId;
-  const postId = req.body.postId;
+  const postId = req.body?.postId;
 
-  // Validate input
-  if (!userId || !postId) {
-    return res.status(400).json({
-      message: "Invalid userId or postId",
-    });
+  if (!isObjectId(postId)) {
+    return invalidId(res, "post id");
   }
 
-  try {
-    // Check if the post is already saved by the user
-    const checkPost = await prisma.savedPosts.findUnique({
-      where: {
-        userId_postId: {
-          userId: userId,
-          postId: postId,
-        },
-      },
-    });
-
-    if (!checkPost) {
-      // If not found, add it to saved posts
-      await prisma.savedPosts.create({
-        data: {
-          userId: userId,
-          postId: postId,
-        },
-      });
-      return res.status(200).json({
-        message: "Post Made Favourite",
-      });
-    } else {
-      // If found, remove it from saved posts
-      await prisma.savedPosts.delete({
-        where: {
-          userId_postId: {
-            userId: userId,
-            postId: postId,
-          },
-        },
-      });
-      return res.status(200).json({
-        message: "Post Made Unfavourite",
-      });
-    }
-  } catch (error) {
-    console.error("Error in favUnfavPost:", error.message);
-    return res.status(500).json({
-      message: "Internal Server Error",
-    });
+  const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
+  if (!post) {
+    return res.status(404).json({ success: false, message: "Post not found" });
   }
+
+  const key = { userId_postId: { userId, postId } };
+  const existing = await prisma.savedPosts.findUnique({ where: key });
+
+  if (existing) {
+    await prisma.savedPosts.delete({ where: key });
+    return res.status(200).json({ success: true, message: "Post removed from favourites" });
+  }
+
+  await prisma.savedPosts.create({ data: { userId, postId } });
+  return res.status(200).json({ success: true, message: "Post added to favourites" });
 });
 
 const getFavoritePosts = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
-
-  try {
-    const favoritePosts = await prisma.savedPosts.findMany({
-      where: {
-        userId: userId,
-      },
-      include: {
-        post: true,
-      },
-    });
-
-    if (!favoritePosts.length) {
-      return res.status(404).json({
-        message: "No Favorite Posts Found!",
-        success: false,
-      });
-    }
-
-    return res.status(200).json({
-      posts: favoritePosts,
-    });
-  } catch (error) {
-    console.error("Error fetching favorite posts:", error.message);
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
-    });
+  const { id } = req.params;
+  if (!isObjectId(id)) {
+    return invalidId(res, "user id");
   }
+  if (id !== req.userId) {
+    return res.status(403).json({ success: false, message: "Saved posts are private" });
+  }
+
+  const favoritePosts = await prisma.savedPosts.findMany({
+    where: { userId: id },
+    include: { post: true },
+  });
+
+  return res.status(200).json({ posts: favoritePosts });
 });
 
 const getFollowersPost = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  try {
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required in params" });
-    }
+  const userId = req.userId;
 
-    const followedUsers = await prisma.follows.findMany({
-      where: { followerId: userId },
-      select: { followingId: true },
-    });
-    console.log("Followed users:", followedUsers);
+  const followedUsers = await prisma.follows.findMany({
+    where: { followerId: userId },
+    select: { followingId: true },
+  });
 
-    const followingIds = followedUsers.map(f => f.followingId);
+  const authorIds = [...followedUsers.map((follow) => follow.followingId), userId];
 
-    const allUserIds = [...followingIds, userId];
-    console.log("All user IDs (following + self):", allUserIds);
+  const posts = await prisma.posts.findMany({
+    where: { userId: { in: authorIds } },
+    include: {
+      User: { select: publicUserSelect },
+      comment: true,
+      like: true,
+      unlike: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: FEED_POOL_SIZE,
+  });
 
-    const posts = await prisma.posts.findMany({
-      where: {
-        userId: { in: allUserIds },
-      },
-      include: {
-        User: true,
-        comment: true,
-        like: true,
-        unlike: true,
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-    console.log("Found posts:", posts.length);
-
-    if (posts.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    const shuffled = posts.sort(() => 0.5 - Math.random());
-
-    const limitedPosts = shuffled.slice(0, 20);
-
-    res.status(200).json(limitedPosts);
-
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+  return res.status(200).json(shuffle(posts).slice(0, FEED_SIZE));
 });
 
 const getPostById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  try {
-    const post = await prisma.posts.findMany({
-      where: { id: id },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        savedPosts: true,
-        User: {
-          select: {
-            password: false,
-            avatar: true,
-          },
-        },
-        comment: {
-          include: {
-            user: true,
-            post: {
-              include: {
-                User: {
-                  select: {
-                    password: false,
-                    fullname: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (!post) {
-      return res.status(403).json({
-        message: "Post Not Found",
-        success: false,
-      });
-    }
-
-    return res.status(200).json({
-      posts: post || [],
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).json({
-      message: "Failed to GetPost",
-      success: false,
-    });
+  if (!isObjectId(id)) {
+    return invalidId(res, "post id");
   }
-});
 
+  const post = await prisma.posts.findUnique({
+    where: { id },
+    include: postInclude,
+  });
+
+  if (!post) {
+    return res.status(404).json({ success: false, message: "Post not found" });
+  }
+
+  return res.status(200).json({ posts: [post] });
+});
 
 module.exports = {
   getPost,

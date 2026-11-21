@@ -13,8 +13,7 @@ const Api = `${import.meta.env.VITE_API_BASE_URL}/api`;
 export const fetchAllFollowers = createAsyncThunk("follows/fetchAllFollowers",
      async (id, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/userfollow/followers/${id}`);
-               console.log(res)
+               const res = await axios.get(`${Api}/userfollow/followers/${id}`, { withCredentials: true });
                return res.data.totalFollowers;
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);
@@ -25,7 +24,7 @@ export const fetchAllFollowers = createAsyncThunk("follows/fetchAllFollowers",
 export const fetchAllFollowings = createAsyncThunk("follows/fetchAllFollowings",
      async (id, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/userfollow/following/${id}`);
+               const res = await axios.get(`${Api}/userfollow/following/${id}`, { withCredentials: true });
                return res.data.totalFollowings;
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);
@@ -39,7 +38,7 @@ export const followUnfollowUser = createAsyncThunk("follows/followUnfollowUser",
                const res = await axios.post(`${Api}/userfollow/follow`, {
                     followerId,
                     followingId
-               });
+               }, { withCredentials: true });
                return res.data;
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);
@@ -50,7 +49,7 @@ export const followUnfollowUser = createAsyncThunk("follows/followUnfollowUser",
 export const checkIsFollowing = createAsyncThunk("follows/checkIsFollowing",
      async ({ followerId, followingId }, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/userfollow/status?followerId=${followerId}&followingId=${followingId}`);
+               const res = await axios.get(`${Api}/userfollow/status?followerId=${followerId}&followingId=${followingId}`, { withCredentials: true });
                return res.data.isFollowing;
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);

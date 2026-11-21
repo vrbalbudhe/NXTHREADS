@@ -1,157 +1,101 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const asyncHandler = require("express-async-handler");
+const prisma = require("../lib/prisma");
+const { isObjectId, invalidId } = require("../lib/validators");
 
-const likePost = async (req, res) => {
-  const { userId, postId } = req.body;
+const ensurePost = async (req, res) => {
+  const postId = req.body?.postId;
+  if (!isObjectId(postId)) {
+    invalidId(res, "post id");
+    return null;
+  }
+  const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
+  if (!post) {
+    res.status(404).json({ success: false, message: "Post not found" });
+    return null;
+  }
+  return postId;
+};
 
-  try {
-    const existingLike = await prisma.like.findFirst({
-      where: { postId, userId },
-    });
+const likePost = asyncHandler(async (req, res) => {
+  const postId = await ensurePost(req, res);
+  if (!postId) {
+    return undefined;
+  }
+  const userId = req.userId;
 
-    const existingUnlike = await prisma.unlike.findFirst({
-      where: { postId, userId },
-    });
-
+  const message = await prisma.$transaction(async (tx) => {
+    const existingLike = await tx.like.findFirst({ where: { postId, userId } });
     if (existingLike) {
-      // User is un-liking
-      await prisma.like.delete({
-        where: { id: existingLike.id },
-      });
-
-      await prisma.posts.update({
-        where: { id: postId },
-        data: { likes: { decrement: 1 } },
-      });
-
-      return res.status(200).json({ message: "Post un-liked successfully" });
+      await tx.like.delete({ where: { id: existingLike.id } });
+      await tx.posts.update({ where: { id: postId }, data: { likes: { decrement: 1 } } });
+      return "Post un-liked successfully";
     }
+
+    const existingUnlike = await tx.unlike.findFirst({ where: { postId, userId } });
+    await tx.like.create({ data: { userId, postId } });
 
     if (existingUnlike) {
-      await prisma.unlike.delete({
-        where: { id: existingUnlike.id },
-      });
-
-      await prisma.like.create({
-        data: { userId, postId },
-      });
-
-      await prisma.posts.update({
+      await tx.unlike.delete({ where: { id: existingUnlike.id } });
+      await tx.posts.update({
         where: { id: postId },
-        data: {
-          likes: { increment: 1 },
-          unlikes: { decrement: 1 },
-        },
+        data: { likes: { increment: 1 }, unlikes: { decrement: 1 } },
       });
-
-      return res.status(200).json({ message: "Post liked successfully" });
+    } else {
+      await tx.posts.update({ where: { id: postId }, data: { likes: { increment: 1 } } });
     }
-    await prisma.like.create({
-      data: { userId, postId },
-    });
+    return "Post liked successfully";
+  });
 
-    await prisma.posts.update({
-      where: { id: postId },
-      data: { likes: { increment: 1 } },
-    });
+  return res.status(200).json({ success: true, message });
+});
 
-    return res.status(200).json({ message: "Post liked successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
+const unlikePost = asyncHandler(async (req, res) => {
+  const postId = await ensurePost(req, res);
+  if (!postId) {
+    return undefined;
   }
-};
+  const userId = req.userId;
 
-const unlikePost = async (req, res) => {
-  const { postId } = req.body;
-  const { userId } = req.body;
-
-  try {
-    const existingUnlike = await prisma.unlike.findFirst({
-      where: {
-        postId,
-        userId,
-      },
-    });
-    const existingLike = await prisma.like.findFirst({
-      where: {
-        postId,
-        userId,
-      },
-    });
-
-    if (!existingUnlike) {
-      await prisma.unlike.create({
-        data: {
-          postId,
-          userId,
-        },
-      });
-
-      if (existingLike) {
-        await prisma.like.delete({
-          where: {
-            id: existingLike.id,
-          },
-        });
-        await prisma.posts.update({
-          where: { id: postId },
-          data: { likes: { decrement: 1 }, unlikes: { increment: 1 } },
-        });
-      } else {
-        await prisma.posts.update({
-          where: { id: postId },
-          data: { unlikes: { increment: 1 } },
-        });
-      }
-
-      return res.status(200).json({ message: "Post disliked successfully" });
+  const message = await prisma.$transaction(async (tx) => {
+    const existingUnlike = await tx.unlike.findFirst({ where: { postId, userId } });
+    if (existingUnlike) {
+      await tx.unlike.delete({ where: { id: existingUnlike.id } });
+      await tx.posts.update({ where: { id: postId }, data: { unlikes: { decrement: 1 } } });
+      return "Post un-disliked successfully";
     }
 
-    await prisma.unlike.delete({
-      where: {
-        id: existingUnlike.id,
-      },
-    });
-    await prisma.posts.update({
-      where: { id: postId },
-      data: { unlikes: { decrement: 1 } },
-    });
+    const existingLike = await tx.like.findFirst({ where: { postId, userId } });
+    await tx.unlike.create({ data: { postId, userId } });
 
-    return res.status(200).json({ message: "Post un-disliked successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    if (existingLike) {
+      await tx.like.delete({ where: { id: existingLike.id } });
+      await tx.posts.update({
+        where: { id: postId },
+        data: { likes: { decrement: 1 }, unlikes: { increment: 1 } },
+      });
+    } else {
+      await tx.posts.update({ where: { id: postId }, data: { unlikes: { increment: 1 } } });
+    }
+    return "Post disliked successfully";
+  });
+
+  return res.status(200).json({ success: true, message });
+});
+
+const checkWhetherLike = asyncHandler(async (req, res) => {
+  const postId = req.body?.postId;
+  if (!isObjectId(postId)) {
+    return invalidId(res, "post id");
   }
-};
+  const userId = req.userId;
 
-const checkWhetherLike = async (req, res) => {
-  const { userId, postId } = req.body;
+  const [isLiked, isUnliked] = await Promise.all([
+    prisma.like.findFirst({ where: { userId, postId }, select: { id: true } }),
+    prisma.unlike.findFirst({ where: { userId, postId }, select: { id: true } }),
+  ]);
 
-  try {
-    const isLiked = await prisma.like.findFirst({
-      where: {
-        userId: userId,
-        postId: postId,
-      },
-    });
-
-    const isUnliked = await prisma.unlike.findFirst({
-      where: {
-        userId: userId,
-        postId: postId,
-      },
-    });
-
-    return res.status(200).json({
-      isLiked: isLiked ? true : false,
-      isUnliked: isUnliked ? true : false,
-    });
-  } catch (error) {
-    console.error("Error checking like status:", error);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
+  return res.status(200).json({ isLiked: Boolean(isLiked), isUnliked: Boolean(isUnliked) });
+});
 
 module.exports = {
   likePost,

@@ -1,178 +1,103 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
+const { publicUserSelect } = require("../lib/selects");
+const { isObjectId, invalidId } = require("../lib/validators");
 
 const followUnfollowUser = asyncHandler(async (req, res) => {
-  const followerId = req.body.followerId;
-  const followingId = req.body.followingId;
-  // console.log(followerId);
-  // console.log(followingId);
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: followerId,
-      },
-    });
+  const followerId = req.userId;
+  const followingId = req.body?.followingId;
 
-    const userYouWillingToFollow = await prisma.user.findUnique({
-      where: {
-        id: followingId,
-      },
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        message: "User Not Found",
-        success: false,
-      });
-    }
-
-    if (!userYouWillingToFollow) {
-      return res.status(401).json({
-        message: "User You Are Willing To Follow Is Not Found",
-        success: false,
-      });
-    }
-
-    // Check if the follow relationship already exists
-    const existingFollow = await prisma.follows.findUnique({
-      where: {
-        followerId_followingId: {
-          followerId: followerId,
-          followingId: followingId,
-        },
-      },
-    });
-
-    if (existingFollow) {
-      // Unfollow
-      await prisma.follows.delete({
-        where: {
-          followerId_followingId: {
-            followerId: followerId,
-            followingId: followingId,
-          },
-        },
-      });
-      return res.status(200).json({
-        message: "Unfollowed Successfully",
-        success: true,
-      });
-    } else {
-      // Follow
-      const followSuccess = await prisma.follows.create({
-        data: {
-          followerId: followerId,
-          followingId: followingId,
-        },
-      });
-      return res.status(200).json({
-        message: "Followed Successfully",
-        success: true,
-        followSuccess: followSuccess,
-      });
-    }
-  } catch (error) {
-    return res.status(200).json({
-      message: "Unable to follow or unfollow User",
-      success: false,
-    });
+  if (!isObjectId(followingId)) {
+    return invalidId(res, "user id");
   }
+  if (followingId === followerId) {
+    return res.status(400).json({ success: false, message: "You cannot follow yourself" });
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: followingId },
+    select: { id: true },
+  });
+  if (!target) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const key = { followerId_followingId: { followerId, followingId } };
+  const existingFollow = await prisma.follows.findUnique({ where: key });
+
+  if (existingFollow) {
+    await prisma.follows.delete({ where: key });
+    return res.status(200).json({ success: true, message: "Unfollowed successfully" });
+  }
+
+  const followSuccess = await prisma.follows.create({ data: { followerId, followingId } });
+  return res.status(200).json({
+    success: true,
+    message: "Followed successfully",
+    followSuccess,
+  });
 });
 
 const checkIsFollwing = asyncHandler(async (req, res) => {
-  const followerId = req.params.id;
-  try {
-    console.log(followerId);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Error in CheckIsFollowing",
-      success: false,
-    });
+  const followingId = req.params.id;
+  if (!isObjectId(followingId)) {
+    return invalidId(res, "user id");
   }
+
+  const followRecord = await prisma.follows.findUnique({
+    where: { followerId_followingId: { followerId: req.userId, followingId } },
+    select: { id: true },
+  });
+
+  return res.status(200).json({ isFollowing: Boolean(followRecord) });
 });
 
 const totalFollowing = asyncHandler(async (req, res) => {
-  const followerId = req.params.id;
-  try {
-    const totalFollowings = await prisma.follows.findMany({
-      where: {
-        followerId: followerId,
-      },
-      include: {
-        following: {
-          select: {
-            id: true,
-            username: true,
-            fullname: true,
-            avatar: true,
-          },
-        },
-      },
-    });
-    return res.status(200).json({
-      totalFollowings: totalFollowings,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Error in total following",
-      success: false,
-    });
+  const { id } = req.params;
+  if (!isObjectId(id)) {
+    return invalidId(res, "user id");
   }
+
+  const totalFollowings = await prisma.follows.findMany({
+    where: { followerId: id },
+    include: { following: { select: publicUserSelect } },
+  });
+
+  return res.status(200).json({ totalFollowings });
 });
+
 const totalFollowers = asyncHandler(async (req, res) => {
-  const followerId = req.params.id;
-  try {
-    const totalFollowings = await prisma.follows.findMany({
-      where: {
-        followingId: followerId,
-      },
-      include: {
-        follower: {
-          select: {
-            id: true,
-            username: true,
-            fullname: true,
-            avatar: true,
-          },
-        },
-      },
-    });
-    return res.status(200).json({
-      totalFollowers: totalFollowings,
-    });
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({
-      message: "Error in total followers",
-      success: false,
-    });
+  const { id } = req.params;
+  if (!isObjectId(id)) {
+    return invalidId(res, "user id");
   }
+
+  const totalFollowers = await prisma.follows.findMany({
+    where: { followingId: id },
+    include: { follower: { select: publicUserSelect } },
+  });
+
+  return res.status(200).json({ totalFollowers });
 });
 
 const isFollowing = asyncHandler(async (req, res) => {
   const { followerId, followingId } = req.query;
-
-  try {
-    const followRecord = await prisma.follows.findFirst({
-      where: {
-        followerId: followerId,
-        followingId: followingId,
-      },
-    });
-    // io.emit("isFollowing", followRecord);
-
-    const isFollowing = !!followRecord; // convert to boolean
-    res.status(200).json({ isFollowing });
-  } catch (error) {
-    console.error("Error checking follow status", error);
-    res.status(500).json({ error: "Failed to check follow status" });
+  if (!isObjectId(followerId) || !isObjectId(followingId)) {
+    return invalidId(res, "user id");
   }
+
+  const followRecord = await prisma.follows.findUnique({
+    where: { followerId_followingId: { followerId, followingId } },
+    select: { id: true },
+  });
+
+  return res.status(200).json({ isFollowing: Boolean(followRecord) });
 });
+
 module.exports = {
   totalFollowing,
   totalFollowers,
   followUnfollowUser,
   checkIsFollwing,
-  // setIoInstance,
   isFollowing,
 };

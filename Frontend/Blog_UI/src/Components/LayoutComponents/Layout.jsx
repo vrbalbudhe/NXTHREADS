@@ -6,7 +6,7 @@ import Footer from "./Footer";
 
 export const Layout = () => {
   return (
-    <div className="w-[100%] outline outline-red-500 p-1 md:p-0 scrollable-section min-h-screen bg-white dark:bg-darkBackground flex flex-col justify-start items-center">
+    <div className="w-[100%] p-1 md:p-0 scrollable-section min-h-screen bg-white dark:bg-darkBackground flex flex-col justify-start items-center">
       <div className="md:w-[83%] top-0 sticky z-50 bg-transparent md:h-fit w-full h-fit">
         <Navbar />
       </div>

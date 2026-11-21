@@ -10,10 +10,10 @@ const {
 } = require("../Controller/User.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 
-router.get("/", getUsers);
-router.get("/:id", getUser);
+router.get("/", verifyToken, getUsers);
+router.get("/:id", verifyToken, getUser);
 router.get("/foll/:id", verifyToken, getUserFollowStatus);
 router.delete("/:id", verifyToken, deleteUser);
-router.put("/upd/:id", updateUser);
+router.put("/upd/:id", verifyToken, updateUser);
 
 module.exports = router;
