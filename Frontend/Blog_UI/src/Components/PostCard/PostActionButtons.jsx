@@ -16,7 +16,7 @@ import {
   createCommentThunk,
   deleteCommentThunk,
   deletePost,
-  fetchAllPosts,
+  toggleSavePostThunk,
 } from "../../ReduxThunkSlice/PostSlice";
 import { useNavigate } from "react-router-dom";
 import DialogBox from "../LayoutComponents/DialogBox";
@@ -30,9 +30,7 @@ const LikeUnlikeActions = ({ post, currentUser }) => {
     isUnliked: false,
   };
 
-  const updatedPost = useSelector((state) =>
-    state.post.posts.find((p) => p.id === post.id)
-  );
+  const updatedPost = useSelector((state) => state.post.reactions[post.id]);
 
   const handleLikeButton = () => {
     if (!currentUser) {
@@ -89,13 +87,27 @@ const CommentAndDeleteActions = ({
   setOpenCommentSection,
 }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const comments = useSelector((state) => state.post.comments[post.id] || []);
   const [openCardDelete, setOpenCardDelete] = useState(false);
 
+  const savedFromServer = Boolean(
+    currentUser?.userId &&
+      post?.savedPosts?.some((saved) => saved.userId === currentUser.userId)
+  );
+  const savedOverride = useSelector((state) => state.post.savedState[post.id]);
+  const isSaved = savedOverride ?? savedFromServer;
+
   const handleDeletePost = () => {
-    dispatch(deletePost({ postId: post.id })).then(() =>
-      dispatch(fetchAllPosts())
-    );
+    dispatch(deletePost({ postId: post.id }));
+  };
+
+  const handleToggleSave = () => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    dispatch(toggleSavePostThunk({ postId: post.id, saved: !isSaved }));
   };
 
   return (
@@ -105,7 +117,15 @@ const CommentAndDeleteActions = ({
         className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 md:hover:text-green-500 dark:hover:text-green-400"
       >
         <MessageCircle className="w-5 h-5" />
-        <span>{comments?.length || post?.comment?.length}</span>
+        <span>{comments?.length || post?.comment?.length || 0}</span>
+      </button>
+
+      <button
+        onClick={handleToggleSave}
+        aria-label={isSaved ? "Remove from saved" : "Save post"}
+        className={`md:hover:text-sky-500 ${isSaved ? "text-sky-500" : "text-gray-600 dark:text-gray-400"}`}
+      >
+        <Bookmark className="w-5 h-5" fill={isSaved ? "currentColor" : "none"} />
       </button>
 
       {currentUser?.userId === post?.userId && (

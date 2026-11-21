@@ -8,6 +8,9 @@ const initialState = {
      queryPosts: [],
      userPosts: [],
      likedPosts: {},
+     reactions: {},
+     savedState: {},
+     deletedPosts: {},
      loading: false,
      error: undefined,
      comments: {},
@@ -16,12 +19,17 @@ const initialState = {
      personalizedPosts: []
 };
 
+const PAGE_SIZE = 10;
+
 export const fetchAllPosts = createAsyncThunk(
      "posts/fetchAllPosts",
-     async (_, thunkAPI) => {
+     async ({ page = 1 } = {}, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/post`, { withCredentials: true });
-               return res?.data?.posts;
+               const res = await axios.get(`${Api}/post`, {
+                    params: { page, limit: PAGE_SIZE },
+                    withCredentials: true,
+               });
+               return { posts: res?.data?.posts || [], meta: res?.data?.meta, page };
           } catch (error) {
                const message =
                     error.response?.data?.message || error.message || "Something went wrong";
@@ -71,7 +79,7 @@ export const likePostThunk = createAsyncThunk(
      async ({ postId, userId }, thunkAPI) => {
           try {
                const res = await axios.post(`${Api}/post/like`, { postId, userId }, { withCredentials: true });
-               return { postId };
+               return res.data;
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
           }
@@ -83,7 +91,7 @@ export const unlikePostThunk = createAsyncThunk(
      async ({ postId, userId }, thunkAPI) => {
           try {
                const res = await axios.post(`${Api}/post/unlike`, { postId, userId }, { withCredentials: true });
-               return { postId };
+               return res.data;
           } catch (err) {
                return thunkAPI.rejectWithValue(err.response?.data || err.message);
           }
@@ -142,17 +150,53 @@ export const deleteCommentThunk = createAsyncThunk(
      }
 );
 
+export const toggleSavePostThunk = createAsyncThunk(
+     "posts/toggleSavePost",
+     async ({ postId, saved }, thunkAPI) => {
+          try {
+               await axios.post(`${Api}/post/fav`, { postId }, { withCredentials: true });
+               return { postId, saved };
+          } catch (err) {
+               return thunkAPI.rejectWithValue(err.response?.data || err.message);
+          }
+     }
+);
+
+export const fetchSavedPosts = createAsyncThunk(
+     "posts/fetchSavedPosts",
+     async (userId, thunkAPI) => {
+          try {
+               const res = await axios.get(`${Api}/post/fav/${userId}`, { withCredentials: true });
+               return res.data?.posts || [];
+          } catch (err) {
+               return thunkAPI.rejectWithValue(err.response?.data || err.message);
+          }
+     }
+);
+
 export const personalizedPostsThunk = createAsyncThunk(
      "posts/personalizedPosts",
-     async ({ userId }, thunkAPI) => {
+     async ({ userId, page = 1 }, thunkAPI) => {
           try {
-               const res = await axios.get(`${Api}/post/gfp/${userId}`, { withCredentials: true });
-               return res.data;
+               const res = await axios.get(`${Api}/post/gfp/${userId}`, {
+                    params: { page, limit: PAGE_SIZE },
+                    withCredentials: true,
+               });
+               return { posts: res?.data?.posts || [], meta: res?.data?.meta, page };
           } catch (error) {
                return thunkAPI.rejectWithValue(error.response?.data || error.message);
           }
      }
 )
+const applyReaction = (state, action) => {
+     const { postId, likes, unlikes, isLiked, isUnliked } = action.payload || {};
+     if (!postId) {
+          return;
+     }
+     state.likedPosts[postId] = { isLiked, isUnliked };
+     state.reactions[postId] = { likes, unlikes };
+};
+
 const postSlice = createSlice({
      name: 'posts',
      initialState,
@@ -165,8 +209,9 @@ const postSlice = createSlice({
                     state.error = undefined;
                })
                .addCase(fetchAllPosts.fulfilled, (state, action) => {
+                    const { posts, page } = action.payload;
                     state.loading = false;
-                    state.posts = action.payload;
+                    state.posts = page > 1 ? [...state.posts, ...posts] : posts;
                })
                .addCase(fetchAllPosts.rejected, (state, action) => {
                     state.loading = false;
@@ -200,42 +245,8 @@ const postSlice = createSlice({
                     const { postId, isLiked, isUnliked } = action.payload;
                     state.likedPosts[postId] = { isLiked, isUnliked };
                })
-               .addCase(likePostThunk.fulfilled, (state, action) => {
-                    const { postId } = action.payload;
-                    const post = state.posts.find((p) => p.id === postId);
-                    const currentStatus = state.likedPosts[postId] || { isLiked: false, isUnliked: false };
-
-                    if (post) {
-                         if (currentStatus.isLiked) {
-                              // Undo Like
-                              if (post.likes > 0) post.likes -= 1;
-                              state.likedPosts[postId] = { isLiked: false, isUnliked: false };
-                         } else {
-                              // Like
-                              post.likes += 1;
-                              if (currentStatus.isUnliked && post.unlikes > 0) post.unlikes -= 1;
-                              state.likedPosts[postId] = { isLiked: true, isUnliked: false };
-                         }
-                    }
-               })
-               .addCase(unlikePostThunk.fulfilled, (state, action) => {
-                    const { postId } = action.payload;
-                    const post = state.posts.find((p) => p.id === postId);
-                    const currentStatus = state.likedPosts[postId] || { isLiked: false, isUnliked: false };
-
-                    if (post) {
-                         if (currentStatus.isUnliked) {
-                              // Undo Unlike
-                              if (post.unlikes > 0) post.unlikes -= 1;
-                              state.likedPosts[postId] = { isLiked: false, isUnliked: false };
-                         } else {
-                              // Unlike
-                              post.unlikes += 1;
-                              if (currentStatus.isLiked && post.likes > 0) post.likes -= 1;
-                              state.likedPosts[postId] = { isLiked: false, isUnliked: true };
-                         }
-                    }
-               })
+               .addCase(likePostThunk.fulfilled, applyReaction)
+               .addCase(unlikePostThunk.fulfilled, applyReaction)
                .addCase(fetchCommentsByPostId.pending, (state) => {
                     state.commentLoading = true;
                     state.commentError = undefined;
@@ -264,12 +275,19 @@ const postSlice = createSlice({
                })
                .addCase(deletePost.fulfilled, (state, action) => {
                     const { postId } = action.payload;
+                    state.deletedPosts[postId] = true;
                     state.posts = state.posts?.filter(
                          (post) => post.id !== postId
                     );
                })
+               .addCase(toggleSavePostThunk.fulfilled, (state, action) => {
+                    const { postId, saved } = action.payload;
+                    state.savedState[postId] = saved;
+               })
                .addCase(personalizedPostsThunk.fulfilled, (state, action) => {
-                    state.personalizedPosts = action.payload;
+                    const { posts, page } = action.payload;
+                    state.personalizedPosts =
+                         page > 1 ? [...state.personalizedPosts, ...posts] : posts;
                })
      },
 });

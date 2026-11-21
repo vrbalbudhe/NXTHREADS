@@ -1,7 +1,8 @@
-import axios from "axios";
-import { Pencil } from "lucide-react";
+/* eslint-disable react/prop-types */
+import { Pencil, Trash2, X } from "lucide-react";
 import { AuthContext } from "../Context/AuthContext";
 import { useContext, useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import PostCard from "../Components/PostCard/PostCard";
 import BlogWriteBanner from "../Components/UI_Components/BlogWriteBanner";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,20 +12,29 @@ import { useFetchUserById } from "../Loaders/users/useFetchUserById";
 import { useFetchPostsByUserId } from "../Loaders/posts/useFetchPostsByUserId";
 import CompleteProfileCard from "../Components/UI_Components/CompleteProfileCard";
 import UpdateCard from "../Components/LayoutComponents/UpdateCard";
-import { X } from "lucide-react";
-import Spinner from "../Components/LayoutComponents/Spinner";
+import DeleteAccountCard from "../Components/LayoutComponents/DeleteAccountCard";
 import PostSkeleton from "../Components/PostCard/PostSkeleton";
+import { fetchSavedPosts } from "../ReduxThunkSlice/PostSlice";
 
 const ProfilePostHeading = ({ whatToShow, setWhatToShow, isCurrentUser }) => {
   const navigate = useNavigate();
   return (
     <div className="w-full mt-2 md:mt-5 mb-2 border border-slate-300 rounded-2xl h-10 flex justify-between pr-1 items-center pl-2 dark:bg-darkPostCardBackground dark:border dark:border-gray-700">
       <div className="flex h-full justify-center items-center gap-2">
-        <h1
-          className={`${!whatToShow ? " text-slate-800" : ""} font-semibold text-sm cursor-pointer rounded-sm px-2 py-1 -tracking-tighter dark:text-white`}
+        <button
+          onClick={() => setWhatToShow(false)}
+          className={`${!whatToShow ? "text-slate-800 underline underline-offset-4" : "text-slate-400"} font-semibold text-sm rounded-sm px-2 py-1 -tracking-tighter dark:text-white`}
         >
-          My Blogs
-        </h1>
+          {isCurrentUser ? "My Blogs" : "Blogs"}
+        </button>
+        {isCurrentUser && (
+          <button
+            onClick={() => setWhatToShow(true)}
+            className={`${whatToShow ? "text-slate-800 underline underline-offset-4" : "text-slate-400"} font-semibold text-sm rounded-sm px-2 py-1 -tracking-tighter dark:text-white`}
+          >
+            Saved
+          </button>
+        )}
       </div>
       {isCurrentUser && (
         <button
@@ -42,6 +52,7 @@ const ProfileUserInformation = ({
   user,
   id,
   setShowUpdateCard,
+  setShowDeleteCard,
 }) => {
   return (
     <div className="w-full h-fit select-none border border-slate-300 dark:border-gray-700 bg-white dark:bg-darkPostCardBackground rounded-2xl p-5 shadow-sm transition-all">
@@ -80,14 +91,23 @@ const ProfileUserInformation = ({
         </div>
       </div>
 
-      {currentUser && (
-        <button
-          onClick={() => setShowUpdateCard(true)}
-          className="w-full mt-4 flex items-center justify-center gap-2 border border-slate-300 dark:border-gray-600 text-slate-800 dark:text-white font-semibold text-sm py-2 px-4 rounded-xl hover:border-blue-400 hover:text-blue-500 transition-colors"
-        >
-          <Pencil size={16} />
-          Edit Profile
-        </button>
+      {currentUser?.userId === id && (
+        <>
+          <button
+            onClick={() => setShowUpdateCard(true)}
+            className="w-full mt-4 flex items-center justify-center gap-2 border border-slate-300 dark:border-gray-600 text-slate-800 dark:text-white font-semibold text-sm py-2 px-4 rounded-xl hover:border-blue-400 hover:text-blue-500 transition-colors"
+          >
+            <Pencil size={16} />
+            Edit Profile
+          </button>
+          <button
+            onClick={() => setShowDeleteCard(true)}
+            className="w-full mt-2 flex items-center justify-center gap-2 text-red-500 font-semibold text-xs py-2 px-4 rounded-xl hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete Account
+          </button>
+        </>
       )}
     </div>
   );
@@ -112,23 +132,36 @@ const FollowingAndFollowerCard = ({
   );
 };
 const ProfileUserPosts = ({ userPosts, whatToShow, loading, currentUser }) => {
+  const dispatch = useDispatch();
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
+
+  useEffect(() => {
+    if (!whatToShow || !currentUser?.userId) return;
+    setSavedLoading(true);
+    dispatch(fetchSavedPosts(currentUser.userId))
+      .unwrap()
+      .then(setSavedPosts)
+      .catch(() => setSavedPosts([]))
+      .finally(() => setSavedLoading(false));
+  }, [whatToShow, currentUser?.userId, dispatch]);
+
+  const list = whatToShow ? savedPosts : userPosts;
+  const isLoading = whatToShow ? savedLoading : loading;
+
   return (
     <div className="w-full flex flex-wrap gap-2">
-      {loading ? (
+      {isLoading ? (
         [...Array(4)].map((_, i) => <PostSkeleton key={i} />)
-      ) : !whatToShow ? (
-        userPosts && userPosts.length > 0 ? (
-          userPosts.map((post) => (
-            <PostCard key={post.id} post={post} currentUser={currentUser} />
-          ))
-        ) : (
-          <div className="w-full text-center min-h-[200px] text-gray-500 dark:text-gray-300">
-            No posts available
-          </div>
-        )
-      ) : null}
-
-      {!loading && userPosts?.length > 4 && <Spinner />}
+      ) : list && list.length > 0 ? (
+        list.map((post) => (
+          <PostCard key={post.id} post={post} currentUser={currentUser} />
+        ))
+      ) : (
+        <div className="w-full text-center min-h-[200px] text-gray-500 dark:text-gray-300">
+          {whatToShow ? "No saved posts yet" : "No posts available"}
+        </div>
+      )}
     </div>
   );
 };
@@ -158,50 +191,25 @@ const ProfileAvatar = ({ user }) => {
 };
 
 function Profile() {
-  const navigate = useNavigate();
   const { id } = useParams();
   const { user, loadUser } = useFetchUserById(id);
   const { currentUser } = useContext(AuthContext);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const { userPosts, loadUserPosts, userPostsLoading } =
     useFetchPostsByUserId(id);
-  const [reload, setReload] = useState(false);
   const [whatToShow, setWhatToShow] = useState(false);
   const [showUpdateCard, setShowUpdateCard] = useState(false);
+  const [showDeleteCard, setShowDeleteCard] = useState(false);
 
   const isCurrentUser = user?.id === currentUser?.userId;
 
   useEffect(() => {
+    setWhatToShow(false);
     loadUser();
     loadUserPosts();
   }, [id]);
 
   const totalFollowers = user?.followers?.length;
   const totalFollowing = user?.following?.length;
-
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        `${baseUrl}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
-      localStorage.removeItem("user");
-      setReload((prev) => !prev);
-      navigate("/login");
-      window.location.reload();
-    } catch (error) {
-      console.log(error);
-      navigate("/profile");
-    }
-  };
-
-  const closeDialogHandler = async (shouldDelete) => {
-    setLogoutCard(false);
-    if (shouldDelete) {
-      await handleLogout();
-    }
-  };
 
   return (
     <div className="w-full min-h-fit md:p-1 p-2 md:gap-2 md:flex justify-start items-start">
@@ -224,6 +232,7 @@ function Profile() {
           currentUser={currentUser}
           id={id}
           setShowUpdateCard={setShowUpdateCard}
+          setShowDeleteCard={setShowDeleteCard}
         />
         <div className="w-full hidden md:block">
           <BlogWriteBanner isCurrentUser={isCurrentUser} />
@@ -266,6 +275,13 @@ function Profile() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {showDeleteCard && (
+        <div className="fixed top-0 left-0 w-full h-full z-50 bg-black bg-opacity-40 flex justify-center items-center">
+          <div className="w-full max-w-md">
+            <DeleteAccountCard onClose={() => setShowDeleteCard(false)} />
           </div>
         </div>
       )}

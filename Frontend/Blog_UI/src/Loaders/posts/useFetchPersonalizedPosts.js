@@ -1,25 +1,17 @@
-import { useState, useCallback } from "react";
-import { useDispatch } from "react-redux";
 import { personalizedPostsThunk } from "../../ReduxThunkSlice/PostSlice";
+import { usePagedPosts } from "./usePagedPosts";
 
 export const useFetchPersonalizedPosts = (userId) => {
-     const dispatch = useDispatch();
-     const [personalizedPosts, setPersonalizedPosts] = useState([]);
-     const [error, setError] = useState();
-     const [loading, setLoading] = useState(false);
+  const { posts, error, loading, loadingMore, hasMore, load, loadMore } =
+    usePagedPosts(personalizedPostsThunk, { userId });
 
-     const loadPersonalizedPosts = useCallback(async () => {
-          setLoading(true);
-          setError(null);
-          try {
-               const posts_response = await dispatch(personalizedPostsThunk({ userId })).unwrap();
-               setPersonalizedPosts(posts_response);
-          } catch (err) {
-               setError(err);
-          } finally {
-               setLoading(false);
-          }
-     }, [dispatch]);
-
-     return { personalizedPosts, error, loading, loadPersonalizedPosts };
+  return {
+    personalizedPosts: posts,
+    error,
+    loading,
+    loadingMore,
+    hasMore,
+    loadPersonalizedPosts: load,
+    loadMore,
+  };
 };
