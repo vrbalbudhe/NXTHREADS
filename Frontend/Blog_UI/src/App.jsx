@@ -11,7 +11,7 @@ import Search from "./Routes/Search.jsx";
 import ListPage from "./Routes/ListPage.jsx";
 import PrivacyPolicy from "./Routes/PrivacyPolicy.jsx";
 import BloggersPage from "./Routes/BloggersPage.jsx";
-import SinglePostPage from "./Routes/SinglePostPage.jsx";
+import NotFound from "./Routes/NotFound.jsx";
 import ChatingPage from "./Routes/ChatingPage.jsx";
 import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
 import Blog from "./Routes/Blog.jsx";
@@ -27,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/policy", element: <PrivacyPolicy /> },
       { path: "/blog/:id", element: <Blog /> },
       { path: "/search", element: <Search /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
   {
@@ -35,7 +36,6 @@ const router = createBrowserRouter([
     children: [
       { path: "/profile/:id", element: <Profile /> },
       { path: "/createBlog", element: <CreateBlog /> },
-      { path: "/:id", element: <SinglePostPage /> },
       { path: "/chat", element: <ChatingPage /> },
       { path: "/bloggers", element: <BloggersPage /> },
     ],

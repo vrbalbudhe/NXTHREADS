@@ -31,16 +31,25 @@
 
 ## Phase 1 — Make features correct (next)
 
-1. **Replace Firebase chat with the backend** (Firebase is to be removed):
-   - Attach Socket.IO to the Express HTTP server, authenticate sockets with the same session cookie.
-   - Use the existing `Chat` / `Message` Prisma models and the now-secured `/api/chat` routes for history.
-   - Rewrite `ChatingPage`, `useFirebaseChat`, `useFirebaseUsers` against REST + Socket.IO.
-   - Delete `firebase.js`, `syncUsersToFirebase.js`, the `firebase` dependency and the `VITE_FIREBASE_*` variables.
-   - One-off script to migrate existing Firestore messages into MongoDB if they are worth keeping.
-2. Request validation (`zod`), central error handler, consistent `{ success, data, message }` responses.
-3. `helmet`, request body size limit, replace the in-memory rate limiter with `express-rate-limit` + Redis when running more than one instance.
-4. Like/unlike counters inside `prisma.$transaction`; database-side pagination for the personalized feed; frontend infinite scroll.
-5. Fix the broken saved-posts endpoint (`/api/post/favourite/:id` does not exist), implement account deletion, 404 route on the frontend.
+Branch: `feature/phase-1-realtime-chat` (built on `feature/phase-0-security-hardening`).
+
+| # | Task | Status |
+|---|------|--------|
+| 1.1 | Socket.IO on the Express server, authenticated with the session cookie, per-socket rate limit | Done |
+| 1.2 | Chat on MongoDB: contacts (follows + conversations) with unread counts, paged history, read receipts, REST fallback | Done |
+| 1.3 | Messaging allowed only between users where either follows the other, or who already have a conversation | Done |
+| 1.4 | Frontend chat rewritten on REST + Socket.IO; Firebase code, dependency and env variables removed | Done |
+| 1.5 | Old Firestore messages | Not migrated (start fresh) |
+| 1.6 | `helmet` security headers, graceful shutdown | Done |
+| 1.7 | Like/dislike return authoritative counts; counts correct in every feed | Done |
+| 1.8 | Personalized feed paged in the database (chronological), infinite scroll on both feeds | Done |
+| 1.9 | Save button on posts, Saved tab on own profile | Done |
+| 1.10 | Account deletion with password + typed confirmation, full cascade | Done |
+| 1.11 | 404 page; removed the empty `/:id` catch-all route and dead components | Done |
+| 1.12 | Request validation | Kept as hand-written validators in `lib/validators.js`; `zod` moved to Phase 2 |
+| 1.13 | Shared rate-limit store (Redis) | Only needed when running more than one backend instance; moved to Phase 3 |
+
+Verified with an end-to-end script against a real database: 26/26 checks passed (auth, posts, likes, saves, permissions, live chat, unread counts, account deletion cascade).
 
 ## Phase 2 — Code quality
 
@@ -48,6 +57,8 @@
 2. Frontend: RTK Query instead of hand-written thunks and duplicate loader hooks.
 3. Remove unused dependencies (`mongoose`, `redis`, `@redis/client`, `ws`, `body-parser`, `crypto`), move `nodemon` to devDependencies, remove debug logging.
 4. ESLint + Prettier on both apps; consider TypeScript.
+5. Schema-based request validation with `zod` replacing the hand-written validators.
+6. Search over the full post collection on the server instead of the first page on the client.
 
 ## Phase 3 — Testing and delivery
 

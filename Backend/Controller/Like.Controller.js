@@ -16,6 +16,24 @@ const ensurePost = async (req, res) => {
   return postId;
 };
 
+const reactionState = async (postId, userId) => {
+  const [post, like, unlike] = await Promise.all([
+    prisma.posts.findUnique({
+      where: { id: postId },
+      select: { likes: true, unlikes: true },
+    }),
+    prisma.like.findFirst({ where: { postId, userId }, select: { id: true } }),
+    prisma.unlike.findFirst({ where: { postId, userId }, select: { id: true } }),
+  ]);
+  return {
+    postId,
+    likes: Math.max(post?.likes ?? 0, 0),
+    unlikes: Math.max(post?.unlikes ?? 0, 0),
+    isLiked: Boolean(like),
+    isUnliked: Boolean(unlike),
+  };
+};
+
 const likePost = asyncHandler(async (req, res) => {
   const postId = await ensurePost(req, res);
   if (!postId) {
@@ -46,7 +64,11 @@ const likePost = asyncHandler(async (req, res) => {
     return "Post liked successfully";
   });
 
-  return res.status(200).json({ success: true, message });
+  return res.status(200).json({
+    success: true,
+    message,
+    ...(await reactionState(postId, userId)),
+  });
 });
 
 const unlikePost = asyncHandler(async (req, res) => {
@@ -79,7 +101,11 @@ const unlikePost = asyncHandler(async (req, res) => {
     return "Post disliked successfully";
   });
 
-  return res.status(200).json({ success: true, message });
+  return res.status(200).json({
+    success: true,
+    message,
+    ...(await reactionState(postId, userId)),
+  });
 });
 
 const checkWhetherLike = asyncHandler(async (req, res) => {

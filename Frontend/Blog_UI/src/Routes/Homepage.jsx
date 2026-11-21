@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { useFetchPosts } from "../Loaders/posts/useFetchAllPosts";
 import { useFetchPersonalizedPosts } from "../Loaders/posts/useFetchPersonalizedPosts";
@@ -11,29 +11,35 @@ import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import PostSkeleton from "../Components/PostCard/PostSkeleton";
 import PullToRefresh from "pulltorefreshjs";
 
-const BATCH_SIZE = 4;
-
-const LazyLoadingPosts = ({ postList, isLoading, currentUser }) => {
-  const [showMore, setShowMore] = useState(BATCH_SIZE);
+const LazyLoadingPosts = ({
+  postList,
+  isLoading,
+  loadingMore,
+  hasMore,
+  onLoadMore,
+  currentUser,
+}) => {
   const sentinelRef = useRef(null);
-  const observerRef = useRef(null);
+  const loadMoreRef = useRef(onLoadMore);
 
   useEffect(() => {
-    setShowMore(Math.min(BATCH_SIZE, postList.length || BATCH_SIZE));
-  }, [postList]);
+    loadMoreRef.current = onLoadMore;
+  }, [onLoadMore]);
 
   useEffect(() => {
-    if (!sentinelRef.current) return;
-    if (observerRef.current) observerRef.current.disconnect();
-    observerRef.current = new IntersectionObserver((entries) => {
-      const e = entries[0];
-      if (e.isIntersecting && !isLoading) {
-        setShowMore((prev) => Math.min(prev + BATCH_SIZE, postList.length));
-      }
-    });
-    observerRef.current.observe(sentinelRef.current);
-    return () => observerRef.current && observerRef.current.disconnect();
-  }, [isLoading, postList.length]);
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreRef.current();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, postList.length]);
 
   return (
     <div className="w-full md:w-[60%] flex flex-col items-center justify-start gap-3">
@@ -45,12 +51,12 @@ const LazyLoadingPosts = ({ postList, isLoading, currentUser }) => {
         </>
       ) : postList.length > 0 ? (
         <>
-          {postList.slice(0, showMore).map((post) => (
+          {postList.map((post) => (
             <PostCard key={post.id} post={post} currentUser={currentUser} />
           ))}
           <div ref={sentinelRef} className="h-10 w-full" />
-          {showMore < postList.length && <PostSkeleton />}
-          {showMore >= postList.length && (
+          {loadingMore && <PostSkeleton />}
+          {!hasMore && (
             <div className="py-4 text-sm text-gray-400">
               You’re all caught up
             </div>
@@ -76,12 +82,15 @@ const LazyLoadingPosts = ({ postList, isLoading, currentUser }) => {
 
 function Homepage() {
   const { currentUser } = useContext(AuthContext);
+  const personalized = useFetchPersonalizedPosts(currentUser?.userId);
+  const everyone = useFetchPosts();
   const {
     personalizedPosts,
     loading: loadingPersonalized,
     loadPersonalizedPosts,
-  } = useFetchPersonalizedPosts(currentUser?.userId);
-  const { posts, loading: loadingPosts, loadPosts } = useFetchPosts();
+  } = personalized;
+  const { posts, loading: loadingPosts, loadPosts } = everyone;
+  const activeFeed = currentUser?.userId ? personalized : everyone;
 
   useEffect(() => {
     currentUser?.userId ? loadPersonalizedPosts() : loadPosts();
@@ -132,6 +141,9 @@ function Homepage() {
       <LazyLoadingPosts
         postList={postList}
         isLoading={isLoading}
+        loadingMore={activeFeed.loadingMore}
+        hasMore={activeFeed.hasMore}
+        onLoadMore={activeFeed.loadMore}
         currentUser={currentUser}
       />
 

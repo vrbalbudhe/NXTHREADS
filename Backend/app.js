@@ -1,11 +1,16 @@
 const config = require("./Config/env");
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
+const prisma = require("./lib/prisma");
+const { attachSocket } = require("./socket");
 
 const app = express();
 
 app.disable("x-powered-by");
+app.use(helmet());
 
 if (config.trustProxy) {
   app.set("trust proxy", 1);
@@ -51,6 +56,20 @@ app.use((err, req, res, next) => {
   return res.status(500).json({ success: false, message: "Internal server error" });
 });
 
-app.listen(config.port, () => {
+const server = http.createServer(app);
+app.set("io", attachSocket(server));
+
+server.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
 });
+
+const shutdown = () => {
+  server.close(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000).unref();
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

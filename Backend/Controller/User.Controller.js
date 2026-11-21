@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
 const { isObjectId, cleanString, isHttpUrl, invalidId } = require("../lib/validators");
+const { sessionCookieOptions } = require("../Config/env");
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
@@ -61,11 +62,78 @@ const getUsers = asyncHandler(async (req, res) => {
   return res.status(200).json({ users });
 });
 
-const deleteUser = (req, res) =>
-  res.status(501).json({
-    success: false,
-    message: "Account deletion is not available yet",
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!isObjectId(id)) {
+    return invalidId(res, "user id");
+  }
+  if (id !== req.userId) {
+    return res.status(403).json({ success: false, message: "You can only delete your own account" });
+  }
+
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  if (!password) {
+    return res.status(400).json({ success: false, message: "Enter your password to delete your account" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, password: true },
   });
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  if (!(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ success: false, message: "Password is incorrect" });
+  }
+
+  await prisma.$transaction(
+    async (tx) => {
+      const ownPosts = await tx.posts.findMany({ where: { userId: id }, select: { id: true } });
+      const ownPostIds = ownPosts.map((post) => post.id);
+
+      const [likes, unlikes] = await Promise.all([
+        tx.like.findMany({
+          where: { userId: id, postId: { notIn: ownPostIds } },
+          select: { postId: true },
+        }),
+        tx.unlike.findMany({
+          where: { userId: id, postId: { notIn: ownPostIds } },
+          select: { postId: true },
+        }),
+      ]);
+
+      if (likes.length > 0) {
+        await tx.posts.updateMany({
+          where: { id: { in: likes.map((like) => like.postId) } },
+          data: { likes: { decrement: 1 } },
+        });
+      }
+      if (unlikes.length > 0) {
+        await tx.posts.updateMany({
+          where: { id: { in: unlikes.map((unlike) => unlike.postId) } },
+          data: { unlikes: { decrement: 1 } },
+        });
+      }
+
+      const postScope = { postId: { in: ownPostIds } };
+      await tx.comment.deleteMany({ where: { OR: [{ commentor: id }, postScope] } });
+      await tx.like.deleteMany({ where: { OR: [{ userId: id }, postScope] } });
+      await tx.unlike.deleteMany({ where: { OR: [{ userId: id }, postScope] } });
+      await tx.savedPosts.deleteMany({ where: { OR: [{ userId: id }, postScope] } });
+      await tx.posts.deleteMany({ where: { userId: id } });
+      await tx.follows.deleteMany({ where: { OR: [{ followerId: id }, { followingId: id }] } });
+      await tx.message.deleteMany({ where: { OR: [{ senderId: id }, { receiverId: id }] } });
+      await tx.chat.deleteMany({ where: { participants: { has: id } } });
+      await tx.otp.deleteMany({ where: { email: user.email } });
+      await tx.user.delete({ where: { id } });
+    },
+    { timeout: 30000 }
+  );
+
+  res.clearCookie("token", sessionCookieOptions);
+  return res.status(200).json({ success: true, message: "Your account has been deleted" });
+});
 
 const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;

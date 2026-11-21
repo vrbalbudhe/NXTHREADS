@@ -1,22 +1,21 @@
 const asyncHandler = require("express-async-handler");
 const { Category } = require("@prisma/client");
 const prisma = require("../lib/prisma");
-const { publicUserSelect, postInclude } = require("../lib/selects");
+const { postInclude } = require("../lib/selects");
 const { isObjectId, cleanString, isHttpUrl, invalidId } = require("../lib/validators");
 
 const MAX_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 10;
 const MAX_IMAGES = 10;
-const FEED_POOL_SIZE = 100;
-const FEED_SIZE = 20;
 const categories = new Set(Object.values(Category));
 
-const shuffle = (items) => {
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
+const parsePaging = (query) => {
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(
+    Math.max(parseInt(query.limit, 10) || DEFAULT_PAGE_SIZE, 1),
+    MAX_PAGE_SIZE
+  );
+  return { page, limit, offset: (page - 1) * limit };
 };
 
 const parseImages = (images) => {
@@ -61,9 +60,7 @@ const getPost = asyncHandler(async (req, res) => {
 });
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), MAX_PAGE_SIZE);
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = parsePaging(req.query);
 
   const [posts, total] = await Promise.all([
     prisma.posts.findMany({
@@ -239,35 +236,42 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
 
   const favoritePosts = await prisma.savedPosts.findMany({
     where: { userId: id },
-    include: { post: true },
+    include: { post: { include: postInclude } },
   });
 
-  return res.status(200).json({ posts: favoritePosts });
+  return res.status(200).json({
+    posts: favoritePosts.map((saved) => saved.post).filter(Boolean),
+  });
 });
 
 const getFollowersPost = asyncHandler(async (req, res) => {
   const userId = req.userId;
+  const { page, limit, offset } = parsePaging(req.query);
 
   const followedUsers = await prisma.follows.findMany({
     where: { followerId: userId },
     select: { followingId: true },
   });
 
-  const authorIds = [...followedUsers.map((follow) => follow.followingId), userId];
+  const where = {
+    userId: { in: [...followedUsers.map((follow) => follow.followingId), userId] },
+  };
 
-  const posts = await prisma.posts.findMany({
-    where: { userId: { in: authorIds } },
-    include: {
-      User: { select: publicUserSelect },
-      comment: true,
-      like: true,
-      unlike: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: FEED_POOL_SIZE,
+  const [posts, total] = await Promise.all([
+    prisma.posts.findMany({
+      where,
+      include: postInclude,
+      orderBy: { createdAt: "desc" },
+      skip: offset,
+      take: limit,
+    }),
+    prisma.posts.count({ where }),
+  ]);
+
+  return res.status(200).json({
+    posts,
+    meta: { total, page, limit, hasMore: offset + posts.length < total },
   });
-
-  return res.status(200).json(shuffle(posts).slice(0, FEED_SIZE));
 });
 
 const getPostById = asyncHandler(async (req, res) => {
