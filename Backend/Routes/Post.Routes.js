@@ -8,6 +8,8 @@ const {
   deletePosts,
   createPosts,
   searchPosts,
+  getCategories,
+  getStats,
   favUnfavPost,
   getFavoritePosts,
   getFollowersPost,
@@ -16,6 +18,7 @@ const {
 const { likePost, unlikePost, checkWhetherLike } = require("../Controller/Like.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 const validate = require("../Middleware/validate");
+const optionalAuth = require("../Middleware/optionalAuth");
 const createRateLimiter = require("../Middleware/rateLimit");
 const schemas = require("../lib/schemas");
 
@@ -26,12 +29,26 @@ const searchLimiter = createRateLimiter({
 });
 
 const byId = validate({ params: schemas.params.id });
+const byIdPaged = validate({ params: schemas.params.id, query: schemas.paging });
 const byPostIdBody = validate({ body: schemas.post.postIdBody });
 
-router.get("/fltr", validate({ query: schemas.post.filter }), getPostUrl);
-router.get("/search", searchLimiter, validate({ query: schemas.post.search }), searchPosts);
-router.get("/", validate({ query: schemas.paging }), getAllPosts);
-router.get("/:id", byId, getPost);
+router.get(
+  "/fltr",
+  optionalAuth,
+  validate({ query: schemas.post.filter.extend(schemas.paging.shape) }),
+  getPostUrl
+);
+router.get("/categories", getCategories);
+router.get("/stats", getStats);
+router.get(
+  "/search",
+  searchLimiter,
+  optionalAuth,
+  validate({ query: schemas.post.search }),
+  searchPosts
+);
+router.get("/", optionalAuth, validate({ query: schemas.paging }), getAllPosts);
+router.get("/:id", optionalAuth, byIdPaged, getPost);
 router.post("/", verifyToken, validate({ body: schemas.post.create }), createPosts);
 router.put(
   "/upd/:id",
@@ -42,9 +59,9 @@ router.put(
 router.delete("/:id", verifyToken, byId, deletePosts);
 
 router.post("/fav", verifyToken, byPostIdBody, favUnfavPost);
-router.get("/fav/:id", verifyToken, byId, getFavoritePosts);
+router.get("/fav/:id", verifyToken, byIdPaged, getFavoritePosts);
 
-router.get("/get/:id", byId, getPostById);
+router.get("/get/:id", optionalAuth, byId, getPostById);
 
 router.post("/like", verifyToken, byPostIdBody, likePost);
 router.post("/unlike", verifyToken, byPostIdBody, unlikePost);

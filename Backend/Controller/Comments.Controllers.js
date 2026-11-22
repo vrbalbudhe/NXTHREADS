@@ -55,6 +55,7 @@ const getComments = asyncHandler(async (req, res) => {
   const allComments = await prisma.comment.findMany({
     where: { postId: req.valid.params.id },
     include: { user: { select: publicUserSelect } },
+    orderBy: { createdAt: "asc" },
   });
 
   return res.status(200).json({

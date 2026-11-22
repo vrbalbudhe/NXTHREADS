@@ -2,3 +2,4 @@
 .env.*
 !.env.example
 k8s/backend-secret.yaml
+*.local.md

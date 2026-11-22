@@ -78,9 +78,10 @@ model comment {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
   post        posts  @relation(fields: [postId], references: [id])
   user        User   @relation(fields: [commentor], references: [id])
-  postId      String @db.ObjectId
-  commentor   String @db.ObjectId
+  postId      String    @db.ObjectId
+  commentor   String    @db.ObjectId
   description String
+  createdAt   DateTime? @default(now())
 }
 
 model Follows {

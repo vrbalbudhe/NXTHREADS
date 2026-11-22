@@ -10,6 +10,7 @@ const {
   getUserFollowStatus,
 } = require("../Controller/User.Controller");
 const verifyToken = require("../Middleware/verifyToken");
+const optionalAuth = require("../Middleware/optionalAuth");
 const validate = require("../Middleware/validate");
 const createRateLimiter = require("../Middleware/rateLimit");
 const schemas = require("../lib/schemas");
@@ -27,20 +28,26 @@ const searchLimiter = createRateLimiter({
 
 const byId = validate({ params: schemas.params.id });
 
-router.use(verifyToken);
-
-router.get("/", getUsers);
-router.get("/search", searchLimiter, validate({ query: schemas.user.search }), searchUsers);
-router.get("/foll/:id", byId, getUserFollowStatus);
-router.get("/:id", byId, getUser);
+router.get("/", verifyToken, getUsers);
+router.get(
+  "/search",
+  verifyToken,
+  searchLimiter,
+  validate({ query: schemas.user.search }),
+  searchUsers
+);
+router.get("/foll/:id", verifyToken, byId, getUserFollowStatus);
+router.get("/:id", optionalAuth, byId, getUser);
 router.delete(
   "/:id",
+  verifyToken,
   passwordCheckLimiter,
   validate({ params: schemas.params.id, body: schemas.user.remove }),
   deleteUser
 );
 router.put(
   "/upd/:id",
+  verifyToken,
   passwordCheckLimiter,
   validate({ params: schemas.params.id, body: schemas.user.update }),
   updateUser

@@ -1,17 +1,22 @@
-import React from "react";
-import { Provider } from "react-redux";
-import ReactDOM from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
+import { ThemeProvider } from "./Context/ThemeContext.jsx";
 import { AuthContextProvider } from "./Context/AuthContext.jsx";
-import store from "./store.js";
+import { SocialProvider } from "./Context/SocialContext.jsx";
+import { ChatProvider } from "./Context/ChatContext.jsx";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <Provider store={store}>
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <ThemeProvider>
       <AuthContextProvider>
-        <App />
+        <SocialProvider>
+          <ChatProvider>
+            <App />
+          </ChatProvider>
+        </SocialProvider>
       </AuthContextProvider>
-    </Provider>
-  </React.StrictMode>
+    </ThemeProvider>
+  </StrictMode>
 );
