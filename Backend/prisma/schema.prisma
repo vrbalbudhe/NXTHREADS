@@ -8,22 +8,28 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  username    String       @unique
-  email       String       @unique
-  password    String
-  fullname    String?
-  gender      String?
-  avatar      String?
-  verified    Boolean      @default(false)
-  createdAt   DateTime     @default(now())
-  posts       posts[]
-  savedPosts  savedPosts[]
-  followers   Follows[]    @relation("following")
-  following   Follows[]    @relation("follower")
-  comment     comment[]
-  Like        Like[]
-  Unlike      Unlike[]
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  username          String         @unique
+  email             String         @unique
+  password          String
+  fullname          String?
+  gender            String?
+  avatar            String?
+  verified          Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  mfaEnabled        Boolean        @default(false)
+  mfaMethod         MfaMethod?
+  mfaSecret         String?
+  mfaRecoveryCodes  String[]
+  mfaEnabledAt      DateTime?
+  interests         Category[]
+  posts             posts[]
+  savedPosts        savedPosts[]
+  followers         Follows[]      @relation("following")
+  following         Follows[]      @relation("follower")
+  comment           comment[]
+  Like              Like[]
+  Unlike            Unlike[]
   notifications     Notification[] @relation("NotificationRecipient")
   notificationsSent Notification[] @relation("NotificationActor")
 }
@@ -52,59 +58,77 @@ model Notification {
   @@index([userId, createdAt])
 }
 
-model Otp {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  otp       Int
-  attempts  Int       @default(0)
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
+enum MfaMethod {
+  TOTP
+  EMAIL
+}
+
+enum CodePurpose {
+  REGISTER
+  RESET_PASSWORD
+  MFA_LOGIN
+  MFA_SETUP
+}
+
+model VerificationCode {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  purpose   CodePurpose
+  codeHash  String
+  attempts  Int         @default(0)
+  expiresAt DateTime
+  createdAt DateTime    @default(now())
+
+  @@unique([email, purpose])
+  @@index([expiresAt])
 }
 
 model posts {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  subtitle   String
-  category   Category
-  author     String
-  content    String
-  images     String[]
-  createdAt  DateTime     @default(now())
-  User       User?        @relation(fields: [userId], references: [id])
-  userId     String?      @db.ObjectId
-  savedPosts savedPosts[]
-  comment    comment[]
-  like       Like[]
-  unlike     Unlike[]
-  likes      Int          @default(0)
-  unlikes    Int          @default(0)
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  subtitle      String
+  category      Category
+  author        String
+  content       String
+  images        String[]
+  createdAt     DateTime       @default(now())
+  User          User?          @relation(fields: [userId], references: [id])
+  userId        String?        @db.ObjectId
+  savedPosts    savedPosts[]
+  comment       comment[]
+  like          Like[]
+  unlike        Unlike[]
+  likes         Int            @default(0)
+  unlikes       Int            @default(0)
   notifications Notification[]
 }
 
 model Like {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  postId String @db.ObjectId
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
-  post   posts  @relation(fields: [postId], references: [id])
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String    @db.ObjectId
+  userId    String    @db.ObjectId
+  createdAt DateTime? @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  post      posts     @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId])
 }
 
 model Unlike {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  postId String @db.ObjectId
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
-  post   posts  @relation(fields: [postId], references: [id])
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String    @db.ObjectId
+  userId    String    @db.ObjectId
+  createdAt DateTime? @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  post      posts     @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId])
 }
 
 model comment {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  post        posts  @relation(fields: [postId], references: [id])
-  user        User   @relation(fields: [commentor], references: [id])
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  post        posts     @relation(fields: [postId], references: [id])
+  user        User      @relation(fields: [commentor], references: [id])
   postId      String    @db.ObjectId
   commentor   String    @db.ObjectId
   description String
@@ -122,11 +146,12 @@ model Follows {
 }
 
 model savedPosts {
-  id     String  @id @default(auto()) @map("_id") @db.ObjectId
-  post   posts   @relation(fields: [postId], references: [id])
-  User   User?   @relation(fields: [userId], references: [id])
-  postId String  @db.ObjectId
-  userId String? @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  post      posts     @relation(fields: [postId], references: [id])
+  User      User?     @relation(fields: [userId], references: [id])
+  postId    String    @db.ObjectId
+  userId    String?   @db.ObjectId
+  createdAt DateTime? @default(now())
 
   @@unique([userId, postId])
 }

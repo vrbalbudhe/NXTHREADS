@@ -24,6 +24,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const About = lazy(() =>
   import("./pages/StaticPages").then((module) => ({ default: module.About }))
 );
@@ -81,6 +82,7 @@ const router = createBrowserRouter([
   },
   { path: "/login", element: <GuestOnly>{page(<Login />)}</GuestOnly> },
   { path: "/register", element: <GuestOnly>{page(<Register />)}</GuestOnly> },
+  { path: "/forgot-password", element: <GuestOnly>{page(<ForgotPassword />)}</GuestOnly> },
 ]);
 
 export default function App() {

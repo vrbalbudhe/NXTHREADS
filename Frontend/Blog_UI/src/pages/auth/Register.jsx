@@ -1,208 +1,327 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck, Mail, Sparkles, UserRoundPlus } from "lucide-react";
 import { toast } from "react-toastify";
 import { api, errorMessage } from "../../lib/api";
 import { useAuth } from "../../Context/AuthContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { ErrorNote, Notice, Spinner } from "../../Components/ui/Feedback";
-import AuthLayout, { PasswordField } from "./AuthLayout";
+import OtpInput from "../../Components/ui/OtpInput";
+import TopicPicker from "../../Components/ui/TopicPicker";
+import AuthLayout, { AuthForm } from "./AuthLayout";
+import { FieldHint, MIN_PASSWORD, PasswordField, PasswordStrength, ResendButton } from "./fields";
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.]{3,30}$/;
+const TOTAL_STEPS = 4;
+const MIN_SUGGESTED_TOPICS = 3;
 
-function strengthOf(password) {
-  let score = 0;
-  if (password.length >= 8) score += 1;
-  if (password.length >= 12) score += 1;
-  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
-  if (/\d/.test(password)) score += 1;
-  if (/[^A-Za-z0-9]/.test(password)) score += 1;
-  return Math.min(score, 4);
-}
-
-const STRENGTH = [
-  { label: "Too short", color: "bg-rose-500" },
-  { label: "Weak", color: "bg-rose-500" },
-  { label: "Fair", color: "bg-amber-500" },
-  { label: "Good", color: "bg-emerald-500" },
-  { label: "Strong", color: "bg-emerald-600" },
-];
-
-function OtpInput({ value, onChange, disabled }) {
-  const refs = useRef([]);
-  const digits = Array.from({ length: 6 }, (_, index) => value[index] || "");
-
-  const update = (index, char) => {
-    const next = digits.slice();
-    next[index] = char;
-    onChange(next.join("").slice(0, 6));
-  };
-
-  return (
-    <div
-      className="flex justify-between gap-2"
-      onPaste={(event) => {
-        const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-        if (pasted) {
-          event.preventDefault();
-          onChange(pasted);
-          refs.current[Math.min(pasted.length, 5)]?.focus();
-        }
-      }}
-    >
-      {digits.map((digit, index) => (
-        <input
-          key={index}
-          ref={(node) => (refs.current[index] = node)}
-          value={digit}
-          disabled={disabled}
-          inputMode="numeric"
-          autoComplete={index === 0 ? "one-time-code" : "off"}
-          maxLength={1}
-          aria-label={`Digit ${index + 1}`}
-          onChange={(event) => {
-            const char = event.target.value.replace(/\D/g, "").slice(-1);
-            update(index, char);
-            if (char) refs.current[index + 1]?.focus();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Backspace" && !digits[index]) refs.current[index - 1]?.focus();
-          }}
-          className="input h-12 w-full text-center text-lg font-bold"
-        />
-      ))}
-    </div>
-  );
-}
+const signInFooter = (
+  <>
+    Already have an account?{" "}
+    <Link to="/login" className="link">
+      Sign in
+    </Link>
+  </>
+);
 
 export default function Register() {
-  const { login } = useAuth();
+  const { setCurrentUser } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState("details");
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [step, setStep] = useState("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [signupToken, setSignupToken] = useState("");
+  const [form, setForm] = useState({ username: "", fullname: "", password: "", confirm: "" });
   const [show, setShow] = useState(false);
-  const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  usePageTitle(step === "verify" ? "Verify email" : "Create account");
+  const [newUser, setNewUser] = useState(null);
+  const [topics, setTopics] = useState([]);
+  usePageTitle(
+    {
+      email: "Create account",
+      code: "Verify email",
+      details: "Finish sign-up",
+      topics: "Pick your topics",
+    }[step]
+  );
 
-  const strength = strengthOf(form.password);
-  const usernameInvalid = form.username && !USERNAME_PATTERN.test(form.username);
+  const run = async (task, fallback) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await task();
+    } catch (err) {
+      setError(errorMessage(err, fallback));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendCode = () => api.post("/auth/register/start", { email: email.trim() });
+
+  const startSignup = (event) => {
+    event.preventDefault();
+    run(async () => {
+      await sendCode();
+      setCode("");
+      setStep("code");
+      toast.success("Check your inbox for a 6-digit code");
+    }, "Could not send the code");
+  };
+
+  const verifyCode = (value = code) => {
+    if (value.length !== 6 || busy) return;
+    run(async () => {
+      try {
+        const res = await api.post("/auth/register/verify", { email: email.trim(), code: value });
+        setSignupToken(res.data.signupToken);
+        setStep("details");
+      } catch (err) {
+        setCode("");
+        throw err;
+      }
+    }, "Verification failed");
+  };
+
+  const resend = async () => {
+    try {
+      await sendCode();
+      toast.success("A new code is on its way");
+      return true;
+    } catch (err) {
+      toast.error(errorMessage(err, "Could not resend the code"));
+      return false;
+    }
+  };
 
   const set = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+  const usernameInvalid = form.username && !USERNAME_PATTERN.test(form.username.trim());
+  const tooShort = form.password.length > 0 && form.password.length < MIN_PASSWORD;
+  const mismatch = form.confirm && form.password !== form.confirm;
+  const detailsReady =
+    USERNAME_PATTERN.test(form.username.trim()) &&
+    form.password.length >= MIN_PASSWORD &&
+    form.password === form.confirm;
 
-  const register = async (event) => {
+  const finish = (event) => {
     event.preventDefault();
-    if (usernameInvalid || form.password.length < 8) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await api.post("/auth/register", {
-        ...form,
-        email: form.email.trim(),
-        username: form.username.trim(),
-      });
-      setStep("verify");
-      toast.success("Check your inbox for a 6-digit code");
-    } catch (err) {
-      setError(errorMessage(err, "Could not create the account"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const verify = async (event) => {
-    event.preventDefault();
-    if (otp.length !== 6) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await api.post("/auth/verify-otp", { email: form.email.trim(), otp });
+    if (!detailsReady) return;
+    run(async () => {
       try {
-        await login(form.email.trim(), form.password);
-        toast.success("Welcome to NXTHREADS!");
-        navigate("/settings", { replace: true });
-      } catch {
-        toast.success("Email verified. Please sign in.");
-        navigate("/login", { replace: true, state: { email: form.email.trim() } });
+        const res = await api.post("/auth/register/complete", {
+          signupToken,
+          username: form.username.trim(),
+          fullname: form.fullname.trim() || undefined,
+          password: form.password,
+        });
+        // The session cookie is set now; we only publish the user after the topics step,
+        // otherwise the guest-only route would redirect away from it.
+        setNewUser(res.data.userInfo);
+        setStep("topics");
+      } catch (err) {
+        if (err?.response?.data?.expired) {
+          setSignupToken("");
+          setStep("email");
+        }
+        throw err;
       }
-    } catch (err) {
-      setError(errorMessage(err, "Verification failed"));
-      setOtp("");
-    } finally {
-      setBusy(false);
-    }
+    }, "Could not create the account");
   };
 
-  if (step === "verify") {
+  const enterApp = () => {
+    setCurrentUser(newUser);
+    toast.success("Welcome to NXTHREADS!");
+    navigate("/", { replace: true });
+  };
+
+  const saveTopics = () =>
+    run(async () => {
+      await api.put("/user/me/interests", { interests: topics });
+      enterApp();
+    }, "Could not save your topics");
+
+  if (step === "topics") {
     return (
       <AuthLayout
-        title="Verify your email"
-        subtitle={`We sent a 6-digit code to ${form.email}. It expires in 10 minutes.`}
+        step={{ current: 4, total: TOTAL_STEPS }}
+        icon={<Sparkles className="h-5 w-5" />}
+        title="What do you like to read?"
+        subtitle={`Pick at least ${MIN_SUGGESTED_TOPICS} topics so your feed and suggestions fit you from day one. You can change them in Settings.`}
+      >
+        <div className="space-y-4">
+          <ErrorNote message={error} />
+          <TopicPicker value={topics} onChange={setTopics} disabled={busy} />
+          <button
+            type="button"
+            className="btn btn-primary btn-lg w-full"
+            onClick={saveTopics}
+            disabled={busy || topics.length < MIN_SUGGESTED_TOPICS}
+          >
+            {busy && <Spinner />}{" "}
+            {topics.length < MIN_SUGGESTED_TOPICS
+              ? `Pick ${MIN_SUGGESTED_TOPICS - topics.length} more`
+              : "Continue"}
+          </button>
+          <button type="button" className="btn btn-ghost w-full" onClick={enterApp} disabled={busy}>
+            Skip for now
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (step === "code") {
+    return (
+      <AuthLayout
+        step={{ current: 2, total: TOTAL_STEPS }}
+        icon={<MailCheck className="h-5 w-5" />}
+        title="Check your email"
+        subtitle={`Enter the 6-digit code we sent to ${email.trim()}. It expires in 10 minutes.`}
         footer={
           <button
             type="button"
-            onClick={() => setStep("details")}
+            onClick={() => {
+              setError(null);
+              setStep("email");
+            }}
             className="link inline-flex items-center gap-1"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Use a different email
           </button>
         }
       >
-        <form onSubmit={verify} className="space-y-4">
+        <AuthForm
+          onSubmit={(event) => {
+            event.preventDefault();
+            verifyCode();
+          }}
+        >
           <ErrorNote message={error} />
-          <OtpInput value={otp} onChange={setOtp} disabled={busy} />
+          <OtpInput value={code} onChange={setCode} disabled={busy} onComplete={verifyCode} />
           <button
             type="submit"
             className="btn btn-primary btn-lg w-full"
-            disabled={busy || otp.length !== 6}
+            disabled={busy || code.length !== 6}
           >
-            {busy ? <Spinner /> : <MailCheck className="h-4 w-4" />} Verify and continue
+            {busy && <Spinner />} Verify email
           </button>
-          <Notice icon={MailCheck} tone="brand">
-            Can&apos;t find it? Check spam. After 10 minutes you can register again to get a new
-            code.
+          <div className="flex items-center justify-between text-[13px]">
+            <span className="muted">Didn&apos;t get it?</span>
+            <ResendButton onResend={resend} />
+          </div>
+          <Notice icon={Mail} tone="brand">
+            Can&apos;t find it? Check your spam folder. If you already have an account, we emailed
+            you a sign-in reminder instead.
           </Notice>
-        </form>
+        </AuthForm>
+      </AuthLayout>
+    );
+  }
+
+  if (step === "details") {
+    return (
+      <AuthLayout
+        step={{ current: 3, total: TOTAL_STEPS }}
+        icon={<UserRoundPlus className="h-5 w-5" />}
+        title="Set up your profile"
+        subtitle={`Email confirmed: ${email.trim()}. Choose how you'll appear and sign in.`}
+        footer={signInFooter}
+      >
+        <AuthForm onSubmit={finish}>
+          <ErrorNote message={error} />
+          <div>
+            <label htmlFor="username" className="label">
+              Username
+            </label>
+            <input
+              id="username"
+              className="input h-11"
+              autoComplete="username"
+              value={form.username}
+              onChange={set("username")}
+              placeholder="jane.doe"
+              maxLength={30}
+              autoFocus
+              required
+            />
+            <FieldHint>
+              {usernameInvalid && "3–30 characters: letters, numbers, dots or underscores"}
+            </FieldHint>
+          </div>
+          <div>
+            <label htmlFor="fullname" className="label">
+              Full name <span className="font-normal muted">(optional)</span>
+            </label>
+            <input
+              id="fullname"
+              className="input h-11"
+              autoComplete="name"
+              value={form.fullname}
+              onChange={set("fullname")}
+              placeholder="Jane Doe"
+              maxLength={60}
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="label">
+              Password
+            </label>
+            <PasswordField
+              id="password"
+              value={form.password}
+              onChange={set("password")}
+              autoComplete="new-password"
+              placeholder={`At least ${MIN_PASSWORD} characters`}
+              show={show}
+              onToggle={() => setShow((value) => !value)}
+            />
+            <PasswordStrength password={form.password} />
+          </div>
+          <div>
+            <label htmlFor="confirm" className="label">
+              Confirm password
+            </label>
+            <input
+              id="confirm"
+              type={show ? "text" : "password"}
+              className="input h-11"
+              autoComplete="new-password"
+              value={form.confirm}
+              onChange={set("confirm")}
+              maxLength={72}
+              required
+            />
+            <FieldHint>{mismatch && "Passwords don't match"}</FieldHint>
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg w-full"
+            disabled={busy || !detailsReady || tooShort}
+          >
+            {busy && <Spinner />} Create account
+          </button>
+          <p className="text-center text-[11px] muted">
+            By joining you agree to our{" "}
+            <Link to="/privacy" className="link">
+              privacy policy
+            </Link>
+            .
+          </p>
+        </AuthForm>
       </AuthLayout>
     );
   }
 
   return (
     <AuthLayout
+      step={{ current: 1, total: TOTAL_STEPS }}
       title="Create your account"
-      subtitle="Join a community of writers and readers."
-      footer={
-        <>
-          Already have an account?{" "}
-          <Link to="/login" className="link">
-            Sign in
-          </Link>
-        </>
-      }
+      subtitle="Start with your email. We'll send a code to confirm it's you."
+      footer={signInFooter}
     >
-      <form onSubmit={register} className="space-y-4">
+      <AuthForm onSubmit={startSignup}>
         <ErrorNote message={error} />
-        <div>
-          <label htmlFor="username" className="label">
-            Username
-          </label>
-          <input
-            id="username"
-            className="input h-11"
-            autoComplete="username"
-            value={form.username}
-            onChange={set("username")}
-            placeholder="jane.doe"
-            maxLength={30}
-            required
-          />
-          {usernameInvalid && (
-            <p className="mt-1 text-[11px] text-rose-600">
-              3–30 characters: letters, numbers, dots or underscores
-            </p>
-          )}
-        </div>
         <div>
           <label htmlFor="email" className="label">
             Email
@@ -212,56 +331,17 @@ export default function Register() {
             type="email"
             className="input h-11"
             autoComplete="email"
-            value={form.email}
-            onChange={set("email")}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
+            autoFocus
             required
           />
         </div>
-        <div>
-          <label htmlFor="password" className="label">
-            Password
-          </label>
-          <PasswordField
-            id="password"
-            value={form.password}
-            onChange={set("password")}
-            autoComplete="new-password"
-            placeholder="At least 8 characters"
-            show={show}
-            onToggle={() => setShow((value) => !value)}
-          />
-          {form.password && (
-            <div className="mt-2 flex items-center gap-2">
-              <div className="flex flex-1 gap-1">
-                {[1, 2, 3, 4].map((level) => (
-                  <span
-                    key={level}
-                    className={`h-1 flex-1 rounded-full ${strength >= level ? STRENGTH[strength].color : "bg-slate-200 dark:bg-white/10"}`}
-                  />
-                ))}
-              </div>
-              <span className="text-[11px] muted">
-                {form.password.length < 8 ? STRENGTH[0].label : STRENGTH[strength].label}
-              </span>
-            </div>
-          )}
-        </div>
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg w-full"
-          disabled={busy || usernameInvalid || form.password.length < 8}
-        >
-          {busy && <Spinner />} Create account
+        <button type="submit" className="btn btn-primary btn-lg w-full" disabled={busy}>
+          {busy && <Spinner />} Send code
         </button>
-        <p className="text-center text-[11px] muted">
-          By joining you agree to our{" "}
-          <Link to="/privacy" className="link">
-            privacy policy
-          </Link>
-          .
-        </p>
-      </form>
+      </AuthForm>
     </AuthLayout>
   );
 }

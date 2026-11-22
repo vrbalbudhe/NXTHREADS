@@ -13,7 +13,6 @@ import { api, errorMessage } from "../lib/api";
 import { categoryLabel, displayName, formatDate, formatTime, readingTime } from "../lib/format";
 import { useAuth } from "../Context/AuthContext";
 import { usePostActions } from "../hooks/usePostActions";
-import { usePaged } from "../hooks/usePaged";
 import { useShellTitle } from "../Components/layout/ShellContext";
 import Avatar from "../Components/ui/Avatar";
 import Breadcrumbs from "../Components/ui/Breadcrumbs";
@@ -59,31 +58,46 @@ function AuthorCard({ post }) {
 }
 
 function RelatedPosts({ post }) {
-  const related = usePaged("/post/fltr", { params: { category: post.category }, limit: 6 });
-  const items = related.items.filter((item) => item.id !== post.id).slice(0, 5);
+  const [items, setItems] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setItems(null);
+    api
+      .get(`/post/related/${post.id}`, { params: { limit: 5 } })
+      .then((res) => !cancelled && setItems(res.data?.posts || []))
+      .catch(() => !cancelled && setItems([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [post.id]);
+
   return (
     <WidgetCard
-      title={`More in ${categoryLabel(post.category)}`}
+      title="Recommended reads"
       action={
         <Link to={`/topics?category=${post.category}`} className="text-[11px] link">
-          See all
+          More in {categoryLabel(post.category)}
         </Link>
       }
     >
-      {related.loading ? (
+      {!items ? (
         <div className="space-y-3">
           {[0, 1, 2].map((key) => (
             <Skeleton key={key} className="h-10" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <p className="text-xs muted">No other posts in this topic yet.</p>
+        <p className="text-xs muted">No related posts yet.</p>
       ) : (
         <ul className="divide-y divide-line dark:divide-line-dark">
           {items.map((item) => (
             <li key={item.id}>
               <Link to={`/post/${item.id}`} className="group block py-2.5">
-                <span className="line-clamp-2 text-[13px] font-semibold text-slate-800 group-hover:text-brand-600 dark:text-slate-100 dark:group-hover:text-brand-400">
+                <span className="block text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                  {item.reason}
+                </span>
+                <span className="mt-0.5 line-clamp-2 text-[13px] font-semibold text-slate-800 group-hover:text-brand-600 dark:text-slate-100 dark:group-hover:text-brand-400">
                   {item.title}
                 </span>
                 <span className="mt-0.5 block text-[11px] muted">
@@ -120,7 +134,7 @@ function PostBody({ post, setPost }) {
 
   return (
     <article className="card overflow-hidden">
-      <div className="border-b border-line px-4 py-4 dark:border-line-dark sm:px-6 sm:py-5">
+      <div className="border-b border-line px-4 py-4 dark:border-line-dark sm:px-5 sm:py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <CategoryChip category={post.category} />
@@ -172,14 +186,14 @@ function PostBody({ post, setPost }) {
         </div>
       </div>
 
-      <div className="space-y-5 px-4 py-5 sm:px-6">
+      <div className="space-y-5 px-4 py-5 sm:px-5">
         {post.images?.length > 0 && <ImageGallery images={post.images} max={4} />}
         <div className="whitespace-pre-line break-words text-[15px] leading-8 text-slate-700 dark:text-slate-200">
           {post.content}
         </div>
       </div>
 
-      <div className="border-t border-line px-3 py-2 dark:border-line-dark sm:px-5">
+      <div className="border-t border-line px-4 py-2 dark:border-line-dark sm:px-5">
         <PostReactions post={post} actions={actions} />
       </div>
 
@@ -259,7 +273,7 @@ export default function PostDetail() {
 
   if (!post) {
     return (
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="card card-pad space-y-3">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-7 w-3/4" />
@@ -279,7 +293,7 @@ export default function PostDetail() {
           { label: post.title },
         ]}
       />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="page-grid">
         <div className="min-w-0 space-y-4">
           <PostBody post={post} setPost={setPost} />
           <CommentThread post={post} onCountChange={setCommentCount} />

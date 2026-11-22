@@ -35,11 +35,32 @@ export const AuthContextProvider = ({ children }) => {
     refresh().finally(() => setLoading(false));
   }, [refresh]);
 
+  /**
+   * Resolves to { user } when signed in, or { mfaRequired, mfaToken, method } when a
+   * second step is needed.
+   */
   const login = useCallback(
     async (email, password) => {
       const res = await api.post("/auth/login", { email, password });
+      if (res.data?.mfaRequired) {
+        return {
+          mfaRequired: true,
+          mfaToken: res.data.mfaToken,
+          method: res.data.method,
+          message: res.data.message,
+        };
+      }
       setCurrentUser(res.data?.userInfo);
-      return res.data?.userInfo;
+      return { user: res.data?.userInfo };
+    },
+    [setCurrentUser]
+  );
+
+  const completeMfa = useCallback(
+    async (mfaToken, code) => {
+      const res = await api.post("/auth/mfa/challenge", { mfaToken, code });
+      setCurrentUser(res.data?.userInfo);
+      return { user: res.data?.userInfo, recoveryCodesLeft: res.data?.recoveryCodesLeft };
     },
     [setCurrentUser]
   );
@@ -58,8 +79,16 @@ export const AuthContextProvider = ({ children }) => {
   );
 
   const value = useMemo(
-    () => ({ currentUser, setCurrentUser, updateCurrentUser, login, logout, refresh }),
-    [currentUser, setCurrentUser, updateCurrentUser, login, logout, refresh]
+    () => ({
+      currentUser,
+      setCurrentUser,
+      updateCurrentUser,
+      login,
+      completeMfa,
+      logout,
+      refresh,
+    }),
+    [currentUser, setCurrentUser, updateCurrentUser, login, completeMfa, logout, refresh]
   );
 
   if (loading) {

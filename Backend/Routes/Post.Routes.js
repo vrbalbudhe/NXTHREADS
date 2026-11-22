@@ -14,6 +14,9 @@ const {
   getFavoritePosts,
   getFollowersPost,
   getPostById,
+  getForYouFeed,
+  getTrendingTopics,
+  getRelatedPosts,
 } = require("../Controller/Post.Controller");
 const { likePost, unlikePost, checkWhetherLike } = require("../Controller/Like.Controller");
 const verifyToken = require("../Middleware/verifyToken");
@@ -39,6 +42,9 @@ router.get(
   getPostUrl
 );
 router.get("/categories", getCategories);
+router.get("/trending", getTrendingTopics);
+router.get("/feed", verifyToken, validate({ query: schemas.paging }), getForYouFeed);
+router.get("/related/:id", optionalAuth, byId, getRelatedPosts);
 router.get("/stats", getStats);
 router.get(
   "/search",

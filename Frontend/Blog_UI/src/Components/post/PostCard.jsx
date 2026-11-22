@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Sparkles, Trash2 } from "lucide-react";
 import { usePostActions } from "../../hooks/usePostActions";
 import { displayName, readingTime, timeAgo } from "../../lib/format";
 import Avatar from "../ui/Avatar";
@@ -47,6 +47,11 @@ export default function PostCard({ post, onChange, onRemove }) {
 
   return (
     <article className="card card-pad animate-slide-up transition-shadow hover:shadow-lift">
+      {post.reason && (
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400">
+          <Sparkles className="h-3 w-3" /> {post.reason}
+        </p>
+      )}
       <header className="flex items-start justify-between gap-3">
         <PostAuthor post={post} />
         <div className="flex shrink-0 items-center gap-1">

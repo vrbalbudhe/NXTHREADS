@@ -33,7 +33,7 @@ export default function Header({ title, onOpenMenu }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-panel/85 backdrop-blur-md dark:border-line-dark dark:bg-panel-dark/85">
-      <div className="flex h-16 items-center gap-2 px-4 sm:px-6">
+      <div className="flex h-16 items-center gap-2 page-gutter">
         <button
           type="button"
           onClick={onOpenMenu}

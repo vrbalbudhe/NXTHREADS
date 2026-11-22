@@ -35,8 +35,33 @@
     @apply rounded-xl2 border border-line bg-panel shadow-soft dark:border-line-dark dark:bg-panel-dark;
   }
 
+  /*
+   * Layout tokens. Every screen uses these so gutters, gaps and card insets match:
+   * 16px page gutter on phones (24px from sm), one 16px rhythm between blocks,
+   * and the same 16px/20px inset inside every card (.card-pad / .card-header).
+   */
+  .page-gutter {
+    @apply px-4 sm:px-6;
+  }
+
+  .page {
+    @apply mx-auto w-full space-y-4;
+  }
+
+  .page-narrow {
+    @apply max-w-3xl;
+  }
+
+  .page-grid {
+    @apply grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px];
+  }
+
   .card-pad {
     @apply p-4 sm:p-5;
+  }
+
+  .card-header {
+    @apply flex items-start gap-3 border-b border-line px-4 py-4 dark:border-line-dark sm:px-5;
   }
 
   .btn {

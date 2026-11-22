@@ -70,8 +70,24 @@ const params = {
   }),
 };
 
+const normalizedEmail = email.transform((value) => value.toLowerCase());
+
+const sixDigitCode = z
+  .union([z.string(), z.number()], { error: "Enter the 6-digit code" })
+  .transform((value) => String(value).replace(/\s+/g, ""))
+  .pipe(z.string().regex(/^\d{6}$/, "Enter the 6-digit code"));
+
+const opaqueToken = (label) =>
+  z
+    .string({ error: `${label} is missing. Start again` })
+    .trim()
+    .regex(/^[A-Za-z0-9_-]{20,128}$/, `${label} is invalid. Start again`);
+
 const auth = {
-  register: z.object({
+  registerStart: z.object({ email: normalizedEmail }),
+  registerVerify: z.object({ email: normalizedEmail, code: sixDigitCode }),
+  registerComplete: z.object({
+    signupToken: opaqueToken("Sign-up session"),
     username: z
       .string({ error: "Username is required" })
       .trim()
@@ -79,15 +95,23 @@ const auth = {
         /^[A-Za-z0-9_.]{3,30}$/,
         "Username must be 3-30 characters: letters, numbers, dots or underscores"
       ),
-    email,
+    fullname: trimmed("Full name", 60).optional(),
     password,
   }),
-  verifyOtp: z.object({
-    email,
-    otp: z
-      .union([z.string(), z.number()], { error: "Enter the 6-digit code" })
-      .transform((value) => String(value).trim())
-      .pipe(z.string().regex(/^\d{6}$/, "Enter the 6-digit code")),
+  forgotPassword: z.object({ email: normalizedEmail }),
+  resetPassword: z.object({ email: normalizedEmail, code: sixDigitCode, password }),
+  mfaChallenge: z.object({
+    mfaToken: opaqueToken("Sign-in session"),
+    code: z
+      .string({ error: "Enter your code" })
+      .trim()
+      .min(6, "Enter your code")
+      .max(20, "Enter your code"),
+  }),
+  mfaResend: z.object({ mfaToken: opaqueToken("Sign-in session") }),
+  mfaEnable: z.object({ code: sixDigitCode }),
+  mfaPassword: z.object({
+    password: z.string({ error: "Enter your password" }).min(1, "Enter your password"),
   }),
   login: z.object({
     email: z
@@ -192,6 +216,15 @@ const user = {
       .trim()
       .min(1, "Enter something to search for")
       .max(100, "Search is too long"),
+  }),
+  interests: z.object({
+    interests: z
+      .array(category, { error: "Choose topics from the list" })
+      .max(20, "Choose up to 20 topics")
+      .transform((list) => [...new Set(list)]),
+  }),
+  suggestions: z.object({
+    limit: z.coerce.number().int().min(1).max(20).catch(5),
   }),
 };
 

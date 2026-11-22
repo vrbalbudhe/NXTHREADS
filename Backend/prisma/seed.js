@@ -49,7 +49,7 @@ const removeUsers = async (userIds) => {
     where: { OR: [{ senderId: { in: userIds } }, { receiverId: { in: userIds } }] },
   });
   await prisma.chat.deleteMany({ where: { id: { in: chats.map((chat) => chat.id) } } });
-  await prisma.otp.deleteMany({ where: { email: { in: users.map((user) => user.email) } } });
+  await prisma.verificationCode.deleteMany({ where: { email: { in: users.map((user) => user.email) } } });
   await prisma.user.deleteMany({ where: { id: { in: userIds } } });
 };
 

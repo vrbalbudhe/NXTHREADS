@@ -4,6 +4,7 @@ const prisma = require("../lib/prisma");
 const { postIncludeFor, shapePost } = require("../lib/selects");
 const { containsText } = require("../lib/text");
 const { remember, removeKeys } = require("../lib/store");
+const recommend = require("../lib/recommend");
 
 const categories = new Set(Object.values(Category));
 const TREND_DAYS = 14;
@@ -214,6 +215,7 @@ const favUnfavPost = asyncHandler(async (req, res) => {
   const key = { userId_postId: { userId, postId } };
   const existing = await prisma.savedPosts.findUnique({ where: key });
 
+  await recommend.forgetUser(userId);
   if (existing) {
     await prisma.savedPosts.delete({ where: key });
     return res.status(200).json({ success: true, saved: false, message: "Removed from saved" });
@@ -253,6 +255,70 @@ const getFollowersPost = asyncHandler(async (req, res) => {
   return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), userId));
 });
 
+// ---------------------------------------------------------------------------
+// Suggestions
+// ---------------------------------------------------------------------------
+
+const nameOf = (user) => user?.fullname || user?.username || "this writer";
+
+const feedReason = (reason, post) => {
+  switch (reason?.type) {
+    case "following":
+      return `You follow ${nameOf(post.User)}`;
+    case "topic":
+      return `Because you like ${recommend.topicLabel(reason.topic)}`;
+    case "author":
+      return `You often read ${nameOf(post.User)}`;
+    default:
+      return "Popular right now";
+  }
+};
+
+/** Loads full posts for ranked ids, keeping the ranking order. */
+const loadInOrder = async (ranked, viewerId, describe) => {
+  if (!ranked.length) return [];
+  const posts = await prisma.posts.findMany({
+    where: { id: { in: ranked.map((item) => item.id) } },
+    include: postIncludeFor(viewerId),
+  });
+  const byId = new Map(posts.map((post) => [post.id, post]));
+  return ranked
+    .filter((item) => byId.has(item.id))
+    .map((item) => {
+      const post = shapePost(byId.get(item.id));
+      return { ...post, reason: describe(item.reason, post) };
+    });
+};
+
+const getForYouFeed = asyncHandler(async (req, res) => {
+  const paging = pagingOf(req.valid.query);
+  const { items, total } = await recommend.feedPage(req.userId, paging);
+  const posts = await loadInOrder(items, req.userId, feedReason);
+  return res.status(200).json({ posts, meta: pageMeta(paging, items.length, total) });
+});
+
+const getTrendingTopics = asyncHandler(async (req, res) => {
+  return res.status(200).json(await recommend.trendingTopics());
+});
+
+const RELATED_REASONS = {
+  co: () => "Readers of this also liked",
+  topic: (post) => `More in ${recommend.topicLabel(post.category)}`,
+  author: (post) => `More from ${nameOf(post.User)}`,
+};
+
+const getRelatedPosts = asyncHandler(async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 5, 10);
+  const result = await recommend.relatedPosts(req.valid.params.id, req.userId, limit);
+  if (!result) {
+    return res.status(404).json({ success: false, message: "Post not found" });
+  }
+  const posts = await loadInOrder(result.ranked, req.userId, (reason, post) =>
+    RELATED_REASONS[reason](post)
+  );
+  return res.status(200).json({ posts });
+});
+
 const getPostById = asyncHandler(async (req, res) => {
   const post = await prisma.posts.findUnique({
     where: { id: req.valid.params.id },
@@ -280,4 +346,7 @@ module.exports = {
   favUnfavPost,
   getFollowersPost,
   getFavoritePosts,
+  getForYouFeed,
+  getTrendingTopics,
+  getRelatedPosts,
 };

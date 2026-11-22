@@ -39,8 +39,8 @@ export function About() {
   useShellTitle("About");
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      <section className="card relative overflow-hidden p-6 sm:p-8">
+    <div className="page page-narrow">
+      <section className="card card-pad relative overflow-hidden">
         <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-gradient-to-br from-brand-400/30 to-violet-400/30 blur-3xl" />
         <LogoMark className="h-12 w-12" />
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
@@ -135,7 +135,7 @@ const POLICY = [
 export function Privacy() {
   useShellTitle("Privacy");
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="page page-narrow">
       <section className="card card-pad flex items-center gap-3">
         <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
           <ShieldCheck className="h-5 w-5" />

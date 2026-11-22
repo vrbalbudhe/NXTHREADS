@@ -107,9 +107,9 @@ export default function Explore() {
   });
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="page-grid">
       <div className="min-w-0 space-y-4">
-        <div className="card p-3 sm:p-4">
+        <div className="card card-pad">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <input

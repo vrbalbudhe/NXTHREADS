@@ -95,9 +95,47 @@ Branch: `feature/redis-notifications` (built on `feature/ui-redesign`).
 
 Verified: 70/70 end-to-end checks (Phase 1 regression 26, Phase 2 regression 19, this phase 25).
 
+## Email OTP sign-up, password reset, MFA and unified layout
+
+Branch: `feature/auth-otp-mfa` (built on `feature/redis-notifications`).
+
+- **Sign-up is email-OTP first**: email → 6-digit code → username, name and password. No account row exists until the email is proven, so there are no unverified accounts. A signed-up email gets a "you already have an account" email instead of a code, and the response is the same either way (no account enumeration). Codes are HMAC-hashed, expire in 10 minutes, allow 5 attempts, are single use, and can be resent once a minute. Old `/auth/register` and `/auth/verify-otp` are removed.
+- **Forgot password**: `/forgot-password` screen, emailed 6-digit code, new password. Signs out every device; MFA stays on. Same response whether or not the account exists.
+- **Two-step verification (MFA)** in Settings: authenticator app (TOTP, RFC 6238, QR code + manual key, replay-protected) or email code, plus 10 single-use recovery codes (hashed; copy / download; regenerate with password). Sign-in returns a 5-minute challenge instead of a session when MFA is on; 5 wrong codes end the challenge. TOTP secrets are encrypted at rest (AES-256-GCM). Turning MFA on signs out other devices.
+- **Unified layout tokens** in `index.css`: `page-gutter` (16px phone / 24px from `sm`, used by header, content and auth screens), `page` / `page-narrow` (one 16px rhythm, one 768px reading width), `page-grid` (feed + sidebar), `card-pad` and `card-header` (one 16px/20px card inset). Removed the mixed `gap-5` / `max-w-2xl|3xl|4xl` / `p-3`, `p-5`, `p-6 sm:p-8`, `sm:px-6` card insets, and the 12px mobile content gutter that didn't line up with the 16px header. All auth screens share one card layout with a step indicator.
+- Emails: HTML + text templates. With no SMTP credentials outside production, emails print to the server console.
+
+### Owner actions for this branch
+
+1. `cd backend && npx prisma db push` to create the `VerificationCode` collection and its `(email, purpose)` unique index. The old `Otp` collection is no longer used and can be dropped.
+2. Set `MFA_ENCRYPTION_KEY` (32+ random characters) in every environment before anyone turns on an authenticator app. It falls back to `JWT_SECRET_KEY`, so rotating the JWT secret without it would break existing TOTP setups.
+3. Legacy accounts that were never email-verified: the owner signs up again with the same email; the new flow claims the old row.
+
+Verified: 42/42 end-to-end checks against the real database (registration, cooldowns, enumeration-safe responses, reset, TOTP enable/replay/recovery/lockout, email MFA, cleanup); TOTP matches RFC 6238 test vectors; frontend lint 0 errors, production build passes; layout checked at 375px and desktop.
+
+### Suggestion engine (same branch)
+
+Weighted scoring in `backend/lib/recommend.js`, no ML and no background jobs. Every suggestion carries a human reason.
+
+- **Interest profile** per user, built from chosen topics (+3), saves (+4), comments (+3), likes (+2), own posts (+1) and dislikes (−3), with a 30-day half-life; author affinity from follows and the same actions. Cached 5 minutes and cleared on like, dislike, save, comment, follow or topic change.
+- **For you feed** (`GET /api/post/feed`): candidates from followed writers, favourite topics and recent popular posts (all-time best when the community is quiet). Score = 35% author affinity + 30% topic match + 25% popularity (likes, 2× comments, 3× saves, minus dislikes, with Hacker News style time gravity) + 10% freshness; already-engaged posts halved; own and disliked posts removed; at most 2 in a row from one author and 3 from one topic. The ranked list is cached for 10 minutes so later pages don't shift. Home tabs: For you / Following / Latest.
+- **Who to follow** (`GET /api/user/suggestions`): followed by people you follow, follows you, active writers in your topics, popular writers. Replaces the random shuffle that downloaded every user.
+- **Trending topics** (`GET /api/post/trending`): this week's activity versus the usual week over the previous 4 weeks; falls back to biggest topics when nothing happened this week.
+- **Recommended reads** on each post (`GET /api/post/related/:id`): "readers of this also liked", then same topic, then same author; hides posts the viewer disliked.
+- **Topics**: optional 4th sign-up step (pick at least 3) and a "Your topics" section in Settings that also highlights topics learned from reading (`GET/PUT /api/user/me/interests`).
+- Schema: `User.interests`, and `createdAt` on likes, dislikes and saves (older rows count as "a while ago").
+
+Verified: 21/21 end-to-end checks against the seeded demo data (feed reasons, paging without repeats, variety rule, suggestions, related posts, topic validation, dislike removal); screens checked in the browser.
+
+### Follow-ups (same branch)
+
+- **`npm test` in the backend**: 48 tests on the built-in Node test runner (no new dependencies). 16 unit tests (RFC 4226/6238 vectors, replay, secret encryption, recovery codes, scoring, decay, variety) and 32 end-to-end tests that start the real API on a random port with emails printed to the console (`test/helpers/server.js`), covering sign-up, reset, both MFA methods and the suggestion engine. Each run creates throwaway `nx-test-…@example.com` accounts and deletes them. `CODE_RESEND_COOLDOWN_MS` (default 60 s) lets the tests use a 1.5 s cooldown.
+- **People page** no longer downloads every account: Suggested (ranked, with reasons), Following, and server-side search.
+- **Email MFA setup**: reopening setup within the resend minute now says the code already sent is still valid instead of failing, and the dialog has a Resend link.
+
 ## Phase 3 — Testing and delivery
 
-1. Backend: Jest/Vitest + Supertest for auth, OTP, ownership rules.
+1. Backend: ~~auth, OTP, MFA and suggestion tests~~ done with `node:test` (see above); still to cover: post/comment ownership rules, chat, notifications.
 2. Frontend: Vitest + React Testing Library; Playwright end-to-end for sign-up → post → comment → follow.
 3. One CI pipeline (GitHub Actions): lint, test, build, Docker images tagged by commit SHA. Remove unused Jenkins / CodeDeploy / k8s paths.
 4. Fix path casing (`backend/` vs `Backend/`) in `buildspec.yml`, `docker-compose.yml`, `scripts/`; production nginx image for the frontend; one Node LTS version everywhere; non-root containers.

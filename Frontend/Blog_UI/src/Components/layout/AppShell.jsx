@@ -58,7 +58,7 @@ export default function AppShell() {
 
         <div className="lg:pl-64">
           <Header title={title} onOpenMenu={() => setDrawerOpen(true)} />
-          <main className="mx-auto w-full max-w-[1320px] px-3 pb-28 pt-4 sm:px-6 sm:pt-5 lg:pb-10">
+          <main className="mx-auto w-full max-w-[1320px] page-gutter pb-28 pt-4 sm:pt-5 lg:pb-10">
             <Outlet />
           </main>
         </div>

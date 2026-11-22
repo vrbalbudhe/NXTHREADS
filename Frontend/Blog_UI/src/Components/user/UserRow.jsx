@@ -16,7 +16,9 @@ export default function UserRow({ user, action = "follow", onNavigate }) {
           <span className="block truncate text-[13px] font-semibold text-slate-900 dark:text-white">
             {displayName(user)}
           </span>
-          <span className="block truncate text-[11px] muted">@{user.username}</span>
+          <span className="block truncate text-[11px] muted">
+            {user.reason || `@${user.username}`}
+          </span>
         </span>
       </Link>
       {action === "follow" && <FollowButton userId={user.id} />}
