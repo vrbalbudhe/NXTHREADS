@@ -1,12 +1,16 @@
 const { readSession } = require("./verifyToken");
 
-const optionalAuth = (req, res, next) => {
-  const session = readSession(req);
-  if (session) {
-    req.userId = session.userId;
-    req.session = session;
+const optionalAuth = async (req, res, next) => {
+  try {
+    const session = await readSession(req);
+    if (session) {
+      req.userId = session.userId;
+      req.session = session;
+    }
+    return next();
+  } catch (error) {
+    return next(error);
   }
-  return next();
 };
 
 module.exports = optionalAuth;

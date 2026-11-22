@@ -2,15 +2,14 @@ const nodemailer = require("nodemailer");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
 const prisma = require("../lib/prisma");
+const { smtp } = require("../Config/env");
 const {
-  smtp,
-  jwtSecret,
-  jwtExpiresIn,
-  sessionMaxAgeMs,
-  sessionCookieOptions,
-} = require("../Config/env");
+  issueSession,
+  clearSessionCookie,
+  verifySessionToken,
+  revokeSession,
+} = require("../lib/session");
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
@@ -159,30 +158,17 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  const tokenData = {
-    userId: user.id,
-    username: user.username,
-    fullname: user.fullname,
-    email: user.email,
-    avatar: user.avatar,
-    gender: user.gender,
-  };
-  const token = jwt.sign(tokenData, jwtSecret, {
-    expiresIn: jwtExpiresIn,
-    algorithm: "HS256",
-  });
-
+  issueSession(res, user);
   const { password: _password, ...userInfo } = user;
 
-  return res
-    .status(200)
-    .cookie("token", token, { ...sessionCookieOptions, maxAge: sessionMaxAgeMs })
-    .json({ success: true, message: "Login successful", userInfo });
+  return res.status(200).json({ success: true, message: "Login successful", userInfo });
 });
 
-const logout = (req, res) => {
-  res.clearCookie("token", sessionCookieOptions);
+const logout = asyncHandler(async (req, res) => {
+  const session = await verifySessionToken(req.cookies?.token);
+  if (session) await revokeSession(session);
+  clearSessionCookie(res);
   return res.status(200).json({ success: true, message: "Logout successful" });
-};
+});
 
 module.exports = { register, login, logout, optFinalization };

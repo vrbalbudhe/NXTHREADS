@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Menu as MenuIcon, MessageSquare, Moon, PenSquare, Search, Sun } from "lucide-react";
+import { Bell, Menu as MenuIcon, MessageSquare, Moon, PenSquare, Search, Sun } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import { useChatContext } from "../../Context/ChatContext";
+import { useNotifications } from "../../Context/NotificationContext";
 import { useStats } from "../../hooks/useCommunity";
 import { formatCount } from "../../lib/format";
 import Avatar from "../ui/Avatar";
@@ -28,6 +29,7 @@ export default function Header({ title, onOpenMenu }) {
   const { currentUser } = useAuth();
   const { resolved, toggle } = useTheme();
   const { unreadTotal } = useChatContext();
+  const { unread: unreadNotifications } = useNotifications();
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-panel/85 backdrop-blur-md dark:border-line-dark dark:bg-panel-dark/85">
@@ -58,6 +60,24 @@ export default function Header({ title, onOpenMenu }) {
               <Moon className="h-[18px] w-[18px]" />
             )}
           </button>
+          {currentUser && (
+            <Link
+              to="/notifications"
+              className="icon-btn"
+              aria-label={
+                unreadNotifications
+                  ? `Notifications, ${unreadNotifications} unread`
+                  : "Notifications"
+              }
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              {unreadNotifications > 0 && (
+                <span className="absolute right-0.5 top-0.5 min-w-4 rounded-full bg-rose-500 px-1 text-center text-[9px] font-bold leading-4 text-white ring-2 ring-white dark:ring-panel-dark">
+                  {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                </span>
+              )}
+            </Link>
+          )}
           {currentUser && (
             <Link
               to="/messages"

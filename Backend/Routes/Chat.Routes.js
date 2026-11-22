@@ -1,11 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  listContacts,
-  listMessages,
-  createMessage,
-} = require("../Controller/Chat.Controller");
+const { listContacts, listMessages, createMessage } = require("../Controller/Chat.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 const createRateLimiter = require("../Middleware/rateLimit");
 

@@ -33,8 +33,14 @@ const httpUrl = z
 
 const password = z
   .string({ error: "Password is required" })
-  .min(MIN_PASSWORD_LENGTH, `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`)
-  .max(MAX_PASSWORD_LENGTH, `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`);
+  .min(
+    MIN_PASSWORD_LENGTH,
+    `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`
+  )
+  .max(
+    MAX_PASSWORD_LENGTH,
+    `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`
+  );
 
 const email = z
   .string({ error: "Email is required" })
@@ -84,7 +90,10 @@ const auth = {
       .pipe(z.string().regex(/^\d{6}$/, "Enter the 6-digit code")),
   }),
   login: z.object({
-    email: z.string({ error: "All fields are mandatory" }).trim().min(1, "All fields are mandatory"),
+    email: z
+      .string({ error: "All fields are mandatory" })
+      .trim()
+      .min(1, "All fields are mandatory"),
     password: z.string({ error: "All fields are mandatory" }).min(1, "All fields are mandatory"),
   }),
 };
@@ -114,7 +123,11 @@ const post = {
     author: z.string().trim().max(100).optional().catch(undefined),
   }),
   search: paging.extend({
-    q: z.string({ error: "Enter something to search for" }).trim().min(1, "Enter something to search for").max(100, "Search is too long"),
+    q: z
+      .string({ error: "Enter something to search for" })
+      .trim()
+      .min(1, "Enter something to search for")
+      .max(100, "Search is too long"),
   }),
   postIdBody: z.object({ postId: objectId("post id") }),
 };
@@ -143,7 +156,10 @@ const user = {
         .string()
         .trim()
         .optional()
-        .refine((value) => !value || httpUrl.safeParse(value).success, "Avatar must be an http(s) URL"),
+        .refine(
+          (value) => !value || httpUrl.safeParse(value).success,
+          "Avatar must be an http(s) URL"
+        ),
       password: z.string().optional(),
       currentPassword: z.string().optional(),
     })
@@ -171,7 +187,11 @@ const user = {
       .min(1, "Enter your password to delete your account"),
   }),
   search: z.object({
-    q: z.string({ error: "Enter something to search for" }).trim().min(1, "Enter something to search for").max(100, "Search is too long"),
+    q: z
+      .string({ error: "Enter something to search for" })
+      .trim()
+      .min(1, "Enter something to search for")
+      .max(100, "Search is too long"),
   }),
 };
 
@@ -184,6 +204,20 @@ const chat = {
     before: z.iso.datetime({ offset: true }).optional().catch(undefined),
   }),
   read: z.object({ userId: objectId("user id") }),
+  typing: z.object({ userId: objectId("user id"), typing: z.boolean() }),
+};
+
+const notification = {
+  list: paging.extend({
+    unread: z
+      .enum(["true", "false"])
+      .optional()
+      .transform((value) => value === "true")
+      .catch(false),
+  }),
+  markRead: z.object({
+    ids: z.array(objectId("notification id")).min(1).max(100).optional(),
+  }),
 };
 
 const firstIssueMessage = (error) => error.issues[0]?.message || "Invalid request";
@@ -198,5 +232,6 @@ module.exports = {
   follow,
   user,
   chat,
+  notification,
   firstIssueMessage,
 };

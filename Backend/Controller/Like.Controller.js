@@ -1,14 +1,18 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
+const { notify } = require("../lib/notify");
 
 const ensurePost = async (req, res) => {
   const { postId } = req.valid.body;
-  const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
+  const post = await prisma.posts.findUnique({
+    where: { id: postId },
+    select: { id: true, userId: true, title: true },
+  });
   if (!post) {
     res.status(404).json({ success: false, message: "Post not found" });
     return null;
   }
-  return postId;
+  return post;
 };
 
 const reactionState = async (postId, userId) => {
@@ -30,10 +34,11 @@ const reactionState = async (postId, userId) => {
 };
 
 const likePost = asyncHandler(async (req, res) => {
-  const postId = await ensurePost(req, res);
-  if (!postId) {
+  const post = await ensurePost(req, res);
+  if (!post) {
     return undefined;
   }
+  const postId = post.id;
   const userId = req.userId;
 
   const message = await prisma.$transaction(async (tx) => {
@@ -59,18 +64,26 @@ const likePost = asyncHandler(async (req, res) => {
     return "Post liked successfully";
   });
 
-  return res.status(200).json({
-    success: true,
-    message,
-    ...(await reactionState(postId, userId)),
-  });
+  const state = await reactionState(postId, userId);
+  if (state.isLiked) {
+    await notify({
+      type: "LIKE",
+      userId: post.userId,
+      actorId: userId,
+      postId,
+      preview: post.title,
+    });
+  }
+
+  return res.status(200).json({ success: true, message, ...state });
 });
 
 const unlikePost = asyncHandler(async (req, res) => {
-  const postId = await ensurePost(req, res);
-  if (!postId) {
+  const post = await ensurePost(req, res);
+  if (!post) {
     return undefined;
   }
+  const postId = post.id;
   const userId = req.userId;
 
   const message = await prisma.$transaction(async (tx) => {

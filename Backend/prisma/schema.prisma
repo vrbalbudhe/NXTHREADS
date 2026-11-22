@@ -24,6 +24,32 @@ model User {
   comment     comment[]
   Like        Like[]
   Unlike      Unlike[]
+  notifications     Notification[] @relation("NotificationRecipient")
+  notificationsSent Notification[] @relation("NotificationActor")
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  type      NotificationType
+  userId    String           @db.ObjectId
+  actorId   String           @db.ObjectId
+  postId    String?          @db.ObjectId
+  commentId String?          @db.ObjectId
+  preview   String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation("NotificationRecipient", fields: [userId], references: [id])
+  actor     User             @relation("NotificationActor", fields: [actorId], references: [id])
+  post      posts?           @relation(fields: [postId], references: [id])
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 model Otp {
@@ -52,6 +78,7 @@ model posts {
   unlike     Unlike[]
   likes      Int          @default(0)
   unlikes    Int          @default(0)
+  notifications Notification[]
 }
 
 model Like {

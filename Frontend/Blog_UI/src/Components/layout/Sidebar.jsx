@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../Context/AuthContext";
 import { useTheme } from "../../Context/ThemeContext";
 import { useChatContext } from "../../Context/ChatContext";
+import { useNotifications } from "../../Context/NotificationContext";
 import { useStats } from "../../hooks/useCommunity";
 import { displayName, formatCount } from "../../lib/format";
 import Avatar from "../ui/Avatar";
@@ -63,6 +64,8 @@ export default function Sidebar({ onNavigate }) {
   const { currentUser, logout } = useAuth();
   const { resolved, toggle } = useTheme();
   const { unreadTotal } = useChatContext();
+  const { unread: unreadNotifications } = useNotifications();
+  const badges = { messages: unreadTotal, notifications: unreadNotifications };
   const navigate = useNavigate();
 
   const visible = (items) => items.filter((item) => !item.auth || currentUser);
@@ -121,7 +124,7 @@ export default function Sidebar({ onNavigate }) {
             key={item.to}
             item={item}
             onNavigate={onNavigate}
-            badge={item.badge === "messages" ? unreadTotal : 0}
+            badge={badges[item.badge] || 0}
           />
         ))}
       </nav>

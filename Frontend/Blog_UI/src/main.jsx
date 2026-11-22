@@ -6,6 +6,7 @@ import { ThemeProvider } from "./Context/ThemeContext.jsx";
 import { AuthContextProvider } from "./Context/AuthContext.jsx";
 import { SocialProvider } from "./Context/SocialContext.jsx";
 import { ChatProvider } from "./Context/ChatContext.jsx";
+import { NotificationProvider } from "./Context/NotificationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <AuthContextProvider>
         <SocialProvider>
           <ChatProvider>
-            <App />
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
           </ChatProvider>
         </SocialProvider>
       </AuthContextProvider>

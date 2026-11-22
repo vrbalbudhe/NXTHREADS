@@ -1,5 +1,7 @@
 const prisma = require("./prisma");
 const { publicUserSelect } = require("./selects");
+const { onlineMap } = require("./presence");
+const { userRoom } = require("./realtime");
 const { chat: schemas, objectId, firstIssueMessage } = require("./schemas");
 
 const HISTORY_PAGE_SIZE = 50;
@@ -148,6 +150,7 @@ const getContacts = async (userId) => {
     where: { id: { in: [...contactIds].filter(isObjectId) } },
     select: publicUserSelect,
   });
+  const online = await onlineMap(users.map((user) => user.id));
 
   return users
     .map((user) => {
@@ -157,6 +160,7 @@ const getContacts = async (userId) => {
         lastMessage: chat?.lastMessage || null,
         lastMessageAt: chat?.updatedAt || null,
         unreadCount: unreadByUser.get(user.id) || 0,
+        online: online.get(user.id) || false,
       };
     })
     .sort((a, b) => {
@@ -169,7 +173,27 @@ const getContacts = async (userId) => {
     });
 };
 
-const userRoom = (userId) => `user:${userId}`;
+const contactIdsOf = async (userId) => {
+  const [follows, chats] = await Promise.all([
+    prisma.follows.findMany({
+      where: { OR: [{ followerId: userId }, { followingId: userId }] },
+      select: { followerId: true, followingId: true },
+    }),
+    prisma.chat.findMany({
+      where: { participants: { has: userId } },
+      select: { participants: true },
+    }),
+  ]);
+  const ids = new Set();
+  for (const follow of follows) {
+    ids.add(follow.followerId === userId ? follow.followingId : follow.followerId);
+  }
+  for (const chat of chats) {
+    for (const id of chat.participants) ids.add(id);
+  }
+  ids.delete(userId);
+  return ids;
+};
 
 module.exports = {
   ChatError,
@@ -177,5 +201,6 @@ module.exports = {
   getHistory,
   getContacts,
   markConversationRead,
+  contactIdsOf,
   userRoom,
 };

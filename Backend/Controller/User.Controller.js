@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
 const { containsText } = require("../lib/text");
-const { sessionCookieOptions } = require("../Config/env");
+const { issueSession, clearSessionCookie, revokeAllSessions } = require("../lib/session");
 
 const SEARCH_RESULT_LIMIT = 20;
 
@@ -131,13 +131,17 @@ const deleteUser = asyncHandler(async (req, res) => {
       await tx.follows.deleteMany({ where: { OR: [{ followerId: id }, { followingId: id }] } });
       await tx.message.deleteMany({ where: { OR: [{ senderId: id }, { receiverId: id }] } });
       await tx.chat.deleteMany({ where: { participants: { has: id } } });
+      await tx.notification.deleteMany({
+        where: { OR: [{ userId: id }, { actorId: id }, postScope] },
+      });
       await tx.otp.deleteMany({ where: { email: user.email } });
       await tx.user.delete({ where: { id } });
     },
     { timeout: 30000 }
   );
 
-  res.clearCookie("token", sessionCookieOptions);
+  await revokeAllSessions(id);
+  clearSessionCookie(res);
   return res.status(200).json({ success: true, message: "Your account has been deleted" });
 });
 
@@ -168,6 +172,11 @@ const updateUser = asyncHandler(async (req, res) => {
     data: updatedFields,
     select: { ...publicUserSelect, gender: true, email: true, verified: true },
   });
+
+  if (password) {
+    await revokeAllSessions(id);
+    issueSession(res, updatedUser);
+  }
 
   return res.status(200).json({
     success: true,

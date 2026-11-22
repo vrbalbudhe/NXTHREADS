@@ -19,7 +19,7 @@ import { EmptyState, ErrorNote, Skeleton, Spinner } from "../Components/ui/Feedb
 
 const EMOJIS = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "😢"];
 
-function ContactList({ contacts, loading, error, selectedId, onSelect }) {
+function ContactList({ contacts, loading, error, selectedId, onSelect, typing }) {
   const [filter, setFilter] = useState("");
   const visible = useMemo(() => {
     const term = filter.trim().toLowerCase();
@@ -87,7 +87,7 @@ function ContactList({ contacts, loading, error, selectedId, onSelect }) {
                         : "hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                     }`}
                   >
-                    <Avatar user={contact} size="md" />
+                    <PresenceAvatar user={contact} online={contact.online} />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
                         <span className="truncate text-[13px] font-semibold text-slate-900 dark:text-white">
@@ -103,7 +103,13 @@ function ContactList({ contacts, loading, error, selectedId, onSelect }) {
                         <span
                           className={`truncate text-xs ${contact.unreadCount ? "font-semibold text-slate-800 dark:text-slate-100" : "muted"}`}
                         >
-                          {contact.lastMessage || `@${contact.username}`}
+                          {typing[contact.id] ? (
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                              typing…
+                            </span>
+                          ) : (
+                            contact.lastMessage || `@${contact.username}`
+                          )}
                         </span>
                         {contact.unreadCount > 0 && (
                           <span className="min-w-5 shrink-0 rounded-full bg-rose-500 px-1.5 text-center text-[10px] font-bold leading-5 text-white">
@@ -123,6 +129,20 @@ function ContactList({ contacts, loading, error, selectedId, onSelect }) {
   );
 }
 
+function PresenceAvatar({ user, online }) {
+  return (
+    <span className="relative shrink-0">
+      <Avatar user={user} size="md" />
+      <span
+        aria-label={online ? "Online" : "Offline"}
+        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-white dark:ring-panel-dark ${
+          online ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"
+        }`}
+      />
+    </span>
+  );
+}
+
 function groupByDay(messages) {
   const groups = [];
   for (const message of messages) {
@@ -134,14 +154,47 @@ function groupByDay(messages) {
   return groups;
 }
 
-function Composer({ onSend, sending }) {
+const TYPING_IDLE_MS = 3000;
+const TYPING_REPEAT_MS = 2500;
+
+function Composer({ onSend, sending, onTyping }) {
   const [text, setText] = useState("");
   const [emojiOpen, setEmojiOpen] = useState(false);
   const inputRef = useRef(null);
+  const typingRef = useRef({ sentAt: 0, timer: null });
+
+  const stopTyping = () => {
+    clearTimeout(typingRef.current.timer);
+    if (typingRef.current.sentAt) {
+      typingRef.current.sentAt = 0;
+      onTyping(false);
+    }
+  };
+
+  useEffect(() => {
+    const state = typingRef.current;
+    return () => clearTimeout(state.timer);
+  }, []);
+
+  const handleChange = (value) => {
+    setText(value);
+    if (!value.trim()) {
+      stopTyping();
+      return;
+    }
+    const now = Date.now();
+    if (now - typingRef.current.sentAt > TYPING_REPEAT_MS) {
+      typingRef.current.sentAt = now;
+      onTyping(true);
+    }
+    clearTimeout(typingRef.current.timer);
+    typingRef.current.timer = setTimeout(stopTyping, TYPING_IDLE_MS);
+  };
 
   const submit = async (event) => {
     event.preventDefault();
     if (!text.trim() || sending) return;
+    stopTyping();
     const ok = await onSend(text);
     if (ok) setText("");
     inputRef.current?.focus();
@@ -157,7 +210,7 @@ function Composer({ onSend, sending }) {
               type="button"
               className="h-8 w-8 rounded-lg text-base hover:bg-slate-100 dark:hover:bg-white/5"
               onClick={() => {
-                setText((value) => value + emoji);
+                handleChange(text + emoji);
                 setEmojiOpen(false);
                 inputRef.current?.focus();
               }}
@@ -180,7 +233,8 @@ function Composer({ onSend, sending }) {
           ref={inputRef}
           value={text}
           maxLength={2000}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => handleChange(event.target.value)}
+          onBlur={stopTyping}
           placeholder="Write a message…"
           className="h-9 flex-1 bg-transparent text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none dark:text-slate-100"
           aria-label="Message"
@@ -200,7 +254,31 @@ function Composer({ onSend, sending }) {
 
 function Conversation({ partner, onBack }) {
   const { currentUser } = useAuth();
-  const { connected } = useChatContext();
+  const { connected, typing, sendTyping } = useChatContext();
+  const partnerTyping = Boolean(typing[partner.id]);
+  const status = !connected
+    ? {
+        label: "Reconnecting…",
+        dot: "bg-amber-500",
+        tone: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+      }
+    : partnerTyping
+      ? {
+          label: "typing…",
+          dot: "bg-emerald-500",
+          tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+        }
+      : partner.online
+        ? {
+            label: "Online",
+            dot: "bg-emerald-500",
+            tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+          }
+        : {
+            label: "Offline",
+            dot: "bg-slate-400",
+            tone: "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400",
+          };
   const { messages, hasMore, loading, sending, error, loadOlder, send } = useConversation(
     currentUser.userId,
     partner.id
@@ -226,7 +304,7 @@ function Conversation({ partner, onBack }) {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <Link to={`/profile/${partner.id}`} className="flex min-w-0 items-center gap-3">
-          <Avatar user={partner} size="md" />
+          <PresenceAvatar user={partner} online={partner.online} />
           <span className="min-w-0">
             <span className="block truncate text-[13px] font-semibold text-slate-900 dark:text-white">
               {displayName(partner)}
@@ -235,16 +313,11 @@ function Conversation({ partner, onBack }) {
           </span>
         </Link>
         <span
-          className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-            connected
-              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-              : "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400"
-          }`}
+          aria-live="polite"
+          className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${status.tone}`}
         >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-slate-400"}`}
-          />
-          {connected ? "Live" : "Offline"}
+          <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
+          {status.label}
         </span>
       </header>
 
@@ -313,13 +386,17 @@ function Conversation({ partner, onBack }) {
           <ErrorNote message={error} />
         </div>
       )}
-      <Composer onSend={send} sending={sending} />
+      <Composer
+        onSend={send}
+        sending={sending}
+        onTyping={(isTyping) => sendTyping(partner.id, isTyping)}
+      />
     </div>
   );
 }
 
 export default function Messages() {
-  const { contacts, loading, error, setActiveConversation } = useChatContext();
+  const { contacts, loading, error, typing, setActiveConversation } = useChatContext();
   const [params, setParams] = useSearchParams();
   const selectedId = params.get("user");
   const known = contacts.find((contact) => contact.id === selectedId);
@@ -347,6 +424,7 @@ export default function Messages() {
           error={error}
           selectedId={selectedId}
           onSelect={select}
+          typing={typing}
         />
       </aside>
       <section className={`min-h-0 ${selectedId ? "block" : "hidden md:block"}`}>

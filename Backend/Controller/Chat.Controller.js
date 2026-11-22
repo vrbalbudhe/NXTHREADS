@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const { ChatError, sendMessage, getHistory, getContacts, userRoom } = require("../lib/chatService");
+const { ChatError, sendMessage, getHistory, getContacts } = require("../lib/chatService");
+const { emitToUser } = require("../lib/realtime");
 
 const handleChatError = (res, error) => {
   if (error instanceof ChatError) {
@@ -25,12 +26,8 @@ const listMessages = asyncHandler(async (req, res) => {
 const createMessage = asyncHandler(async (req, res) => {
   try {
     const message = await sendMessage(req.userId, req.body);
-    const io = req.app.get("io");
-    if (io) {
-      io.to(userRoom(message.senderId))
-        .to(userRoom(message.receiverId))
-        .emit("chat:message", message);
-    }
+    emitToUser(message.senderId, "chat:message", message);
+    emitToUser(message.receiverId, "chat:message", message);
     return res.status(201).json({ success: true, data: message });
   } catch (error) {
     return handleChatError(res, error);
