@@ -1,56 +1,99 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Homepage from "./Routes/Homepage.jsx";
+import { lazy, Suspense } from "react";
+import { createBrowserRouter, Navigate, RouterProvider, useParams } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Login from "./Routes/Login.jsx";
-import Register from "./Routes/Register.jsx";
-import Profile from "./Routes/Profile.jsx";
-import AboutPage from "./Routes/AboutPage.jsx";
-import CreateBlog from "./Components/CreateBlog/CreateBlog.jsx";
-import Search from "./Routes/Search.jsx";
-import ListPage from "./Routes/ListPage.jsx";
-import PrivacyPolicy from "./Routes/PrivacyPolicy.jsx";
-import BloggersPage from "./Routes/BloggersPage.jsx";
-import NotFound from "./Routes/NotFound.jsx";
-import ChatingPage from "./Routes/ChatingPage.jsx";
-import { Layout, RequiredAuth } from "./Components/LayoutComponents/Layout.jsx";
-import Blog from "./Routes/Blog.jsx";
+import { useTheme } from "./Context/ThemeContext";
+import AppShell, { GuestOnly, RequireAuth } from "./Components/layout/AppShell";
+import { Spinner } from "./Components/ui/Feedback";
+import Home from "./pages/Home";
+
+const PostDetail = lazy(() => import("./pages/PostDetail"));
+const WritePost = lazy(() =>
+  import("./pages/PostEditor").then((module) => ({ default: module.WritePost }))
+);
+const EditPost = lazy(() =>
+  import("./pages/PostEditor").then((module) => ({ default: module.EditPost }))
+);
+const Topics = lazy(() => import("./pages/Topics"));
+const Explore = lazy(() => import("./pages/Explore"));
+const People = lazy(() => import("./pages/People"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Saved = lazy(() => import("./pages/Saved"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
+const About = lazy(() =>
+  import("./pages/StaticPages").then((module) => ({ default: module.About }))
+);
+const Privacy = lazy(() =>
+  import("./pages/StaticPages").then((module) => ({ default: module.Privacy }))
+);
+const NotFound = lazy(() =>
+  import("./pages/StaticPages").then((module) => ({ default: module.NotFound }))
+);
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <Spinner className="h-6 w-6 text-brand-600" />
+    </div>
+  );
+}
+
+const page = (element) => <Suspense fallback={<PageFallback />}>{element}</Suspense>;
+const privatePage = (element) => <RequireAuth>{page(element)}</RequireAuth>;
+
+function LegacyPostRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/post/${id}`} replace />;
+}
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: <AppShell />,
     children: [
-      { path: "/", element: <Homepage /> },
-      { path: "/list", element: <ListPage /> },
-      { path: "/about", element: <AboutPage /> },
-      { path: "/policy", element: <PrivacyPolicy /> },
-      { path: "/blog/:id", element: <Blog /> },
-      { path: "/search", element: <Search /> },
-      { path: "*", element: <NotFound /> },
+      { index: true, element: <Home /> },
+      { path: "post/:id", element: page(<PostDetail />) },
+      { path: "post/:id/edit", element: privatePage(<EditPost />) },
+      { path: "write", element: privatePage(<WritePost />) },
+      { path: "topics", element: page(<Topics />) },
+      { path: "explore", element: page(<Explore />) },
+      { path: "people", element: privatePage(<People />) },
+      { path: "profile/:id", element: page(<Profile />) },
+      { path: "saved", element: privatePage(<Saved />) },
+      { path: "settings", element: privatePage(<Settings />) },
+      { path: "messages", element: privatePage(<Messages />) },
+      { path: "about", element: page(<About />) },
+      { path: "privacy", element: page(<Privacy />) },
+      { path: "blog/:id", element: <LegacyPostRedirect /> },
+      { path: "list", element: <Navigate to="/topics" replace /> },
+      { path: "search", element: <Navigate to="/explore" replace /> },
+      { path: "bloggers", element: <Navigate to="/people" replace /> },
+      { path: "chat", element: <Navigate to="/messages" replace /> },
+      { path: "createBlog", element: <Navigate to="/write" replace /> },
+      { path: "policy", element: <Navigate to="/privacy" replace /> },
+      { path: "*", element: page(<NotFound />) },
     ],
   },
-  {
-    path: "/",
-    element: <RequiredAuth />,
-    children: [
-      { path: "/profile/:id", element: <Profile /> },
-      { path: "/createBlog", element: <CreateBlog /> },
-      { path: "/chat", element: <ChatingPage /> },
-      { path: "/bloggers", element: <BloggersPage /> },
-    ],
-  },
-  { path: "/register", element: <Register /> },
-  { path: "/login", element: <Login /> },
+  { path: "/login", element: <GuestOnly>{page(<Login />)}</GuestOnly> },
+  { path: "/register", element: <GuestOnly>{page(<Register />)}</GuestOnly> },
 ]);
 
-function App() {
+export default function App() {
+  const { resolved } = useTheme();
   return (
     <>
       <RouterProvider router={router} />
-      <ToastContainer position="top-center" autoClose={3000} />
+      <ToastContainer
+        position="top-center"
+        autoClose={2800}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        theme={resolved === "dark" ? "dark" : "light"}
+      />
     </>
   );
 }
-
-export default App;

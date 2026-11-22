@@ -1,45 +1,79 @@
-import { createContext, useEffect, useState } from "react";
-import axios from "axios";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { api } from "../lib/api";
+import Logo from "../Components/ui/Logo";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
+
+const toCurrentUser = (user) =>
+  user
+    ? {
+        userId: user.userId || user.id,
+        username: user.username,
+        fullname: user.fullname,
+        email: user.email,
+        avatar: user.avatar,
+        gender: user.gender,
+      }
+    : null;
 
 export const AuthContextProvider = ({ children }) => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUserState] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const setCurrentUser = useCallback((user) => setCurrentUserState(toCurrentUser(user)), []);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await api.get("/auth/isLogin");
+      setCurrentUser(res.data?.payload);
+    } catch {
+      setCurrentUser(null);
+    }
+  }, [setCurrentUser]);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${baseUrl}/api/auth/isLogin`, {
-          withCredentials: true,
-        });
+    refresh().finally(() => setLoading(false));
+  }, [refresh]);
 
-        const userInfo = response?.data?.payload;
-        if (userInfo) {
-          setCurrentUser(userInfo);
-        } else {
-          setCurrentUser(null);
-        }
-      } catch {
-        setCurrentUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const login = useCallback(
+    async (email, password) => {
+      const res = await api.post("/auth/login", { email, password });
+      setCurrentUser(res.data?.userInfo);
+      return res.data?.userInfo;
+    },
+    [setCurrentUser]
+  );
 
-    fetchUser();
-  }, []);
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setCurrentUser(null);
+    }
+  }, [setCurrentUser]);
+
+  const updateCurrentUser = useCallback(
+    (patch) => setCurrentUserState((previous) => (previous ? { ...previous, ...patch } : previous)),
+    []
+  );
+
+  const value = useMemo(
+    () => ({ currentUser, setCurrentUser, updateCurrentUser, login, logout, refresh }),
+    [currentUser, setCurrentUser, updateCurrentUser, login, logout, refresh]
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-darkBackground">
-        <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full"></div>
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-canvas dark:bg-canvas-dark">
+        <Logo size="lg" />
+        <div className="h-1 w-24 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-brand-600" />
+        </div>
       </div>
     );
   }
 
-  return (
-    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export const useAuth = () => useContext(AuthContext);

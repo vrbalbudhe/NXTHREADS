@@ -1,10 +1,12 @@
 const asyncHandler = require("express-async-handler");
 const { Category } = require("@prisma/client");
 const prisma = require("../lib/prisma");
-const { postInclude } = require("../lib/selects");
+const { postIncludeFor, shapePost } = require("../lib/selects");
 const { containsText } = require("../lib/text");
 
 const categories = new Set(Object.values(Category));
+const TREND_DAYS = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const pageMeta = ({ page, limit }, count, total) => ({
   total,
@@ -13,66 +15,95 @@ const pageMeta = ({ page, limit }, count, total) => ({
   hasMore: (page - 1) * limit + count < total,
 });
 
-const findPaged = async (where, paging) => {
+const findPaged = async (where, paging, viewerId) => {
   const [posts, total] = await Promise.all([
     prisma.posts.findMany({
       where,
-      include: postInclude,
+      include: postIncludeFor(viewerId),
       orderBy: { createdAt: "desc" },
       skip: (paging.page - 1) * paging.limit,
       take: paging.limit,
     }),
     prisma.posts.count({ where }),
   ]);
-  return { posts, meta: pageMeta(paging, posts.length, total) };
+  return { posts: posts.map(shapePost), meta: pageMeta(paging, posts.length, total) };
 };
+
+const pagingOf = ({ page, limit }) => ({ page, limit });
+
+const getCategories = asyncHandler(async (req, res) => {
+  const grouped = await prisma.posts.groupBy({
+    by: ["category"],
+    _count: { _all: true },
+  });
+  const counts = new Map(grouped.map((row) => [row.category, row._count._all]));
+
+  return res.status(200).json({
+    categories: Object.values(Category).map((name) => ({
+      name,
+      count: counts.get(name) || 0,
+    })),
+  });
+});
+
+const getStats = asyncHandler(async (req, res) => {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const since = new Date(startOfToday.getTime() - (TREND_DAYS - 1) * DAY_MS);
+
+  const [posts, writers, comments, recent] = await Promise.all([
+    prisma.posts.count(),
+    prisma.user.count({ where: { verified: true } }),
+    prisma.comment.count(),
+    prisma.posts.findMany({
+      where: { createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  const trend = Array.from({ length: TREND_DAYS }, () => 0);
+  for (const { createdAt } of recent) {
+    const index = Math.floor((createdAt.getTime() - since.getTime()) / DAY_MS);
+    if (index >= 0 && index < TREND_DAYS) {
+      trend[index] += 1;
+    }
+  }
+
+  return res.status(200).json({
+    posts,
+    writers,
+    comments,
+    postsThisWeek: trend.slice(-7).reduce((sum, value) => sum + value, 0),
+    trend,
+  });
+});
 
 const getPostUrl = asyncHandler(async (req, res) => {
   const { category, author } = req.valid.query;
+  const where = {
+    ...(categories.has(category) && { category }),
+    ...(author && author !== "All" && { author }),
+  };
 
-  const posts = await prisma.posts.findMany({
-    where: {
-      ...(categories.has(category) && { category }),
-      ...(author && author !== "All" && { author }),
-    },
-    orderBy: { createdAt: "desc" },
-    include: postInclude,
-  });
-
-  return res.status(200).json({ posts });
+  return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), req.userId));
 });
 
 const searchPosts = asyncHandler(async (req, res) => {
-  const { q, page, limit } = req.valid.query;
-  const contains = containsText(q);
+  const contains = containsText(req.valid.query.q);
+  const where = {
+    OR: [{ title: contains }, { subtitle: contains }, { content: contains }, { author: contains }],
+  };
 
-  const result = await findPaged(
-    {
-      OR: [
-        { title: contains },
-        { subtitle: contains },
-        { content: contains },
-        { author: contains },
-      ],
-    },
-    { page, limit }
-  );
-
-  return res.status(200).json(result);
+  return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), req.userId));
 });
 
 const getPost = asyncHandler(async (req, res) => {
-  const posts = await prisma.posts.findMany({
-    where: { userId: req.valid.params.id },
-    orderBy: { createdAt: "desc" },
-    include: postInclude,
-  });
-
-  return res.status(200).json({ posts });
+  const where = { userId: req.valid.params.id };
+  return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), req.userId));
 });
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  return res.status(200).json(await findPaged({}, req.valid.query));
+  return res.status(200).json(await findPaged({}, pagingOf(req.valid.query), req.userId));
 });
 
 const createPosts = asyncHandler(async (req, res) => {
@@ -88,12 +119,13 @@ const createPosts = asyncHandler(async (req, res) => {
       author: req.session?.username || "",
       userId: req.userId,
     },
+    include: postIncludeFor(req.userId),
   });
 
   return res.status(201).json({
     success: true,
     message: "Post created successfully",
-    post: newPost,
+    post: shapePost(newPost),
   });
 });
 
@@ -127,12 +159,13 @@ const updatePost = asyncHandler(async (req, res) => {
       ...(category && { category }),
       ...(images && { images }),
     },
+    include: postIncludeFor(req.userId),
   });
 
   return res.status(200).json({
     success: true,
     message: "Post updated successfully",
-    data: updatedPost,
+    data: shapePost(updatedPost),
   });
 });
 
@@ -167,13 +200,11 @@ const favUnfavPost = asyncHandler(async (req, res) => {
 
   if (existing) {
     await prisma.savedPosts.delete({ where: key });
-    return res
-      .status(200)
-      .json({ success: true, saved: false, message: "Post removed from favourites" });
+    return res.status(200).json({ success: true, saved: false, message: "Removed from saved" });
   }
 
   await prisma.savedPosts.create({ data: { userId, postId } });
-  return res.status(200).json({ success: true, saved: true, message: "Post added to favourites" });
+  return res.status(200).json({ success: true, saved: true, message: "Saved" });
 });
 
 const getFavoritePosts = asyncHandler(async (req, res) => {
@@ -182,14 +213,13 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
     return res.status(403).json({ success: false, message: "Saved posts are private" });
   }
 
-  const favoritePosts = await prisma.savedPosts.findMany({
+  const saved = await prisma.savedPosts.findMany({
     where: { userId: id },
-    include: { post: { include: postInclude } },
+    select: { postId: true },
   });
+  const where = { id: { in: saved.map((entry) => entry.postId) } };
 
-  return res.status(200).json({
-    posts: favoritePosts.map((saved) => saved.post).filter(Boolean),
-  });
+  return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), req.userId));
 });
 
 const getFollowersPost = asyncHandler(async (req, res) => {
@@ -204,20 +234,20 @@ const getFollowersPost = asyncHandler(async (req, res) => {
     userId: { in: [...followedUsers.map((follow) => follow.followingId), userId] },
   };
 
-  return res.status(200).json(await findPaged(where, req.valid.query));
+  return res.status(200).json(await findPaged(where, pagingOf(req.valid.query), userId));
 });
 
 const getPostById = asyncHandler(async (req, res) => {
   const post = await prisma.posts.findUnique({
     where: { id: req.valid.params.id },
-    include: postInclude,
+    include: postIncludeFor(req.userId),
   });
 
   if (!post) {
     return res.status(404).json({ success: false, message: "Post not found" });
   }
 
-  return res.status(200).json({ posts: [post] });
+  return res.status(200).json({ post: shapePost(post) });
 });
 
 module.exports = {
@@ -228,6 +258,8 @@ module.exports = {
   updatePost,
   createPosts,
   getPostUrl,
+  getCategories,
+  getStats,
   searchPosts,
   favUnfavPost,
   getFollowersPost,

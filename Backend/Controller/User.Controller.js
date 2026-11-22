@@ -13,9 +13,8 @@ const profileSelect = (includeEmail) => ({
   verified: true,
   createdAt: true,
   ...(includeEmail && { email: true }),
-  savedPosts: true,
-  followers: true,
-  following: true,
+  followers: { select: { followerId: true } },
+  following: { select: { followingId: true } },
 });
 
 const getUser = asyncHandler(async (req, res) => {

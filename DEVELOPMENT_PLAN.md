@@ -71,6 +71,16 @@ Branch: `feature/phase-2-code-quality` (built on `feature/phase-1-realtime-chat`
 
 Verified against the real database: Phase 1 regression 26/26, Phase 2 checks 19/19 (validation, NoSQL operator rejection, `javascript:` URLs, search, regex escaping, paging limits).
 
+## UI redesign
+
+Branch: `feature/ui-redesign` (built on `feature/phase-2-code-quality`).
+
+- New design system (Inter, neutral canvas, white panels, blue accent, full dark mode) and app shell: sidebar with profile card and menu sections, sticky header with live weekly stats, mobile drawer and bottom tab bar.
+- Every screen rebuilt: Home (For you / Latest), Post page with threaded discussion, Write / Edit with live preview and drag-and-drop image upload, Topics (two-pane list with counts), Explore (posts and people), People, Profile (cover, stats, follower lists, Saved tab), Saved, Settings (profile photo, password, theme, delete account), Messages (two-pane live chat), Sign in, Register with OTP boxes, About, Privacy, 404. Old URLs redirect to the new ones.
+- Data layer replaced: Redux and the loader hooks removed in favour of small hooks over one API client (`src/lib/api.js`); shared contexts for auth, theme, follows and chat (live unread badge on every page). This supersedes Phase 2 item 2.9.
+- Backend support: posts return the viewer's own like / dislike / saved state and a comment count (no per-card status requests, no list of who saved a post); `/api/post/stats` and `/api/post/categories`; comment timestamps; public profiles (email only to the owner); `/auth/isLogin` reads the current profile from the database.
+- Images upload directly to Cloudinary through an unsigned preset configured by `VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET`; the third-party widget script is gone.
+
 ## Phase 3 — Testing and delivery
 
 1. Backend: Jest/Vitest + Supertest for auth, OTP, ownership rules.
