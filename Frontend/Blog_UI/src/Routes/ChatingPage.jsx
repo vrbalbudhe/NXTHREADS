@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState, useEffect, useContext, useRef } from "react";
 import { LuSendHorizonal } from "react-icons/lu";
 import ChatUserCard from "../Components/ChatUserCard/ChatUserCard";
@@ -54,9 +53,7 @@ function ChatHeader({ selectUser, connected }) {
           {selectUser ? selectUser.fullname || `@${selectUser.username}` : "Select a user"}
         </p>
       </div>
-      <span
-        className={`text-xs font-medium ${connected ? "text-green-500" : "text-gray-400"}`}
-      >
+      <span className={`text-xs font-medium ${connected ? "text-green-500" : "text-gray-400"}`}>
         {connected ? "Live" : "Offline"}
       </span>
     </div>

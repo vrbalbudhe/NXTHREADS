@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useContext, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -41,8 +40,8 @@ function DeleteAccountCard({ onClose }) {
     >
       <h1 className="text-sm font-bold text-red-600">Delete account</h1>
       <p className="text-xs text-slate-600 dark:text-slate-300">
-        This permanently deletes your profile, posts, comments, likes, saved posts,
-        follows and messages. It cannot be undone.
+        This permanently deletes your profile, posts, comments, likes, saved posts, follows and
+        messages. It cannot be undone.
       </p>
       <input
         className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md"

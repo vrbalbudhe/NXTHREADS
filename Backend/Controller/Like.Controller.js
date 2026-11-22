@@ -1,13 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
-const { isObjectId, invalidId } = require("../lib/validators");
 
 const ensurePost = async (req, res) => {
-  const postId = req.body?.postId;
-  if (!isObjectId(postId)) {
-    invalidId(res, "post id");
-    return null;
-  }
+  const { postId } = req.valid.body;
   const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
   if (!post) {
     res.status(404).json({ success: false, message: "Post not found" });
@@ -109,10 +104,7 @@ const unlikePost = asyncHandler(async (req, res) => {
 });
 
 const checkWhetherLike = asyncHandler(async (req, res) => {
-  const postId = req.body?.postId;
-  if (!isObjectId(postId)) {
-    return invalidId(res, "post id");
-  }
+  const { postId } = req.valid.body;
   const userId = req.userId;
 
   const [isLiked, isUnliked] = await Promise.all([

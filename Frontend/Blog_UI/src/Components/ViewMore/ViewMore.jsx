@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { FaAngleDoubleDown } from "react-icons/fa";
 function ViewMore({ onViewMore }) {
   return (

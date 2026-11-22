@@ -1,21 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import {
-  Home,
-  Search,
-  PenSquare,
-  Users,
-  MessageSquare,
-  Sun,
-  Moon,
-  User2Icon,
-} from "lucide-react";
+import { Home, Search, PenSquare, Users, MessageSquare, User2Icon } from "lucide-react";
 
 const MobileNavbar = ({ currentUser }) => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains("dark")
-  );
 
   const navItems = [
     {
@@ -58,7 +45,7 @@ const MobileNavbar = ({ currentUser }) => {
 
   return (
     <div
-      className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground  border-gray-300 dark:border-gray-700 pl-10 pr-10 py-3 flex ${currentUser?" justify-between":" justify-center gap-5"} items-center shadow-md`}
+      className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-darkPostCardBackground  border-gray-300 dark:border-gray-700 pl-10 pr-10 py-3 flex ${currentUser ? " justify-between" : " justify-center gap-5"} items-center shadow-md`}
     >
       {navItems.map(
         (item) =>

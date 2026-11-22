@@ -1,13 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Bookmark,
-  MessageCircle,
-  Send,
-  HeartOff,
-  Heart,
-  Trash2,
-} from "lucide-react";
+import { Bookmark, MessageCircle, Send, HeartOff, Heart, Trash2 } from "lucide-react";
 import {
   fetchPostLikeStatus,
   likePostThunk,
@@ -50,9 +43,7 @@ const LikeUnlikeActions = ({ post, currentUser }) => {
 
   useEffect(() => {
     if (currentUser) {
-      dispatch(
-        fetchPostLikeStatus({ postId: post.id, userId: currentUser.userId })
-      );
+      dispatch(fetchPostLikeStatus({ postId: post.id, userId: currentUser.userId }));
     }
   }, [post.id]);
 
@@ -81,19 +72,14 @@ const LikeUnlikeActions = ({ post, currentUser }) => {
   );
 };
 
-const CommentAndDeleteActions = ({
-  post,
-  currentUser,
-  setOpenCommentSection,
-}) => {
+const CommentAndDeleteActions = ({ post, currentUser, setOpenCommentSection }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const comments = useSelector((state) => state.post.comments[post.id] || []);
   const [openCardDelete, setOpenCardDelete] = useState(false);
 
   const savedFromServer = Boolean(
-    currentUser?.userId &&
-      post?.savedPosts?.some((saved) => saved.userId === currentUser.userId)
+    currentUser?.userId && post?.savedPosts?.some((saved) => saved.userId === currentUser.userId)
   );
   const savedOverride = useSelector((state) => state.post.savedState[post.id]);
   const isSaved = savedOverride ?? savedFromServer;
@@ -234,9 +220,7 @@ const CommentOpenSection = ({ post, currentUser }) => {
                 </button>
               )}
             </div>
-            <p className="text-gray-700 dark:text-gray-300">
-              {com.description}
-            </p>
+            <p className="text-gray-700 dark:text-gray-300">{com.description}</p>
           </div>
         ))}
       </div>
@@ -246,7 +230,6 @@ const CommentOpenSection = ({ post, currentUser }) => {
 
 export default function PostActionButtons({ post, currentUser }) {
   const [openCommentSection, setOpenCommentSection] = useState(false);
-  const [addComment, setAddComment] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-between border-t dark:border-gray-700">
@@ -258,13 +241,7 @@ export default function PostActionButtons({ post, currentUser }) {
           setOpenCommentSection={setOpenCommentSection}
         />
       </div>
-      {openCommentSection && (
-        <CommentOpenSection
-          post={post}
-          currentUser={currentUser}
-          isCommentAdded={setAddComment}
-        />
-      )}
+      {openCommentSection && <CommentOpenSection post={post} currentUser={currentUser} />}
     </div>
   );
 }

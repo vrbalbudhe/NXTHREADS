@@ -1,14 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  register,
-  login,
-  logout,
-  optFinalization,
-} = require("../Controller/Auth.Controller");
+const { register, login, logout, optFinalization } = require("../Controller/Auth.Controller");
 const IsLoginCall = require("../Middleware/verifyTokenRoute");
 const createRateLimiter = require("../Middleware/rateLimit");
+const validate = require("../Middleware/validate");
+const schemas = require("../lib/schemas");
 
 const loginLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
@@ -26,9 +23,9 @@ const otpLimiter = createRateLimiter({
   message: "Too many verification attempts. Try again later",
 });
 
-router.post("/register", registerLimiter, register);
-router.post("/verify-otp", otpLimiter, optFinalization);
-router.post("/login", loginLimiter, login);
+router.post("/register", registerLimiter, validate({ body: schemas.auth.register }), register);
+router.post("/verify-otp", otpLimiter, validate({ body: schemas.auth.verifyOtp }), optFinalization);
+router.post("/login", loginLimiter, validate({ body: schemas.auth.login }), login);
 router.post("/logout", logout);
 router.get("/isLogin", IsLoginCall);
 

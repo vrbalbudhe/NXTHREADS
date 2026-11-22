@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../Context/AuthContext";
 import axios from "axios";
@@ -50,11 +49,9 @@ function UpdateCard({ upd }) {
           currentPassword: input.currentPassword,
         }),
       };
-      const res = await axios.put(
-        `${baseUrl}/api/user/upd/${currentUser?.userId}`,
-        payload,
-        { withCredentials: true }
-      );
+      const res = await axios.put(`${baseUrl}/api/user/upd/${currentUser?.userId}`, payload, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         toast.success("Profile updated successfully!");
         setTimeout(() => window.location.reload(), 1500);
@@ -71,9 +68,7 @@ function UpdateCard({ upd }) {
   return (
     <div className="md:w-full w-[90%] md:max-w-lg mx-auto bg-white dark:bg-darkPostCardBackground border border-slate-300 dark:border-gray-700 rounded-xl p-5 shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-sm font-bold text-slate-800 dark:text-white">
-          Update Profile
-        </h1>
+        <h1 className="text-sm font-bold text-slate-800 dark:text-white">Update Profile</h1>
         <button
           onClick={handleSubmit}
           disabled={loading}

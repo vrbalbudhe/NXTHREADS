@@ -1,23 +1,9 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
-const { isObjectId, cleanString, invalidId } = require("../lib/validators");
-
-const MAX_COMMENT_LENGTH = 2000;
 
 const createComment = asyncHandler(async (req, res) => {
-  const postId = req.body?.postId;
-  const description = cleanString(req.body?.description);
-
-  if (!isObjectId(postId)) {
-    return invalidId(res, "post id");
-  }
-  if (!description || description.length > MAX_COMMENT_LENGTH) {
-    return res.status(400).json({
-      success: false,
-      message: `Comment must be 1-${MAX_COMMENT_LENGTH} characters`,
-    });
-  }
+  const { postId, description } = req.valid.body;
 
   const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
   if (!post) {
@@ -37,10 +23,7 @@ const createComment = asyncHandler(async (req, res) => {
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "comment id");
-  }
+  const { id } = req.valid.params;
 
   const comment = await prisma.comment.findUnique({
     where: { id },
@@ -69,13 +52,8 @@ const deleteComment = asyncHandler(async (req, res) => {
 });
 
 const getComments = asyncHandler(async (req, res) => {
-  const postId = cleanString(req.params.id).split(",")[0].trim();
-  if (!isObjectId(postId)) {
-    return invalidId(res, "post id");
-  }
-
   const allComments = await prisma.comment.findMany({
-    where: { postId },
+    where: { postId: req.valid.params.id },
     include: { user: { select: publicUserSelect } },
   });
 

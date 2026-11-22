@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-function BlogWriteBanner({ isCurrentUser }) {
+function BlogWriteBanner() {
   const navigate = useNavigate();
 
   return (

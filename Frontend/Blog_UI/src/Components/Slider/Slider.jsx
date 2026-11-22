@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight, FaTimes } from "react-icons/fa";
 
@@ -6,15 +5,11 @@ function Slider({ post, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handlePrevClick = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? post.images.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? post.images.length - 1 : prevIndex - 1));
   };
 
   const handleNextClick = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === post.images.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentIndex((prevIndex) => (prevIndex === post.images.length - 1 ? 0 : prevIndex + 1));
   };
 
   return (

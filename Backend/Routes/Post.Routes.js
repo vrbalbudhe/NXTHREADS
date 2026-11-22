@@ -7,34 +7,54 @@ const {
   updatePost,
   deletePosts,
   createPosts,
+  searchPosts,
   favUnfavPost,
   getFavoritePosts,
   getFollowersPost,
   getPostById,
 } = require("../Controller/Post.Controller");
+const { likePost, unlikePost, checkWhetherLike } = require("../Controller/Like.Controller");
 const verifyToken = require("../Middleware/verifyToken");
-const {
-  likePost,
-  unlikePost,
-  checkWhetherLike,
-} = require("../Controller/Like.Controller");
+const validate = require("../Middleware/validate");
+const createRateLimiter = require("../Middleware/rateLimit");
+const schemas = require("../lib/schemas");
 
-router.get("/fltr", verifyToken, getPostUrl);
-router.get("/:id", getPost);
-router.get("/", getAllPosts);
-router.post("/", verifyToken, createPosts);
-router.put("/upd/:id", verifyToken, updatePost);
-router.delete("/:id", verifyToken, deletePosts);
+const searchLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: "Too many searches. Try again in a minute",
+});
 
-router.post("/fav", verifyToken, favUnfavPost);
-router.get("/fav/:id", verifyToken, getFavoritePosts);
+const byId = validate({ params: schemas.params.id });
+const byPostIdBody = validate({ body: schemas.post.postIdBody });
 
-router.get("/get/:id", getPostById);
+router.get("/fltr", validate({ query: schemas.post.filter }), getPostUrl);
+router.get("/search", searchLimiter, validate({ query: schemas.post.search }), searchPosts);
+router.get("/", validate({ query: schemas.paging }), getAllPosts);
+router.get("/:id", byId, getPost);
+router.post("/", verifyToken, validate({ body: schemas.post.create }), createPosts);
+router.put(
+  "/upd/:id",
+  verifyToken,
+  validate({ params: schemas.params.id, body: schemas.post.update }),
+  updatePost
+);
+router.delete("/:id", verifyToken, byId, deletePosts);
 
-router.post("/like", verifyToken, likePost);
-router.post("/unlike", verifyToken, unlikePost);
-router.post("/likecheck", verifyToken, checkWhetherLike);
+router.post("/fav", verifyToken, byPostIdBody, favUnfavPost);
+router.get("/fav/:id", verifyToken, byId, getFavoritePosts);
 
-router.get("/gfp/:userId", verifyToken, getFollowersPost);
+router.get("/get/:id", byId, getPostById);
+
+router.post("/like", verifyToken, byPostIdBody, likePost);
+router.post("/unlike", verifyToken, byPostIdBody, unlikePost);
+router.post("/likecheck", verifyToken, byPostIdBody, checkWhetherLike);
+
+router.get(
+  "/gfp/:userId",
+  verifyToken,
+  validate({ params: schemas.params.userId, query: schemas.paging }),
+  getFollowersPost
+);
 
 module.exports = router;

@@ -4,9 +4,7 @@ const requiredVariables = ["DATABASE_URL", "JWT_SECRET_KEY"];
 const missingVariables = requiredVariables.filter((name) => !process.env[name]);
 
 if (missingVariables.length > 0) {
-  throw new Error(
-    `Missing required environment variables: ${missingVariables.join(", ")}`
-  );
+  throw new Error(`Missing required environment variables: ${missingVariables.join(", ")}`);
 }
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -38,10 +36,5 @@ module.exports = {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
     from: process.env.SMTP_FROM || process.env.SMTP_USER,
-  },
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 };

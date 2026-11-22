@@ -1,45 +1,51 @@
-/* eslint-disable no-unused-vars */
 import { useState, useEffect, useContext } from "react";
+import { useSearchParams } from "react-router-dom";
 import Filter from "../Components/LayoutComponents/Filter";
 import PostCard from "../Components/PostCard/PostCard";
 import HotTopicsCard from "../Components/UI_Components/HotTopicsCard";
 import SearchBar from "../Components/SearchBar/SearchBar";
+import UserCard from "../Components/UserCard/UserCard";
 import { useFetchPosts } from "../Loaders/posts/useFetchAllPosts";
-import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
+import { useSearch } from "../hooks/useSearch";
 import { AuthContext } from "../Context/AuthContext";
 import ShowcaseBanner from "../Components/UI_Components/ShowcaseBanner";
-import NextPrevious from "../Components/LayoutComponents/NextPrevious";
 import PostSkeleton from "../Components/PostCard/PostSkeleton";
 
-function Search() {
-  const { posts, loadPosts, error, loading } = useFetchPosts();
-  const { currentUser } = useContext(AuthContext);
-  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
+function LoadMoreButton({ onClick, loading }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="self-center text-sm font-semibold px-4 py-2 rounded-xl border border-slate-300 dark:border-gray-700 dark:text-white disabled:opacity-50"
+    >
+      {loading ? "Loading..." : "Load more"}
+    </button>
+  );
+}
 
-  const [prev, setPrev] = useState(0);
-  const [next, setNext] = useState(3);
-  const [total, setTotal] = useState(0);
+function Search() {
+  const { currentUser } = useContext(AuthContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const latest = useFetchPosts();
+  const results = useSearch(query, { includeUsers: Boolean(currentUser?.userId) });
+  const isSearching = query.trim().length > 0;
+  const { loadPosts } = latest;
 
   useEffect(() => {
     loadPosts();
-    loadUsers();
-  }, []);
+  }, [loadPosts]);
 
-  useEffect(() => {
-    setTotal(posts.length);
-  }, [posts]);
-
-  const handlePrev = () => {
-    if (prev > 0) {
-      setPrev((prev) => prev - 3);
-      setNext((next) => next - 3);
-    }
+  const handleQueryChange = (value) => {
+    setQuery(value);
+    setSearchParams(value.trim() ? { q: value.trim() } : {}, { replace: true });
   };
 
-  const handleNext = () => {
-    setPrev((prev) => prev + 3);
-    setNext((next) => next + 3);
-  };
+  const posts = isSearching ? results.posts : latest.posts;
+  const loading = isSearching ? results.loading : latest.loading;
+  const hasMore = isSearching ? results.hasMore : latest.hasMore;
+  const loadingMore = isSearching ? results.loadingMore : latest.loadingMore;
+  const loadMore = isSearching ? results.loadMore : latest.loadMore;
 
   return (
     <div className="w-full min-h-screen md:flex justify-start items-start mt-5 gap-2">
@@ -47,35 +53,40 @@ function Search() {
         <HotTopicsCard />
       </div>
 
-      <div className="w-full md:w-[60%] h-full p-1 flex flex-col justify-start gap-2 items-start">
-        <SearchBar posts={posts} users={users} />
+      <div className="w-full md:w-[60%] h-full p-1 flex flex-col justify-start gap-3 items-start">
+        <SearchBar value={query} onChange={handleQueryChange} />
         <div className="md:hidden block">
           <HotTopicsCard />
         </div>
 
+        {isSearching && results.error && <p className="text-sm text-red-500">{results.error}</p>}
+
+        {isSearching && results.users.length > 0 && (
+          <div className="w-full flex flex-wrap justify-start items-center gap-2">
+            {results.users.map((user) => (
+              <UserCard key={user.id} user={user} />
+            ))}
+          </div>
+        )}
+
         <div className="w-full h-fit flex flex-col gap-3">
           {loading ? (
-            [...Array(5)].map((_, index) => <PostSkeleton key={index} />)
+            [...Array(3)].map((_, index) => <PostSkeleton key={index} />)
           ) : posts.length === 0 ? (
-            <div className="w-full min-h-[500px] flex justify-center items-center">
+            <div className="w-full min-h-[300px] flex justify-center items-center">
               <p className="text-lg dark:text-white text-gray-800">
-                No posts found
+                {isSearching ? `No posts match "${query.trim()}"` : "No posts found"}
               </p>
             </div>
           ) : (
-            posts
-              .slice(prev, next)
-              .map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={currentUser?.userId}
-                />
-              ))
+            <>
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} currentUser={currentUser} />
+              ))}
+              {hasMore && <LoadMoreButton onClick={loadMore} loading={loadingMore} />}
+            </>
           )}
         </div>
-
-        <NextPrevious prev={handlePrev} next={handleNext} />
       </div>
 
       <div className="w-full md:w-[20%] h-full hidden md:flex flex-col gap-5 justify-center items-start">

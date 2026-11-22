@@ -60,7 +60,7 @@ const server = http.createServer(app);
 app.set("io", attachSocket(server));
 
 server.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`);
+  process.stdout.write(`Server running on port ${config.port}\n`);
 });
 
 const shutdown = () => {

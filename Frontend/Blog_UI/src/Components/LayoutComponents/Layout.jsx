@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import { useContext } from "react";
 import { AuthContext } from "../../Context/AuthContext";
@@ -24,7 +24,6 @@ export const Layout = () => {
 
 export const RequiredAuth = () => {
   const { currentUser } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;

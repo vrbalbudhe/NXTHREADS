@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
+import { AuthContext } from "../../Context/AuthContext";
 
 const categories = [
   "Technology",
@@ -26,8 +27,10 @@ const categories = [
 ];
 
 function Filter() {
-  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { users, loadUsers } = useFetchAllUsers();
+  const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [query, setQuery] = useState({
     category: searchParams.get("category") || "",
@@ -35,7 +38,10 @@ function Filter() {
   });
 
   const handleFilter = () => {
-    setSearchParams(query);
+    const params = new URLSearchParams();
+    if (query.category) params.set("category", query.category);
+    if (query.author) params.set("author", query.author);
+    navigate(`/list?${params.toString()}`);
   };
 
   const handleInputChange = (e) => {
@@ -47,8 +53,10 @@ function Filter() {
   };
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    if (currentUser?.userId) {
+      loadUsers();
+    }
+  }, [currentUser?.userId, loadUsers]);
 
   useEffect(() => {
     setQuery({

@@ -21,8 +21,7 @@ export const AuthContextProvider = ({ children }) => {
         } else {
           setCurrentUser(null);
         }
-      } catch (error) {
-        console.error("Error fetching user info, please re-login.");
+      } catch {
         setCurrentUser(null);
       } finally {
         setLoading(false);
@@ -30,7 +29,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []); 
+  }, []);
 
   if (loading) {
     return (
@@ -41,8 +40,6 @@ export const AuthContextProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>{children}</AuthContext.Provider>
   );
 };

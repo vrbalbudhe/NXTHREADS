@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
 import PostHeader from "../Components/PostCard/PostHeader";
@@ -15,9 +15,7 @@ const NavbarMidLayoutTitleSection = ({ post }) => {
         <h1 className="text-xl cursor-pointer font-bold text-gray-900 dark:text-white mb-2">
           {post.title}
         </h1>
-        <h2 className="text-sm text-gray-600 dark:text-gray-400">
-          {post.subtitle}
-        </h2>
+        <h2 className="text-sm text-gray-600 dark:text-gray-400">{post.subtitle}</h2>
       </div>
 
       <div className="px-4 py-2">
@@ -82,17 +80,16 @@ export default function Blog() {
   const [error, setError] = useState("");
   const { currentUser } = useContext(AuthContext);
   const [showEditor, setShowEditor] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const res = await axios.get(`${baseUrl}/api/post/get/${id}`, {
-          withCredentials: true
+          withCredentials: true,
         });
         setBlog(res?.data?.posts[0]);
-      } catch (err) {
+      } catch {
         setError("Failed to load the blog.");
       } finally {
         setLoading(false);
@@ -121,9 +118,7 @@ export default function Blog() {
       ) : (
         <p className="text-sm text-gray-500">No blog found with this ID.</p>
       )}
-      {showEditor && (
-        <UpdatePostModal post={blog} onClose={() => setShowEditor(false)} />
-      )}
+      {showEditor && <UpdatePostModal post={blog} onClose={() => setShowEditor(false)} />}
     </div>
   );
 }

@@ -8,7 +8,7 @@ const IsLoginCall = (req, res) => {
       message: "User is not authenticated",
     });
   }
-  const { iat, exp, ...user } = payload;
+  const { iat: _iat, exp: _exp, ...user } = payload;
   return res.status(200).json({
     success: true,
     message: "User is logged in",

@@ -53,12 +53,23 @@ Verified with an end-to-end script against a real database: 26/26 checks passed 
 
 ## Phase 2 — Code quality
 
-1. Backend layering: routes → controllers → services, shared Prisma selects.
-2. Frontend: RTK Query instead of hand-written thunks and duplicate loader hooks.
-3. Remove unused dependencies (`mongoose`, `redis`, `@redis/client`, `ws`, `body-parser`, `crypto`), move `nodemon` to devDependencies, remove debug logging.
-4. ESLint + Prettier on both apps; consider TypeScript.
-5. Schema-based request validation with `zod` replacing the hand-written validators.
-6. Search over the full post collection on the server instead of the first page on the client.
+Branch: `feature/phase-2-code-quality` (built on `feature/phase-1-realtime-chat`).
+
+| # | Task | Status |
+|---|------|--------|
+| 2.1 | `npm audit`: 0 vulnerabilities in both apps (nodemailer 10, zod 4, express patches, React Router 7, Vite 8) | Done |
+| 2.2 | Removed unused dependencies (`mongoose`, `redis`, `@redis/client`, `ws`, `body-parser`, `crypto`, `redux-thunk`, `nodemon`); `npm run dev` uses `node --watch` | Done |
+| 2.3 | Removed dead code: backend Cloudinary config, `NextPrevious`, placeholder post menu; removed debug logging | Done |
+| 2.4 | `zod` schemas for every route (`lib/schemas.js` + `Middleware/validate.js`), also used by the socket chat; hand-written validators deleted | Done |
+| 2.5 | Server-side search: `/api/post/search` (paged) and `/api/user/search`, regex characters escaped; search page rewritten with debounce and URL `?q=` | Done |
+| 2.6 | ESLint 9 flat config in both apps, Prettier config; 0 lint errors (frontend has 12 hook-dependency warnings in older components) | Done |
+| 2.7 | Bugs found on the way: login spinner never showed, search page passed the wrong `currentUser`, guests got 401 on category lists and the search filter, filter button did nothing on the search page | Fixed |
+| 2.8 | Backend layering (routes → controllers → services) | Partly: validation moved out of controllers, chat has a service; rest stays as is until tests exist |
+| 2.9 | RTK Query instead of hand-written thunks and loader hooks | Not started; do after frontend tests exist (Phase 3) |
+| 2.10 | Run Prettier over the whole codebase | Not done on purpose: run `npm run format` in each app as its own formatting-only commit |
+| 2.11 | TypeScript | Not started |
+
+Verified against the real database: Phase 1 regression 26/26, Phase 2 checks 19/19 (validation, NoSQL operator rejection, `javascript:` URLs, search, regex escaping, paging limits).
 
 ## Phase 3 — Testing and delivery
 

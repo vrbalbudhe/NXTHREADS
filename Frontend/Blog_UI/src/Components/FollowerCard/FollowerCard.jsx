@@ -20,9 +20,7 @@ const FollowerUserCard = ({ follower }) => {
         <h1 className="font-medium text-sm text-gray-800 dark:text-gray-200">
           {follower.follower.fullname}
         </h1>
-        <h1 className="text-sm text-gray-500 dark:text-gray-400">
-          {follower.follower.username}
-        </h1>
+        <h1 className="text-sm text-gray-500 dark:text-gray-400">{follower.follower.username}</h1>
       </div>
     </div>
   );
@@ -30,7 +28,7 @@ const FollowerUserCard = ({ follower }) => {
 
 function FollowerCard({ userId }) {
   const dispatch = useDispatch();
-  const { followers, error, loadFollowers } = useFetchFollowers();
+  const { followers, loadFollowers } = useFetchFollowers();
   const reduxFollowers = useSelector((state) => state.follows.followers);
   const [search, setSearch] = useState("");
 
@@ -41,16 +39,12 @@ function FollowerCard({ userId }) {
     }
   }, [userId, loadFollowers, dispatch]);
 
-  const displayFollowers =
-    reduxFollowers.length > 0 ? reduxFollowers : followers;
+  const displayFollowers = reduxFollowers.length > 0 ? reduxFollowers : followers;
 
   const filteredFollowers = displayFollowers.filter((f) => {
     const name = f.follower.fullname?.toLowerCase() || "";
     const username = f.follower.username?.toLowerCase() || "";
-    return (
-      name.includes(search.toLowerCase()) ||
-      username.includes(search.toLowerCase())
-    );
+    return name.includes(search.toLowerCase()) || username.includes(search.toLowerCase());
   });
 
   return (
@@ -72,14 +66,12 @@ function FollowerCard({ userId }) {
       {filteredFollowers.length === 0 && (
         <div className="w-full flex flex-col items-center justify-center py-8 text-center">
           <Users className="h-12 w-12 text-gray-400 mb-2" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            No followers yet
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No followers yet</p>
         </div>
       )}
       <div className="min-h-[10px] w-full overflow-y-auto pr-2">
         {filteredFollowers.map((follower) => (
-          <FollowerUserCard follower={follower} />
+          <FollowerUserCard key={follower.id} follower={follower} />
         ))}
       </div>
     </div>

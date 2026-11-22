@@ -1,11 +1,11 @@
 import { AtomIcon } from "lucide-react";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SuggestionUserCard from "../UserCard/SuggestionUserCard";
 import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
 import { AuthContext } from "../../Context/AuthContext";
 
 function FollowSuggestionCard() {
-  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
+  const { users, loadUsers } = useFetchAllUsers();
   const { currentUser } = useContext(AuthContext) || {};
   const [visibleCount, setVisibleCount] = useState(4);
 
@@ -40,9 +40,7 @@ function FollowSuggestionCard() {
           <span className="text-violet-500">
             <AtomIcon size={20} />
           </span>
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-            Follow Users
-          </p>
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Follow Users</p>
         </div>
 
         <div className={`w-full p-1 flex flex-col gap-2 ${containerStyle}`}>
@@ -50,11 +48,7 @@ function FollowSuggestionCard() {
             users
               .slice(0, visibleCount)
               .map((user) => (
-                <SuggestionUserCard
-                  key={user.id}
-                  user={user}
-                  currentUser={currentUser}
-                />
+                <SuggestionUserCard key={user.id} user={user} currentUser={currentUser} />
               ))
           ) : (
             <p className="w-full text-center py-6 dark:text-white text-gray-800">
