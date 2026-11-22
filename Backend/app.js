@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const prisma = require("./lib/prisma");
 const { attachSocket } = require("./socket");
+const { connectRedis, disconnectRedis } = require("./lib/redis");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/user", require("./Routes/User.Routes"));
 app.use("/api/userfollow", require("./Routes/Follow.Routes"));
 app.use("/api/comment", require("./Routes/Comment.Routes"));
 app.use("/api/chat", require("./Routes/Chat.Routes"));
+app.use("/api/notifications", require("./Routes/Notification.Routes"));
 
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
@@ -57,15 +59,23 @@ app.use((err, req, res, next) => {
 });
 
 const server = http.createServer(app);
-app.set("io", attachSocket(server));
 
-server.listen(config.port, () => {
-  process.stdout.write(`Server running on port ${config.port}\n`);
+const start = async () => {
+  await connectRedis();
+  await attachSocket(server);
+  server.listen(config.port, () => {
+    process.stdout.write(`Server running on port ${config.port}\n`);
+  });
+};
+
+start().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
 
 const shutdown = () => {
   server.close(async () => {
-    await prisma.$disconnect();
+    await Promise.allSettled([prisma.$disconnect(), disconnectRedis()]);
     process.exit(0);
   });
   setTimeout(() => process.exit(1), 10000).unref();

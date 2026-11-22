@@ -1,4 +1,5 @@
 import {
+  Bell,
   Bookmark,
   Compass,
   Home,
@@ -18,6 +19,7 @@ export const mainNav = [
   { to: "/topics", label: "Topics", icon: LayoutGrid },
   { to: "/people", label: "People", icon: Users, auth: true },
   { to: "/messages", label: "Messages", icon: MessageSquare, auth: true, badge: "messages" },
+  { to: "/notifications", label: "Notifications", icon: Bell, auth: true, badge: "notifications" },
   { to: "/saved", label: "Saved", icon: Bookmark, auth: true },
 ];
 

@@ -1,11 +1,15 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
+const { notify } = require("../lib/notify");
 
 const createComment = asyncHandler(async (req, res) => {
   const { postId, description } = req.valid.body;
 
-  const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
+  const post = await prisma.posts.findUnique({
+    where: { id: postId },
+    select: { id: true, userId: true },
+  });
   if (!post) {
     return res.status(404).json({ success: false, message: "Post not found" });
   }
@@ -13,6 +17,15 @@ const createComment = asyncHandler(async (req, res) => {
   const newComment = await prisma.comment.create({
     data: { postId, commentor: req.userId, description },
     include: { user: { select: publicUserSelect } },
+  });
+
+  await notify({
+    type: "COMMENT",
+    userId: post.userId,
+    actorId: req.userId,
+    postId,
+    commentId: newComment.id,
+    preview: description,
   });
 
   return res.status(201).json({
@@ -42,7 +55,10 @@ const deleteComment = asyncHandler(async (req, res) => {
     });
   }
 
-  await prisma.comment.delete({ where: { id } });
+  await prisma.$transaction([
+    prisma.notification.deleteMany({ where: { commentId: id } }),
+    prisma.comment.delete({ where: { id } }),
+  ]);
 
   return res.status(200).json({
     success: true,

@@ -3,6 +3,7 @@ const { Category } = require("@prisma/client");
 const prisma = require("../lib/prisma");
 const { postIncludeFor, shapePost } = require("../lib/selects");
 const { containsText } = require("../lib/text");
+const { remember, removeKeys } = require("../lib/store");
 
 const categories = new Set(Object.values(Category));
 const TREND_DAYS = 14;
@@ -31,22 +32,29 @@ const findPaged = async (where, paging, viewerId) => {
 
 const pagingOf = ({ page, limit }) => ({ page, limit });
 
-const getCategories = asyncHandler(async (req, res) => {
+const CACHE_TTL_MS = 30 * 1000;
+const invalidateCommunityCache = () => removeKeys("cache:stats", "cache:categories");
+
+const loadCategories = async () => {
   const grouped = await prisma.posts.groupBy({
     by: ["category"],
     _count: { _all: true },
   });
   const counts = new Map(grouped.map((row) => [row.category, row._count._all]));
 
-  return res.status(200).json({
+  return {
     categories: Object.values(Category).map((name) => ({
       name,
       count: counts.get(name) || 0,
     })),
-  });
+  };
+};
+
+const getCategories = asyncHandler(async (req, res) => {
+  return res.status(200).json(await remember("cache:categories", CACHE_TTL_MS, loadCategories));
 });
 
-const getStats = asyncHandler(async (req, res) => {
+const loadStats = async () => {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
   const since = new Date(startOfToday.getTime() - (TREND_DAYS - 1) * DAY_MS);
@@ -69,13 +77,17 @@ const getStats = asyncHandler(async (req, res) => {
     }
   }
 
-  return res.status(200).json({
+  return {
     posts,
     writers,
     comments,
     postsThisWeek: trend.slice(-7).reduce((sum, value) => sum + value, 0),
     trend,
-  });
+  };
+};
+
+const getStats = asyncHandler(async (req, res) => {
+  return res.status(200).json(await remember("cache:stats", CACHE_TTL_MS, loadStats));
 });
 
 const getPostUrl = asyncHandler(async (req, res) => {
@@ -121,6 +133,7 @@ const createPosts = asyncHandler(async (req, res) => {
     },
     include: postIncludeFor(req.userId),
   });
+  await invalidateCommunityCache();
 
   return res.status(201).json({
     success: true,
@@ -161,6 +174,7 @@ const updatePost = asyncHandler(async (req, res) => {
     },
     include: postIncludeFor(req.userId),
   });
+  if (category) await invalidateCommunityCache();
 
   return res.status(200).json({
     success: true,
@@ -180,8 +194,10 @@ const deletePosts = asyncHandler(async (req, res) => {
     prisma.like.deleteMany({ where: { postId: post.id } }),
     prisma.unlike.deleteMany({ where: { postId: post.id } }),
     prisma.savedPosts.deleteMany({ where: { postId: post.id } }),
+    prisma.notification.deleteMany({ where: { postId: post.id } }),
     prisma.posts.delete({ where: { id: post.id } }),
   ]);
+  await invalidateCommunityCache();
 
   return res.status(200).json({ success: true, message: "Post deleted successfully" });
 });

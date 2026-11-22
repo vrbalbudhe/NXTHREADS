@@ -27,6 +27,7 @@ module.exports = {
   port: Number(process.env.PORT) || 8000,
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
   trustProxy: process.env.TRUST_PROXY === "true",
+  redisUrl: process.env.REDIS_URL || "",
   jwtSecret: process.env.JWT_SECRET_KEY,
   jwtExpiresIn: "7d",
   sessionMaxAgeMs,

@@ -81,6 +81,20 @@ Branch: `feature/ui-redesign` (built on `feature/phase-2-code-quality`).
 - Backend support: posts return the viewer's own like / dislike / saved state and a comment count (no per-card status requests, no list of who saved a post); `/api/post/stats` and `/api/post/categories`; comment timestamps; public profiles (email only to the owner); `/auth/isLogin` reads the current profile from the database.
 - Images upload directly to Cloudinary through an unsigned preset configured by `VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET`; the third-party widget script is gone.
 
+## Redis and notifications
+
+Branch: `feature/redis-notifications` (built on `feature/ui-redesign`).
+
+- Redis integration (`REDIS_URL`, optional) with an automatic in-memory fallback: shared rate limits, revocable sessions, 30-second cache for stats and topic counts, presence, and the Socket.IO Redis adapter for multiple instances.
+- Sessions: every token has an ID. Logout revokes it immediately; changing the password or deleting the account signs out all other devices.
+- Notifications for likes, comments and follows: stored in MongoDB, delivered live over the socket, bell badge, toast, notifications page with Today / This week / Earlier, unread filter and mark as read. Removed with the comment, post or account they belong to.
+- Chat: online presence dots and typing indicators, limited to people you are connected with.
+- `npm run seed` loads realistic demo data (7 users with photos, 13 posts, comments, likes, follows, saves, conversations, notifications).
+- `prisma db push` also created missing unique indexes, so duplicate likes, follows and saves are now blocked by the database.
+- README rewritten with features, screenshots, setup, environment variables, scripts and API overview.
+
+Verified: 70/70 end-to-end checks (Phase 1 regression 26, Phase 2 regression 19, this phase 25).
+
 ## Phase 3 — Testing and delivery
 
 1. Backend: Jest/Vitest + Supertest for auth, OTP, ownership rules.

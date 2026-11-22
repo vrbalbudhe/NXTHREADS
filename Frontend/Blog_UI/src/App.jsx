@@ -21,6 +21,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Saved = lazy(() => import("./pages/Saved"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Messages = lazy(() => import("./pages/Messages"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
 const About = lazy(() =>
@@ -65,6 +66,7 @@ const router = createBrowserRouter([
       { path: "saved", element: privatePage(<Saved />) },
       { path: "settings", element: privatePage(<Settings />) },
       { path: "messages", element: privatePage(<Messages />) },
+      { path: "notifications", element: privatePage(<Notifications />) },
       { path: "about", element: page(<About />) },
       { path: "privacy", element: page(<Privacy />) },
       { path: "blog/:id", element: <LegacyPostRedirect /> },

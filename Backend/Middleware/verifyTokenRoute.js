@@ -6,7 +6,7 @@ const unauthenticated = (res) =>
   res.status(401).json({ success: false, message: "User is not authenticated" });
 
 const IsLoginCall = asyncHandler(async (req, res) => {
-  const session = readSession(req);
+  const session = await readSession(req);
   if (!session?.userId) {
     return unauthenticated(res);
   }

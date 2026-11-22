@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
+const { notify } = require("../lib/notify");
 
 const followUnfollowUser = asyncHandler(async (req, res) => {
   const followerId = req.userId;
@@ -27,6 +28,7 @@ const followUnfollowUser = asyncHandler(async (req, res) => {
   }
 
   const followSuccess = await prisma.follows.create({ data: { followerId, followingId } });
+  await notify({ type: "FOLLOW", userId: followingId, actorId: followerId });
   return res.status(200).json({
     success: true,
     message: "Followed successfully",

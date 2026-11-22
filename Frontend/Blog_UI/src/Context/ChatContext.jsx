@@ -24,7 +24,9 @@ export function ChatProvider({ children }) {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [typing, setTyping] = useState({});
   const activeRef = useRef(null);
+  const typingTimers = useRef({});
 
   const loadContacts = useCallback(async () => {
     if (!userId) {
@@ -97,9 +99,47 @@ export function ChatProvider({ children }) {
         loadContacts();
       }
     };
+    const onPresence = ({ userId: otherId, online }) =>
+      setContacts((previous) =>
+        previous.map((contact) => (contact.id === otherId ? { ...contact, online } : contact))
+      );
+    const onTyping = ({ userId: otherId, typing: isTyping }) => {
+      clearTimeout(typingTimers.current[otherId]);
+      setTyping((previous) => ({ ...previous, [otherId]: isTyping }));
+      if (isTyping) {
+        typingTimers.current[otherId] = setTimeout(
+          () => setTyping((previous) => ({ ...previous, [otherId]: false })),
+          4000
+        );
+      }
+    };
+    const onReconnect = () => loadContacts();
+    const clearTypingFor = (message) =>
+      setTyping((previous) =>
+        previous[message.senderId] ? { ...previous, [message.senderId]: false } : previous
+      );
     socket.on("chat:message", onMessage);
-    return () => socket.off("chat:message", onMessage);
+    socket.on("chat:message", clearTypingFor);
+    socket.on("presence:update", onPresence);
+    socket.on("chat:typing", onTyping);
+    socket.io.on("reconnect", onReconnect);
+    return () => {
+      socket.off("chat:message", onMessage);
+      socket.off("chat:message", clearTypingFor);
+      socket.off("presence:update", onPresence);
+      socket.off("chat:typing", onTyping);
+      socket.io.off("reconnect", onReconnect);
+    };
   }, [socket, userId, loadContacts]);
+
+  const sendTyping = useCallback(
+    (otherId, isTyping) => {
+      if (socket && socket.connected && otherId) {
+        socket.emit("chat:typing", { userId: otherId, typing: isTyping });
+      }
+    },
+    [socket]
+  );
 
   const setActiveConversation = useCallback((id) => {
     activeRef.current = id || null;
@@ -123,10 +163,23 @@ export function ChatProvider({ children }) {
       loading,
       error,
       unreadTotal,
+      typing,
+      sendTyping,
       reloadContacts: loadContacts,
       setActiveConversation,
     }),
-    [socket, connected, contacts, loading, error, unreadTotal, loadContacts, setActiveConversation]
+    [
+      socket,
+      connected,
+      contacts,
+      loading,
+      error,
+      unreadTotal,
+      typing,
+      sendTyping,
+      loadContacts,
+      setActiveConversation,
+    ]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
