@@ -4,6 +4,7 @@ const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
 const { containsText } = require("../lib/text");
 const { issueSession, clearSessionCookie, revokeAllSessions } = require("../lib/session");
+const recommend = require("../lib/recommend");
 
 const SEARCH_RESULT_LIMIT = 20;
 
@@ -134,7 +135,7 @@ const deleteUser = asyncHandler(async (req, res) => {
       await tx.notification.deleteMany({
         where: { OR: [{ userId: id }, { actorId: id }, postScope] },
       });
-      await tx.otp.deleteMany({ where: { email: user.email } });
+      await tx.verificationCode.deleteMany({ where: { email: user.email } });
       await tx.user.delete({ where: { id } });
     },
     { timeout: 30000 }
@@ -185,7 +186,36 @@ const updateUser = asyncHandler(async (req, res) => {
   });
 });
 
+const getSuggestions = asyncHandler(async (req, res) => {
+  const users = await recommend.suggestPeople(req.userId, req.valid.query.limit);
+  return res.status(200).json({ users });
+});
+
+const getInterests = asyncHandler(async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+    select: { interests: true },
+  });
+  if (!user) return res.status(404).json({ success: false, message: "User not found" });
+  const profile = await recommend.getProfile(req.userId);
+  return res.status(200).json({
+    interests: user.interests,
+    // What the engine has learned from activity, for "Suggested for you" hints.
+    learned: recommend.topTopics(profile, 5).filter((topic) => !user.interests.includes(topic)),
+  });
+});
+
+const updateInterests = asyncHandler(async (req, res) => {
+  const { interests } = req.valid.body;
+  await prisma.user.update({ where: { id: req.userId }, data: { interests } });
+  await recommend.forgetUser(req.userId);
+  return res.status(200).json({ success: true, message: "Topics saved", interests });
+});
+
 module.exports = {
+  getSuggestions,
+  getInterests,
+  updateInterests,
   getUser,
   getUsers,
   searchUsers,

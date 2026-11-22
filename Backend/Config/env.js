@@ -29,6 +29,9 @@ module.exports = {
   trustProxy: process.env.TRUST_PROXY === "true",
   redisUrl: process.env.REDIS_URL || "",
   jwtSecret: process.env.JWT_SECRET_KEY,
+  // Minimum gap between two emailed codes for the same address and purpose.
+  codeResendCooldownMs: Number(process.env.CODE_RESEND_COOLDOWN_MS) || 60 * 1000,
+  mfaEncryptionKey: process.env.MFA_ENCRYPTION_KEY || process.env.JWT_SECRET_KEY,
   jwtExpiresIn: "7d",
   sessionMaxAgeMs,
   sessionCookieOptions,

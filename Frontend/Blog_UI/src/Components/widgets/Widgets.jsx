@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame, PenSquare, Sparkles, UserRoundCheck } from "lucide-react";
-import { api, cachedGet } from "../../lib/api";
+import { ArrowRight, Flame, PenSquare, Sparkles, TrendingUp, UserRoundCheck } from "lucide-react";
+import { api } from "../../lib/api";
 import { categoryLabel, displayName, toneFor } from "../../lib/format";
 import { useAuth } from "../../Context/AuthContext";
-import { useSocial } from "../../Context/SocialContext";
-import { useCategories } from "../../hooks/useCommunity";
+import { useTrending } from "../../hooks/useCommunity";
 import Avatar from "../ui/Avatar";
 import { Skeleton } from "../ui/Feedback";
 import UserRow from "../user/UserRow";
@@ -26,15 +25,12 @@ export function WidgetCard({ title, icon: Icon, action, children }) {
 }
 
 export function TopicsWidget({ limit = 8 }) {
-  const { categories, loading } = useCategories();
-  const top = useMemo(
-    () => [...categories].sort((a, b) => b.count - a.count).slice(0, limit),
-    [categories, limit]
-  );
+  const { topics, basis, loading } = useTrending();
+  const top = useMemo(() => topics.slice(0, limit), [topics, limit]);
 
   return (
     <WidgetCard
-      title="Trending topics"
+      title={basis === "allTime" ? "Popular topics" : "Trending this week"}
       icon={Flame}
       action={
         <Link to="/topics" className="text-[11px] link">
@@ -57,7 +53,15 @@ export function TopicsWidget({ limit = 8 }) {
               className={`chip ${toneFor(topic.name)} py-1 transition-opacity hover:opacity-80`}
             >
               {categoryLabel(topic.name)}
-              <span className="opacity-60">{topic.count}</span>
+              {basis === "week" && topic.growth >= 25 ? (
+                <span title={`${topic.growth}% more activity than a usual week`}>
+                  <TrendingUp className="h-3 w-3" />
+                </span>
+              ) : (
+                <span className="opacity-60">
+                  {basis === "week" ? topic.postsThisWeek || topic.count : topic.count}
+                </span>
+              )}
             </Link>
           ))}
         </div>
@@ -68,30 +72,20 @@ export function TopicsWidget({ limit = 8 }) {
 
 export function WhoToFollowWidget({ limit = 5 }) {
   const { currentUser } = useAuth();
-  const { isFollowing, ready } = useSocial();
-  const [users, setUsers] = useState(null);
+  // Fetched once per mount, so the list doesn't jump when you follow someone in it.
+  const [frozen, setFrozen] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return undefined;
     let cancelled = false;
-    cachedGet("/user", { ttl: 120000 })
-      .then((data) => !cancelled && setUsers(data?.users || []))
-      .catch(() => !cancelled && setUsers([]));
+    api
+      .get("/user/suggestions", { params: { limit } })
+      .then((res) => !cancelled && setFrozen(res.data?.users || []))
+      .catch(() => !cancelled && setFrozen([]));
     return () => {
       cancelled = true;
     };
-  }, [currentUser]);
-
-  const [frozen, setFrozen] = useState(null);
-  useEffect(() => {
-    if (!users || !ready || frozen) return;
-    setFrozen(
-      users
-        .filter((user) => user.id !== currentUser?.userId && !isFollowing(user.id))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, limit)
-    );
-  }, [users, ready, frozen, currentUser, isFollowing, limit]);
+  }, [currentUser, limit]);
 
   if (!currentUser) return null;
 
@@ -115,7 +109,7 @@ export function WhoToFollowWidget({ limit = 5 }) {
           ))}
         </div>
       ) : frozen.length === 0 ? (
-        <p className="text-xs muted">You follow everyone here. Nice!</p>
+        <p className="text-xs muted">No suggestions right now. Check back after a few posts.</p>
       ) : (
         <div className="space-y-3">
           {frozen.map((user) => (

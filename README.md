@@ -283,6 +283,8 @@ Running the seed again replaces the previous demo data. It refuses to run when `
 | `npm run prisma:generate` | Generate the Prisma client |
 | `npm run db:push` | Sync collections and indexes with `prisma/schema.prisma` |
 | `npm run seed` | Load realistic demo data (needs `SEED_PASSWORD`) |
+| `npm test` | All tests (Node 22+): unit tests plus end-to-end tests that start the API on a random port against the database in `.env`, print emails to the console, and delete the accounts they create |
+| `npm run test:unit` / `test:e2e` | Only the unit tests (no database) or only the end-to-end tests (suggestion tests need some posts, e.g. from `npm run seed`) |
 | `npm run lint` / `lint:fix` | Check or fix code with ESLint |
 | `npm run format` / `format:check` | Format or check code with Prettier |
 

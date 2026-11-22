@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { notify } = require("../lib/notify");
+const { forgetUser } = require("../lib/recommend");
 
 const ensurePost = async (req, res) => {
   const { postId } = req.valid.body;
@@ -40,6 +41,7 @@ const likePost = asyncHandler(async (req, res) => {
   }
   const postId = post.id;
   const userId = req.userId;
+  await forgetUser(userId);
 
   const message = await prisma.$transaction(async (tx) => {
     const existingLike = await tx.like.findFirst({ where: { postId, userId } });
@@ -85,6 +87,7 @@ const unlikePost = asyncHandler(async (req, res) => {
   }
   const postId = post.id;
   const userId = req.userId;
+  await forgetUser(userId);
 
   const message = await prisma.$transaction(async (tx) => {
     const existingUnlike = await tx.unlike.findFirst({ where: { postId, userId } });

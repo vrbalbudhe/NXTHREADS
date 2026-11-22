@@ -10,31 +10,9 @@ import Avatar from "../Components/ui/Avatar";
 import Modal from "../Components/ui/Modal";
 import { Spinner } from "../Components/ui/Feedback";
 import ImageUploader from "../Components/post/ImageUploader";
-
-function Section({ icon: Icon, title, description, children, tone }) {
-  return (
-    <section
-      className={`card ${tone === "danger" ? "border-rose-200 dark:border-rose-500/30" : ""}`}
-    >
-      <header className="flex items-start gap-3 border-b border-line px-4 py-4 dark:border-line-dark sm:px-5">
-        <span
-          className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-            tone === "danger"
-              ? "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400"
-              : "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
-          }`}
-        >
-          <Icon className="h-[18px] w-[18px]" />
-        </span>
-        <div>
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h2>
-          {description && <p className="text-xs muted">{description}</p>}
-        </div>
-      </header>
-      <div className="px-4 py-4 sm:px-5">{children}</div>
-    </section>
-  );
-}
+import SettingsSection from "../Components/ui/SettingsSection";
+import MfaSection from "./settings/MfaSection";
+import TopicsSection from "./settings/TopicsSection";
 
 function ProfileSection() {
   const { currentUser, updateCurrentUser } = useAuth();
@@ -64,7 +42,7 @@ function ProfileSection() {
   };
 
   return (
-    <Section icon={UserRound} title="Profile" description="How you appear to other people.">
+    <SettingsSection icon={UserRound} title="Profile" description="How you appear to other people.">
       <form onSubmit={save} className="space-y-4">
         <div className="flex items-center gap-4">
           <Avatar user={{ ...currentUser, ...form }} size="lg" />
@@ -132,7 +110,7 @@ function ProfileSection() {
           </button>
         </div>
       </form>
-    </Section>
+    </SettingsSection>
   );
 }
 
@@ -167,7 +145,7 @@ function PasswordSection() {
   });
 
   return (
-    <Section icon={KeyRound} title="Password" description="Use at least 8 characters.">
+    <SettingsSection icon={KeyRound} title="Password" description="Use at least 8 characters.">
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="current-password" className="label">
@@ -221,7 +199,7 @@ function PasswordSection() {
           </button>
         </div>
       </form>
-    </Section>
+    </SettingsSection>
   );
 }
 
@@ -233,7 +211,7 @@ function AppearanceSection() {
     { value: "system", label: "System", icon: Monitor },
   ];
   return (
-    <Section
+    <SettingsSection
       icon={Palette}
       title="Appearance"
       description="Choose how NXTHREADS looks on this device."
@@ -256,7 +234,7 @@ function AppearanceSection() {
           </button>
         ))}
       </div>
-    </Section>
+    </SettingsSection>
   );
 }
 
@@ -285,7 +263,7 @@ function DangerSection() {
   };
 
   return (
-    <Section
+    <SettingsSection
       icon={Trash2}
       title="Delete account"
       description="Permanently remove your account and everything in it."
@@ -352,16 +330,18 @@ function DangerSection() {
           </div>
         </div>
       </Modal>
-    </Section>
+    </SettingsSection>
   );
 }
 
 export default function Settings() {
   useShellTitle("Settings");
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="page page-narrow">
       <ProfileSection />
+      <TopicsSection />
       <PasswordSection />
+      <MfaSection />
       <AppearanceSection />
       <DangerSection />
     </div>

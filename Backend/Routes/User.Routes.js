@@ -8,6 +8,9 @@ const {
   deleteUser,
   updateUser,
   getUserFollowStatus,
+  getSuggestions,
+  getInterests,
+  updateInterests,
 } = require("../Controller/User.Controller");
 const verifyToken = require("../Middleware/verifyToken");
 const optionalAuth = require("../Middleware/optionalAuth");
@@ -35,6 +38,19 @@ router.get(
   searchLimiter,
   validate({ query: schemas.user.search }),
   searchUsers
+);
+router.get(
+  "/suggestions",
+  verifyToken,
+  validate({ query: schemas.user.suggestions }),
+  getSuggestions
+);
+router.get("/me/interests", verifyToken, getInterests);
+router.put(
+  "/me/interests",
+  verifyToken,
+  validate({ body: schemas.user.interests }),
+  updateInterests
 );
 router.get("/foll/:id", verifyToken, byId, getUserFollowStatus);
 router.get("/:id", optionalAuth, byId, getUser);

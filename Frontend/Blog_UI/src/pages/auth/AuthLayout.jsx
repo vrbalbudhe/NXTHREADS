@@ -4,6 +4,7 @@ import { useStats } from "../../hooks/useCommunity";
 import { formatCount } from "../../lib/format";
 import { LogoMark } from "../../Components/ui/Logo";
 import Sparkline from "../../Components/ui/Sparkline";
+import { StepIndicator } from "./fields";
 
 const FEATURES = [
   { icon: PenSquare, title: "Write freely", text: "Publish stories with images in minutes." },
@@ -11,7 +12,7 @@ const FEATURES = [
   { icon: Users, title: "Connect", text: "Follow writers and chat in real time." },
 ];
 
-export default function AuthLayout({ title, subtitle, children, footer }) {
+export default function AuthLayout({ title, subtitle, children, footer, step, icon }) {
   const { data } = useStats();
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_minmax(0,520px)] xl:grid-cols-[1fr_minmax(0,560px)]">
@@ -58,47 +59,39 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
         </div>
       </aside>
 
-      <main className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10 dark:bg-canvas-dark sm:px-8">
-        <div className="w-full max-w-sm">
-          <Link to="/" className="mb-8 flex items-center gap-2 lg:hidden">
+      <main className="page-gutter flex min-h-screen items-center justify-center bg-canvas py-10 dark:bg-canvas-dark">
+        <div className="w-full max-w-md">
+          <Link to="/" className="mb-6 flex items-center gap-2 lg:hidden">
             <LogoMark className="h-9 w-9" />
             <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
               NXTHREADS
             </span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {title}
-          </h1>
-          {subtitle && <p className="mt-1.5 text-[13px] muted">{subtitle}</p>}
-          <div className="mt-6">{children}</div>
-          {footer && <div className="mt-6 text-center text-[13px] muted">{footer}</div>}
+          <div className="card card-pad">
+            {step && <StepIndicator step={step.current} total={step.total} />}
+            {icon && (
+              <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+                {icon}
+              </span>
+            )}
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {title}
+            </h1>
+            {subtitle && <p className="mt-1.5 text-[13px] muted">{subtitle}</p>}
+            <div className="mt-6">{children}</div>
+          </div>
+          {footer && <div className="mt-5 text-center text-[13px] muted">{footer}</div>}
         </div>
       </main>
     </div>
   );
 }
 
-export function PasswordField({ id, value, onChange, autoComplete, placeholder, show, onToggle }) {
+/** Consistent vertical rhythm for every auth form. */
+export function AuthForm({ onSubmit, children }) {
   return (
-    <div className="relative">
-      <input
-        id={id}
-        type={show ? "text" : "password"}
-        className="input h-11 pr-16"
-        value={value}
-        onChange={onChange}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        maxLength={72}
-        required
-      />
-      <button
-        type="button"
-        onClick={onToggle}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-      >
-        {show ? "Hide" : "Show"}
-      </button>
-    </div>
+    <form onSubmit={onSubmit} className="space-y-4">
+      {children}
+    </form>
   );
 }

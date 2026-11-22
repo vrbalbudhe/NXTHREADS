@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
 const { notify } = require("../lib/notify");
+const { forgetUser } = require("../lib/recommend");
 
 const createComment = asyncHandler(async (req, res) => {
   const { postId, description } = req.valid.body;
@@ -14,6 +15,7 @@ const createComment = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Post not found" });
   }
 
+  await forgetUser(req.userId);
   const newComment = await prisma.comment.create({
     data: { postId, commentor: req.userId, description },
     include: { user: { select: publicUserSelect } },
@@ -55,6 +57,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     });
   }
 
+  await forgetUser(comment.commentor);
   await prisma.$transaction([
     prisma.notification.deleteMany({ where: { commentId: id } }),
     prisma.comment.delete({ where: { id } }),

@@ -16,7 +16,7 @@ export default function Saved() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="page page-narrow">
       <div className="card card-pad flex items-center gap-3">
         <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
           <Bookmark className="h-5 w-5" />

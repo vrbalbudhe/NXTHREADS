@@ -119,7 +119,7 @@ export default function Notifications() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="page page-narrow">
       <div className="card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <Tabs
           className="sm:w-64"

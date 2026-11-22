@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Rss, Sparkles, Users } from "lucide-react";
+import { Clock, Sparkles, UserCheck, Users } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import { usePaged } from "../hooks/usePaged";
 import { useShellTitle } from "../Components/layout/ShellContext";
@@ -15,7 +15,7 @@ import {
 
 function GuestHero() {
   return (
-    <section className="card relative overflow-hidden p-5 sm:p-6">
+    <section className="card card-pad relative overflow-hidden">
       <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-gradient-to-br from-brand-400/30 to-violet-400/30 blur-3xl" />
       <span className="chip bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
         <Sparkles className="h-3 w-3" /> A home for curious writers
@@ -40,18 +40,21 @@ function GuestHero() {
 
 export default function Home() {
   const { currentUser } = useAuth();
-  const [selectedTab, setTab] = useState("following");
+  const [selectedTab, setTab] = useState("foryou");
   const tab = currentUser ? selectedTab : "latest";
   useShellTitle("Home");
 
+  const forYou = usePaged("/post/feed", {
+    enabled: Boolean(currentUser) && tab === "foryou",
+  });
   const following = usePaged(currentUser ? `/post/gfp/${currentUser.userId}` : null, {
     enabled: Boolean(currentUser) && tab === "following",
   });
   const latest = usePaged("/post", { enabled: tab === "latest" });
-  const feed = tab === "following" ? following : latest;
+  const feed = { foryou: forYou, following, latest }[tab];
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="page-grid">
       <div className="min-w-0 space-y-4">
         {currentUser ? <ComposerPrompt /> : <GuestHero />}
 
@@ -60,7 +63,8 @@ export default function Home() {
             value={tab}
             onChange={setTab}
             tabs={[
-              { value: "following", label: "For you", icon: Rss },
+              { value: "foryou", label: "For you", icon: Sparkles },
+              { value: "following", label: "Following", icon: UserCheck },
               { value: "latest", label: "Latest", icon: Clock },
             ]}
           />
@@ -69,28 +73,40 @@ export default function Home() {
         <PostList
           feed={feed}
           empty={
-            tab === "following"
+            tab === "foryou"
               ? {
-                  icon: Users,
-                  title: "Your feed is quiet",
+                  icon: Sparkles,
+                  title: "Nothing to suggest yet",
                   description:
-                    "Follow writers to see their posts here, or check out the latest posts.",
+                    "Like, save or comment on a few posts, or pick topics in Settings, and suggestions will appear here.",
                   action: (
-                    <div className="flex gap-2">
-                      <Link to="/people" className="btn btn-primary btn-sm">
-                        Find people
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setTab("latest")}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        Latest posts
-                      </button>
-                    </div>
+                    <Link to="/settings#topics" className="btn btn-primary btn-sm">
+                      Pick topics
+                    </Link>
                   ),
                 }
-              : { title: "No posts yet", description: "Be the first to publish something." }
+              : tab === "following"
+                ? {
+                    icon: Users,
+                    title: "Your feed is quiet",
+                    description:
+                      "Follow writers to see their posts here, or check out the latest posts.",
+                    action: (
+                      <div className="flex gap-2">
+                        <Link to="/people" className="btn btn-primary btn-sm">
+                          Find people
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setTab("latest")}
+                          className="btn btn-secondary btn-sm"
+                        >
+                          Latest posts
+                        </button>
+                      </div>
+                    ),
+                  }
+                : { title: "No posts yet", description: "Be the first to publish something." }
           }
         />
       </div>

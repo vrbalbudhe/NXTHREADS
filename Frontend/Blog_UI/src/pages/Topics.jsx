@@ -104,7 +104,7 @@ function TopicList({ categories, loading, selected, onSelect }) {
 
 function TopicChips({ categories, selected, onSelect }) {
   return (
-    <div className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 lg:hidden">
+    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:hidden">
       <button
         type="button"
         onClick={() => onSelect("")}
@@ -147,7 +147,7 @@ export default function Topics() {
   return (
     <div className="space-y-4">
       <Breadcrumbs items={[{ label: "Topics", to: "/topics" }, ...(selected ? [{ label }] : [])]} />
-      <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="hidden lg:block">
           <div className="sticky top-20">
             <TopicList

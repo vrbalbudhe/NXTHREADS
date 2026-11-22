@@ -49,7 +49,7 @@ function ProfileHeader({ user, postCount, isMe, onShowList, onFollowToggled }) {
       <div className="relative h-28 bg-gradient-to-r from-brand-600 via-indigo-500 to-violet-500 sm:h-36">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.25),transparent_40%)]" />
       </div>
-      <div className="px-4 pb-5 sm:px-6">
+      <div className="px-4 pb-5 sm:px-5">
         <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
           <div className="relative z-10 w-fit">
             <Avatar user={user} size="xl" ring />
@@ -187,7 +187,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="page page-narrow">
       <ProfileHeader
         user={user}
         postCount={posts.total}

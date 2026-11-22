@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
 const { notify } = require("../lib/notify");
+const { forgetUser } = require("../lib/recommend");
 
 const followUnfollowUser = asyncHandler(async (req, res) => {
   const followerId = req.userId;
@@ -21,6 +22,7 @@ const followUnfollowUser = asyncHandler(async (req, res) => {
 
   const key = { followerId_followingId: { followerId, followingId } };
   const existingFollow = await prisma.follows.findUnique({ where: key });
+  await forgetUser(followerId);
 
   if (existingFollow) {
     await prisma.follows.delete({ where: key });

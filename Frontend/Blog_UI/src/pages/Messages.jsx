@@ -294,7 +294,7 @@ function Conversation({ partner, onBack }) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-3 py-2.5 dark:border-line-dark sm:px-4">
+      <header className="flex items-center gap-3 border-b border-line px-4 py-2.5 dark:border-line-dark sm:px-5">
         <button
           type="button"
           onClick={onBack}
@@ -321,7 +321,7 @@ function Conversation({ partner, onBack }) {
         </span>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 px-3 py-4 dark:bg-white/[0.01] sm:px-5">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 px-4 py-4 dark:bg-white/[0.01] sm:px-5">
         {hasMore && (
           <div className="mb-3 flex justify-center">
             <button type="button" onClick={loadOlder} className="btn btn-secondary btn-sm">
