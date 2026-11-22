@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { Pencil, Trash2, X } from "lucide-react";
 import { AuthContext } from "../Context/AuthContext";
 import { useContext, useState, useEffect } from "react";
@@ -60,33 +59,25 @@ const ProfileUserInformation = ({
         <div className="flex flex-col">
           <span className="text-xs font-medium text-slate-400">Username</span>
           <span className="text-sm font-semibold text-slate-800 dark:text-darkText">
-            {user?.username || (
-              <span className="text-xs text-slate-400">Not Provided</span>
-            )}
+            {user?.username || <span className="text-xs text-slate-400">Not Provided</span>}
           </span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs font-medium text-slate-400">Email</span>
           <span className="text-sm font-semibold text-slate-800 dark:text-darkText">
-            {user?.email || (
-              <span className="text-xs text-slate-400">Not Provided</span>
-            )}
+            {user?.email || <span className="text-xs text-slate-400">Not Provided</span>}
           </span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs font-medium text-slate-400">Full Name</span>
           <span className="text-sm font-semibold text-slate-800 dark:text-darkText">
-            {user?.fullname || (
-              <span className="text-xs text-slate-400">Not Provided</span>
-            )}
+            {user?.fullname || <span className="text-xs text-slate-400">Not Provided</span>}
           </span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs font-medium text-slate-400">Gender</span>
           <span className="text-sm font-semibold text-slate-800 dark:text-darkText">
-            {user?.gender || (
-              <span className="text-xs text-slate-400">Not Provided</span>
-            )}
+            {user?.gender || <span className="text-xs text-slate-400">Not Provided</span>}
           </span>
         </div>
       </div>
@@ -112,12 +103,7 @@ const ProfileUserInformation = ({
     </div>
   );
 };
-const FollowingAndFollowerCard = ({
-  userPosts,
-  currentUser,
-  totalFollowers,
-  totalFollowing,
-}) => {
+const FollowingAndFollowerCard = ({ userPosts, currentUser, totalFollowers, totalFollowing }) => {
   return (
     <div className="w-full md:w-[70%] h-full md:mt-[68px]">
       <div className="w-full h-32 md:h-60 md:flex justify-between items-center">
@@ -154,9 +140,7 @@ const ProfileUserPosts = ({ userPosts, whatToShow, loading, currentUser }) => {
       {isLoading ? (
         [...Array(4)].map((_, i) => <PostSkeleton key={i} />)
       ) : list && list.length > 0 ? (
-        list.map((post) => (
-          <PostCard key={post.id} post={post} currentUser={currentUser} />
-        ))
+        list.map((post) => <PostCard key={post.id} post={post} currentUser={currentUser} />)
       ) : (
         <div className="w-full text-center min-h-[200px] text-gray-500 dark:text-gray-300">
           {whatToShow ? "No saved posts yet" : "No posts available"}
@@ -194,8 +178,7 @@ function Profile() {
   const { id } = useParams();
   const { user, loadUser } = useFetchUserById(id);
   const { currentUser } = useContext(AuthContext);
-  const { userPosts, loadUserPosts, userPostsLoading } =
-    useFetchPostsByUserId(id);
+  const { userPosts, loadUserPosts, userPostsLoading } = useFetchPostsByUserId(id);
   const [whatToShow, setWhatToShow] = useState(false);
   const [showUpdateCard, setShowUpdateCard] = useState(false);
   const [showDeleteCard, setShowDeleteCard] = useState(false);
@@ -223,9 +206,7 @@ function Profile() {
             totalFollowing={totalFollowing}
           />
         </div>
-        {currentUser?.userId === id && (
-          <CompleteProfileCard currentUser={currentUser} />
-        )}
+        {currentUser?.userId === id && <CompleteProfileCard currentUser={currentUser} />}
 
         <ProfileUserInformation
           user={user}

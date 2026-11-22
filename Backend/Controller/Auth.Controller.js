@@ -14,18 +14,12 @@ const {
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
-const MIN_PASSWORD_LENGTH = 8;
-const MAX_PASSWORD_LENGTH = 72;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const USERNAME_PATTERN = /^[A-Za-z0-9_.]{3,30}$/;
 const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString("hex"), 10);
 
 const transporter = nodemailer.createTransport({
   service: smtp.service,
   auth: { user: smtp.user, pass: smtp.pass },
 });
-
-const cleanString = (value) => (typeof value === "string" ? value.trim() : "");
 
 const sendOtpEmail = (email, otp) =>
   transporter.sendMail({
@@ -38,34 +32,13 @@ const sendOtpEmail = (email, otp) =>
 const hasActiveOtp = (record) =>
   Boolean(
     record &&
-      record.expiresAt &&
-      record.expiresAt > new Date() &&
-      record.attempts < MAX_OTP_ATTEMPTS
+    record.expiresAt &&
+    record.expiresAt > new Date() &&
+    record.attempts < MAX_OTP_ATTEMPTS
   );
 
 const register = asyncHandler(async (req, res) => {
-  const username = cleanString(req.body?.username);
-  const email = cleanString(req.body?.email);
-  const password = typeof req.body?.password === "string" ? req.body.password : "";
-
-  if (!username || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are mandatory" });
-  }
-  if (!EMAIL_PATTERN.test(email)) {
-    return res.status(400).json({ success: false, message: "Enter a valid email address" });
-  }
-  if (!USERNAME_PATTERN.test(username)) {
-    return res.status(400).json({
-      success: false,
-      message: "Username must be 3-30 characters: letters, numbers, dots or underscores",
-    });
-  }
-  if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
-    return res.status(400).json({
-      success: false,
-      message: `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`,
-    });
-  }
+  const { username, email, password } = req.valid.body;
 
   const [userWithEmail, userWithUsername] = await Promise.all([
     prisma.user.findUnique({ where: { email } }),
@@ -90,7 +63,8 @@ const register = asyncHandler(async (req, res) => {
     if (hasActiveOtp(pendingOtp)) {
       return res.status(409).json({
         success: false,
-        message: "A verification code was already sent. Check your email or try again in 10 minutes",
+        message:
+          "A verification code was already sent. Check your email or try again in 10 minutes",
       });
     }
   }
@@ -135,12 +109,7 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const optFinalization = asyncHandler(async (req, res) => {
-  const email = cleanString(req.body?.email);
-  const otp = cleanString(String(req.body?.otp ?? ""));
-
-  if (!email || !/^\d{6}$/.test(otp)) {
-    return res.status(400).json({ success: false, message: "Enter the 6-digit code" });
-  }
+  const { email, otp } = req.valid.body;
 
   const now = new Date();
   const { count } = await prisma.otp.updateMany({
@@ -159,8 +128,7 @@ const optFinalization = asyncHandler(async (req, res) => {
   const record = await prisma.otp.findUnique({ where: { email } });
   const expected = Buffer.from(String(record?.otp ?? ""));
   const received = Buffer.from(otp);
-  const matches =
-    expected.length === received.length && crypto.timingSafeEqual(expected, received);
+  const matches = expected.length === received.length && crypto.timingSafeEqual(expected, received);
 
   if (!matches) {
     return res.status(400).json({ success: false, message: "Invalid or expired code" });
@@ -176,12 +144,7 @@ const optFinalization = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const email = cleanString(req.body?.email);
-  const password = typeof req.body?.password === "string" ? req.body.password : "";
-
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are mandatory" });
-  }
+  const { email, password } = req.valid.body;
 
   const user = await prisma.user.findUnique({ where: { email } });
   const passwordMatches = await bcrypt.compare(password, user?.password || DUMMY_HASH);

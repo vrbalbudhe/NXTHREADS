@@ -1,9 +1,9 @@
 const prisma = require("./prisma");
 const { publicUserSelect } = require("./selects");
-const { isObjectId, cleanString } = require("./validators");
+const { chat: schemas, objectId, firstIssueMessage } = require("./schemas");
 
-const MAX_MESSAGE_LENGTH = 2000;
 const HISTORY_PAGE_SIZE = 50;
+const isObjectId = (value) => objectId().safeParse(value).success;
 
 class ChatError extends Error {
   constructor(status, message) {
@@ -42,15 +42,18 @@ const canMessage = async (senderId, receiverId) => {
   return Boolean(await findChat(senderId, receiverId));
 };
 
-const sendMessage = async (senderId, payload) => {
-  const receiverId = payload?.receiverId;
-  const content = cleanString(payload?.content);
-
-  if (!isObjectId(receiverId) || receiverId === senderId) {
-    throw new ChatError(400, "Invalid receiver id");
+const parseOrThrow = (schema, value) => {
+  const result = schema.safeParse(value ?? {});
+  if (!result.success) {
+    throw new ChatError(400, firstIssueMessage(result.error));
   }
-  if (!content || content.length > MAX_MESSAGE_LENGTH) {
-    throw new ChatError(400, `Message must be 1-${MAX_MESSAGE_LENGTH} characters`);
+  return result.data;
+};
+
+const sendMessage = async (senderId, payload) => {
+  const { receiverId, content } = parseOrThrow(schemas.message, payload);
+  if (receiverId === senderId) {
+    throw new ChatError(400, "Invalid receiver id");
   }
 
   const receiver = await prisma.user.findUnique({
@@ -79,27 +82,21 @@ const sendMessage = async (senderId, payload) => {
 };
 
 const markConversationRead = async (userId, otherUserId) => {
-  if (!isObjectId(otherUserId)) {
-    throw new ChatError(400, "Invalid user id");
-  }
+  parseOrThrow(schemas.read, { userId: otherUserId });
   await prisma.message.updateMany({
     where: { senderId: otherUserId, receiverId: userId, ...unreadFilter },
     data: { readAt: new Date() },
   });
 };
 
-const getHistory = async (userId, otherUserId, before) => {
-  if (!isObjectId(otherUserId)) {
-    throw new ChatError(400, "Invalid user id");
-  }
-
-  const beforeDate = before ? new Date(before) : null;
-  const hasCursor = beforeDate && !Number.isNaN(beforeDate.getTime());
+const getHistory = async (userId, otherUserId, query) => {
+  parseOrThrow(schemas.read, { userId: otherUserId });
+  const { before } = parseOrThrow(schemas.history, query);
 
   const messages = await prisma.message.findMany({
     where: {
       ...pairFilter(userId, otherUserId),
-      ...(hasCursor && { createdAt: { lt: beforeDate } }),
+      ...(before && { createdAt: { lt: new Date(before) } }),
     },
     orderBy: { createdAt: "desc" },
     take: HISTORY_PAGE_SIZE + 1,

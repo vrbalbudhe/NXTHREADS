@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useRef } from "react";
 
 const UploadWindow = ({ imageUrls = [], setImageUrls }) => {
@@ -72,11 +71,7 @@ const UploadWindow = ({ imageUrls = [], setImageUrls }) => {
               key={idx}
               className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-300"
             >
-              <img
-                src={url}
-                alt={`uploaded-${idx}`}
-                className="w-full h-full object-cover"
-              />
+              <img src={url} alt={`uploaded-${idx}`} className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => handleRemoveImage(url)}

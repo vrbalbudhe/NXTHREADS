@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -83,7 +82,7 @@ export default function UpdatePostModal({ post, onClose }) {
         toast.error("Failed to update post.");
       }
     } catch (err) {
-      toast.error("Unable to update the Post");
+      toast.error(err.response?.data?.message || "Unable to update the Post");
     }
   };
 
@@ -97,9 +96,7 @@ export default function UpdatePostModal({ post, onClose }) {
           ✕
         </button>
 
-        <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">
-          Edit Post
-        </h2>
+        <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Edit Post</h2>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
@@ -147,11 +144,7 @@ export default function UpdatePostModal({ post, onClose }) {
                   key={idx}
                   className="relative w-24 h-24 border border-gray-300 rounded-lg overflow-hidden"
                 >
-                  <img
-                    src={img}
-                    alt={`img-${idx}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={img} alt={`img-${idx}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(img)}

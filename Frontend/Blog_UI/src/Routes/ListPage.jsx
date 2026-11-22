@@ -10,16 +10,11 @@ import { AuthContext } from "../Context/AuthContext";
 function PageCategoryHeading({ category, count }) {
   return (
     <div className="w-full p-2 md:p-0 min-h-[150px] flex flex-col justify-center items-start gap-3">
-      <h1 className="md:text-4xl text-3xl font-medium text-gray-800 dark:text-white">
-        {category}
-      </h1>
+      <h1 className="md:text-4xl text-3xl font-medium text-gray-800 dark:text-white">{category}</h1>
       <h1 className="text-md font-normal text-blue-400 dark:text-slate-400">
         <span className="dark:text-slate-200 text-gray-800">Results - </span>
         {count}
-        <span className="dark:text-slate-200 text-gray-800">
-          {" "}
-          Blogs Found..!
-        </span>
+        <span className="dark:text-slate-200 text-gray-800"> Blogs Found..!</span>
       </h1>
     </div>
   );
@@ -32,8 +27,7 @@ function ListPage() {
   const queryParamsObj = Object.fromEntries([...queryParams.entries()]);
 
   const { users } = useFetchAllUsers();
-  const { queryPosts, error, loadQueryPosts } =
-    useFetchQueryPosts(queryParamsObj);
+  const { queryPosts, loadQueryPosts } = useFetchQueryPosts(queryParamsObj);
 
   const category = queryParams.get("category") || "All";
   const author = queryParams.get("author") || "All";
@@ -44,10 +38,7 @@ function ListPage() {
   return (
     <div className="w-full h-full p-2 md:p-0 flex md:flex-row flex-col-reverse justify-center items-start gap-5">
       <div className="md:w-[75%] w-full h-full flex flex-col">
-        <PageCategoryHeading
-          category={category}
-          count={queryPosts?.length || 0}
-        />
+        <PageCategoryHeading category={category} count={queryPosts?.length || 0} />
         <div className="w-full h-full flex flex-col gap-4">
           {Array.isArray(queryPosts) && queryPosts.length > 0 ? (
             queryPosts.map((post) => (

@@ -2,35 +2,33 @@ const asyncHandler = require("express-async-handler");
 const { Category } = require("@prisma/client");
 const prisma = require("../lib/prisma");
 const { postInclude } = require("../lib/selects");
-const { isObjectId, cleanString, isHttpUrl, invalidId } = require("../lib/validators");
+const { containsText } = require("../lib/text");
 
-const MAX_PAGE_SIZE = 50;
-const DEFAULT_PAGE_SIZE = 10;
-const MAX_IMAGES = 10;
 const categories = new Set(Object.values(Category));
 
-const parsePaging = (query) => {
-  const page = Math.max(parseInt(query.page, 10) || 1, 1);
-  const limit = Math.min(
-    Math.max(parseInt(query.limit, 10) || DEFAULT_PAGE_SIZE, 1),
-    MAX_PAGE_SIZE
-  );
-  return { page, limit, offset: (page - 1) * limit };
-};
+const pageMeta = ({ page, limit }, count, total) => ({
+  total,
+  page,
+  limit,
+  hasMore: (page - 1) * limit + count < total,
+});
 
-const parseImages = (images) => {
-  if (images === undefined) {
-    return { ok: true, value: undefined };
-  }
-  if (!Array.isArray(images) || images.length > MAX_IMAGES || !images.every(isHttpUrl)) {
-    return { ok: false };
-  }
-  return { ok: true, value: images };
+const findPaged = async (where, paging) => {
+  const [posts, total] = await Promise.all([
+    prisma.posts.findMany({
+      where,
+      include: postInclude,
+      orderBy: { createdAt: "desc" },
+      skip: (paging.page - 1) * paging.limit,
+      take: paging.limit,
+    }),
+    prisma.posts.count({ where }),
+  ]);
+  return { posts, meta: pageMeta(paging, posts.length, total) };
 };
 
 const getPostUrl = asyncHandler(async (req, res) => {
-  const category = cleanString(req.query.category);
-  const author = cleanString(req.query.author);
+  const { category, author } = req.valid.query;
 
   const posts = await prisma.posts.findMany({
     where: {
@@ -44,14 +42,28 @@ const getPostUrl = asyncHandler(async (req, res) => {
   return res.status(200).json({ posts });
 });
 
-const getPost = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
-  }
+const searchPosts = asyncHandler(async (req, res) => {
+  const { q, page, limit } = req.valid.query;
+  const contains = containsText(q);
 
+  const result = await findPaged(
+    {
+      OR: [
+        { title: contains },
+        { subtitle: contains },
+        { content: contains },
+        { author: contains },
+      ],
+    },
+    { page, limit }
+  );
+
+  return res.status(200).json(result);
+});
+
+const getPost = asyncHandler(async (req, res) => {
   const posts = await prisma.posts.findMany({
-    where: { userId: id },
+    where: { userId: req.valid.params.id },
     orderBy: { createdAt: "desc" },
     include: postInclude,
   });
@@ -60,51 +72,11 @@ const getPost = asyncHandler(async (req, res) => {
 });
 
 const getAllPosts = asyncHandler(async (req, res) => {
-  const { page, limit, offset } = parsePaging(req.query);
-
-  const [posts, total] = await Promise.all([
-    prisma.posts.findMany({
-      skip: offset,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: postInclude,
-    }),
-    prisma.posts.count(),
-  ]);
-
-  return res.status(200).json({
-    posts,
-    meta: {
-      total,
-      page,
-      limit,
-      hasMore: offset + posts.length < total,
-    },
-  });
+  return res.status(200).json(await findPaged({}, req.valid.query));
 });
 
 const createPosts = asyncHandler(async (req, res) => {
-  const title = cleanString(req.body?.title);
-  const subtitle = cleanString(req.body?.subtitle);
-  const content = cleanString(req.body?.content);
-  const category = cleanString(req.body?.category);
-  const images = parseImages(req.body?.images ?? []);
-
-  if (!title || !subtitle || !content) {
-    return res.status(400).json({
-      success: false,
-      message: "Title, subtitle and content are required",
-    });
-  }
-  if (!categories.has(category)) {
-    return res.status(400).json({ success: false, message: "Invalid category" });
-  }
-  if (!images.ok) {
-    return res.status(400).json({
-      success: false,
-      message: `Images must be up to ${MAX_IMAGES} http(s) URLs`,
-    });
-  }
+  const { title, subtitle, content, category, images } = req.valid.body;
 
   const newPost = await prisma.posts.create({
     data: {
@@ -112,8 +84,8 @@ const createPosts = asyncHandler(async (req, res) => {
       subtitle,
       category,
       content,
+      images,
       author: req.session?.username || "",
-      images: images.value,
       userId: req.userId,
     },
   });
@@ -126,12 +98,7 @@ const createPosts = asyncHandler(async (req, res) => {
 });
 
 const findOwnedPost = async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    invalidId(res, "post id");
-    return null;
-  }
-  const post = await prisma.posts.findUnique({ where: { id } });
+  const post = await prisma.posts.findUnique({ where: { id: req.valid.params.id } });
   if (!post) {
     res.status(404).json({ success: false, message: "Post not found" });
     return null;
@@ -149,21 +116,7 @@ const updatePost = asyncHandler(async (req, res) => {
     return undefined;
   }
 
-  const title = cleanString(req.body?.title);
-  const subtitle = cleanString(req.body?.subtitle);
-  const content = cleanString(req.body?.content);
-  const category = cleanString(req.body?.category);
-  const images = parseImages(req.body?.images);
-
-  if (category && !categories.has(category)) {
-    return res.status(400).json({ success: false, message: "Invalid category" });
-  }
-  if (!images.ok) {
-    return res.status(400).json({
-      success: false,
-      message: `Images must be up to ${MAX_IMAGES} http(s) URLs`,
-    });
-  }
+  const { title, subtitle, content, category, images } = req.valid.body;
 
   const updatedPost = await prisma.posts.update({
     where: { id: post.id },
@@ -172,7 +125,7 @@ const updatePost = asyncHandler(async (req, res) => {
       ...(subtitle && { subtitle }),
       ...(content && { content }),
       ...(category && { category }),
-      ...(images.value && { images: images.value }),
+      ...(images && { images }),
     },
   });
 
@@ -202,11 +155,7 @@ const deletePosts = asyncHandler(async (req, res) => {
 
 const favUnfavPost = asyncHandler(async (req, res) => {
   const userId = req.userId;
-  const postId = req.body?.postId;
-
-  if (!isObjectId(postId)) {
-    return invalidId(res, "post id");
-  }
+  const { postId } = req.valid.body;
 
   const post = await prisma.posts.findUnique({ where: { id: postId }, select: { id: true } });
   if (!post) {
@@ -218,18 +167,17 @@ const favUnfavPost = asyncHandler(async (req, res) => {
 
   if (existing) {
     await prisma.savedPosts.delete({ where: key });
-    return res.status(200).json({ success: true, message: "Post removed from favourites" });
+    return res
+      .status(200)
+      .json({ success: true, saved: false, message: "Post removed from favourites" });
   }
 
   await prisma.savedPosts.create({ data: { userId, postId } });
-  return res.status(200).json({ success: true, message: "Post added to favourites" });
+  return res.status(200).json({ success: true, saved: true, message: "Post added to favourites" });
 });
 
 const getFavoritePosts = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
-  }
+  const { id } = req.valid.params;
   if (id !== req.userId) {
     return res.status(403).json({ success: false, message: "Saved posts are private" });
   }
@@ -246,7 +194,6 @@ const getFavoritePosts = asyncHandler(async (req, res) => {
 
 const getFollowersPost = asyncHandler(async (req, res) => {
   const userId = req.userId;
-  const { page, limit, offset } = parsePaging(req.query);
 
   const followedUsers = await prisma.follows.findMany({
     where: { followerId: userId },
@@ -257,31 +204,12 @@ const getFollowersPost = asyncHandler(async (req, res) => {
     userId: { in: [...followedUsers.map((follow) => follow.followingId), userId] },
   };
 
-  const [posts, total] = await Promise.all([
-    prisma.posts.findMany({
-      where,
-      include: postInclude,
-      orderBy: { createdAt: "desc" },
-      skip: offset,
-      take: limit,
-    }),
-    prisma.posts.count({ where }),
-  ]);
-
-  return res.status(200).json({
-    posts,
-    meta: { total, page, limit, hasMore: offset + posts.length < total },
-  });
+  return res.status(200).json(await findPaged(where, req.valid.query));
 });
 
 const getPostById = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "post id");
-  }
-
   const post = await prisma.posts.findUnique({
-    where: { id },
+    where: { id: req.valid.params.id },
     include: postInclude,
   });
 
@@ -300,6 +228,7 @@ module.exports = {
   updatePost,
   createPosts,
   getPostUrl,
+  searchPosts,
   favUnfavPost,
   getFollowersPost,
   getFavoritePosts,

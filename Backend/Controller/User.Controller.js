@@ -2,13 +2,10 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { publicUserSelect } = require("../lib/selects");
-const { isObjectId, cleanString, isHttpUrl, invalidId } = require("../lib/validators");
+const { containsText } = require("../lib/text");
 const { sessionCookieOptions } = require("../Config/env");
 
-const MIN_PASSWORD_LENGTH = 8;
-const MAX_PASSWORD_LENGTH = 72;
-const MAX_FULLNAME_LENGTH = 60;
-const MAX_GENDER_LENGTH = 30;
+const SEARCH_RESULT_LIMIT = 20;
 
 const profileSelect = (includeEmail) => ({
   ...publicUserSelect,
@@ -22,10 +19,7 @@ const profileSelect = (includeEmail) => ({
 });
 
 const getUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
-  }
+  const { id } = req.valid.params;
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -40,13 +34,8 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 const getUserFollowStatus = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
-  }
-
   const user = await prisma.user.findUnique({
-    where: { id },
+    where: { id: req.valid.params.id },
     select: { ...publicUserSelect, followers: true },
   });
 
@@ -58,23 +47,41 @@ const getUserFollowStatus = asyncHandler(async (req, res) => {
 });
 
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await prisma.user.findMany({ select: publicUserSelect });
+  const users = await prisma.user.findMany({
+    where: { verified: true },
+    select: publicUserSelect,
+  });
   return res.status(200).json({ users });
 });
 
-const deleteUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
-  }
-  if (id !== req.userId) {
-    return res.status(403).json({ success: false, message: "You can only delete your own account" });
-  }
+const searchUsers = asyncHandler(async (req, res) => {
+  const contains = containsText(req.valid.query.q);
 
-  const password = typeof req.body?.password === "string" ? req.body.password : "";
-  if (!password) {
-    return res.status(400).json({ success: false, message: "Enter your password to delete your account" });
+  const users = await prisma.user.findMany({
+    where: {
+      verified: true,
+      OR: [{ username: contains }, { fullname: contains }],
+    },
+    select: publicUserSelect,
+    take: SEARCH_RESULT_LIMIT,
+  });
+
+  return res.status(200).json({ users });
+});
+
+const ensureSelf = (req, res, action) => {
+  if (req.valid.params.id === req.userId) {
+    return true;
   }
+  res.status(403).json({ success: false, message: `You can only ${action} your own account` });
+  return false;
+};
+
+const deleteUser = asyncHandler(async (req, res) => {
+  if (!ensureSelf(req, res, "delete")) {
+    return undefined;
+  }
+  const { id } = req.valid.params;
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -83,7 +90,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
-  if (!(await bcrypt.compare(password, user.password))) {
+  if (!(await bcrypt.compare(req.valid.body.password, user.password))) {
     return res.status(401).json({ success: false, message: "Password is incorrect" });
   }
 
@@ -136,54 +143,19 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!isObjectId(id)) {
-    return invalidId(res, "user id");
+  if (!ensureSelf(req, res, "update")) {
+    return undefined;
   }
-  if (id !== req.userId) {
-    return res.status(403).json({ success: false, message: "You can only update your own profile" });
-  }
+  const { id } = req.valid.params;
+  const { fullname, gender, avatar, password, currentPassword } = req.valid.body;
 
-  const { fullname, gender, avatar, password, currentPassword } = req.body ?? {};
-  const updatedFields = {};
+  const updatedFields = {
+    ...(fullname !== undefined && { fullname }),
+    ...(gender !== undefined && { gender }),
+    ...(avatar !== undefined && { avatar }),
+  };
 
-  if (fullname !== undefined) {
-    const value = cleanString(fullname);
-    if (value.length > MAX_FULLNAME_LENGTH) {
-      return res.status(400).json({ success: false, message: "Full name is too long" });
-    }
-    updatedFields.fullname = value;
-  }
-
-  if (gender !== undefined) {
-    const value = cleanString(gender);
-    if (value.length > MAX_GENDER_LENGTH) {
-      return res.status(400).json({ success: false, message: "Gender is too long" });
-    }
-    updatedFields.gender = value;
-  }
-
-  if (avatar !== undefined) {
-    const value = cleanString(avatar);
-    if (value && !isHttpUrl(value)) {
-      return res.status(400).json({ success: false, message: "Avatar must be an http(s) URL" });
-    }
-    updatedFields.avatar = value;
-  }
-
-  if (typeof password === "string" && password !== "") {
-    if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
-      return res.status(400).json({
-        success: false,
-        message: `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`,
-      });
-    }
-    if (typeof currentPassword !== "string" || currentPassword === "") {
-      return res.status(400).json({
-        success: false,
-        message: "Enter your current password to set a new one",
-      });
-    }
+  if (password) {
     const existing = await prisma.user.findUnique({ where: { id }, select: { password: true } });
     const matches = existing && (await bcrypt.compare(currentPassword, existing.password));
     if (!matches) {
@@ -208,6 +180,7 @@ const updateUser = asyncHandler(async (req, res) => {
 module.exports = {
   getUser,
   getUsers,
+  searchUsers,
   updateUser,
   deleteUser,
   getUserFollowStatus,

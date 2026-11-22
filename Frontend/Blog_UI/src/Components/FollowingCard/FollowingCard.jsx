@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users } from "lucide-react";
 import { useFetchFollowings } from "../../Loaders/followers/useFetchFollowings";
@@ -38,7 +38,7 @@ const FollowingUserCard = ({ follower }) => {
 
 const FollowingCard = ({ userId }) => {
   const dispatch = useDispatch();
-  const { followings, error, loadFollowings } = useFetchFollowings();
+  const { followings, loadFollowings } = useFetchFollowings();
   const reduxFollowings = useSelector((state) => state.follows.followings);
   const [search, setSearch] = useState("");
 
@@ -49,16 +49,12 @@ const FollowingCard = ({ userId }) => {
     }
   }, [userId, loadFollowings, dispatch]);
 
-  const displayFollowings =
-    reduxFollowings.length > 0 ? reduxFollowings : followings;
+  const displayFollowings = reduxFollowings.length > 0 ? reduxFollowings : followings;
 
   const filteredFollowings = displayFollowings.filter((f) => {
     const name = f.following.fullname?.toLowerCase() || "";
     const username = f.following.username?.toLowerCase() || "";
-    return (
-      name.includes(search.toLowerCase()) ||
-      username.includes(search.toLowerCase())
-    );
+    return name.includes(search.toLowerCase()) || username.includes(search.toLowerCase());
   });
 
   if (!filteredFollowings) {
@@ -66,9 +62,7 @@ const FollowingCard = ({ userId }) => {
       <div className="min-h-fit bg-white dark:bg-gray-800 rounded-lg shadow-md p-2">
         <div className="flex items-center gap-2 mb-4">
           <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            Following
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Following</h2>
         </div>
         <div>Loading...</div>
       </div>
@@ -80,9 +74,7 @@ const FollowingCard = ({ userId }) => {
       <div className="flex items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          <h2 className="text-sm font-medium text-gray-800 dark:text-gray-200">
-            Following
-          </h2>
+          <h2 className="text-sm font-medium text-gray-800 dark:text-gray-200">Following</h2>
         </div>
         <input
           type="text"
@@ -96,14 +88,12 @@ const FollowingCard = ({ userId }) => {
       {filteredFollowings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Users className="h-12 w-12 text-gray-400 mb-2" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            No following yet
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No following yet</p>
         </div>
       ) : (
         <div className="min-h-[10px] overflow-y-auto pr-2">
           {filteredFollowings.map((follower) => (
-            <FollowingUserCard follower={follower} />
+            <FollowingUserCard key={follower.id} follower={follower} />
           ))}
         </div>
       )}

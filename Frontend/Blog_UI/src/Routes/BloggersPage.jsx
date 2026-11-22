@@ -1,4 +1,4 @@
-import { Suspense, useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import UserCard from "../Components/UserCard/UserCard";
 import FollowerCard from "../Components/FollowerCard/FollowerCard";
 import { AuthContext } from "../Context/AuthContext";
@@ -7,7 +7,7 @@ import { useFetchAllUsers } from "../Loaders/users/useFetchAllUsers";
 import OnlyUserSearch from "../Components/LayoutComponents/OnlyUserSearch";
 
 function BloggersPage() {
-  const { users, fetch_all_users_error, loadUsers } = useFetchAllUsers();
+  const { users, loadUsers } = useFetchAllUsers();
   const { currentUser } = useContext(AuthContext) || {};
 
   useEffect(() => {
@@ -21,9 +21,7 @@ function BloggersPage() {
         </div>
         <div className="w-full h-full flex flex-wrap justify-start items-start gap-2">
           {users?.length > 0 ? (
-            users.map((user) => (
-              <UserCard key={user.id} user={user} currentUser={currentUser} />
-            ))
+            users.map((user) => <UserCard key={user.id} user={user} currentUser={currentUser} />)
           ) : (
             <p>No users available</p>
           )}

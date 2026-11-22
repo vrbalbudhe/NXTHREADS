@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function Spinner({ text }) {
   return (
     <div className="flex justify-center items-center gap-2 h-80 select-none">

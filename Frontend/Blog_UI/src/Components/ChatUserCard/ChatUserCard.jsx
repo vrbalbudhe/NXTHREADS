@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 const FALLBACK_AVATAR_URL =
   "https://i.pinimg.com/564x/7f/c4/c6/7fc4c6ecc7738247aac61a60958429d4.jpg";
 

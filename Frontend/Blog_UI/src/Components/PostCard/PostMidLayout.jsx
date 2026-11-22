@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Slider from "../Slider/Slider";
 import { Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +9,9 @@ const NavbarMidLayoutTitleSection = ({ post }) => {
 
   const handleWordLimit = (limit) => {
     if (wordLimit !== limit) {
-      setWordLimit((wordLimit) => limit);
+      setWordLimit(limit);
     } else {
-      setWordLimit((wordLimit) => 300);
+      setWordLimit(300);
     }
   };
   return (
@@ -23,9 +23,7 @@ const NavbarMidLayoutTitleSection = ({ post }) => {
         >
           {post.title}
         </h1>
-        <h2 className="text-sm text-gray-600 dark:text-gray-400">
-          {post.subtitle}
-        </h2>
+        <h2 className="text-sm text-gray-600 dark:text-gray-400">{post.subtitle}</h2>
       </div>
 
       <div className="px-4 py-2">

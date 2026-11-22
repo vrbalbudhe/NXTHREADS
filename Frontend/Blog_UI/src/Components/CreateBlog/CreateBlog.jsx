@@ -2,6 +2,7 @@ import axios from "axios";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import UploadWindow from "../UploadWindow/UploadWindow";
 
 const UploadInstructions = ({ setImageUrls }) => (
@@ -26,8 +27,7 @@ const UploadInstructions = ({ setImageUrls }) => (
     <div className="flex items-end">
       <UploadWindow setImageUrls={setImageUrls} />
       <h1 className="inline-block pl-2 text-xs">
-        made with{" "}
-        <span className="text-blue-900 font-semibold">Cloudinary SDK</span>
+        made with <span className="text-blue-900 font-semibold">Cloudinary SDK</span>
       </h1>
     </div>
   </div>
@@ -39,30 +39,15 @@ const BlogRules = () => (
     <ul className="text-xs list-disc">
       {[
         ["No Hate Speech", "Avoid discriminatory or offensive language."],
-        [
-          "No Explicit Content",
-          "Keep content free of graphic or explicit material.",
-        ],
+        ["No Explicit Content", "Keep content free of graphic or explicit material."],
         ["No Harassment", "Refrain from threatening or harassing others."],
         ["No Spam", "Avoid irrelevant content and excessive self-promotion."],
-        [
-          "Provide Accurate Information",
-          "Ensure factual accuracy and avoid misinformation.",
-        ],
-        [
-          "Respect Copyrights",
-          "Do not infringe on intellectual property rights.",
-        ],
-        [
-          "Protect Privacy",
-          "Do not share personal or confidential information.",
-        ],
+        ["Provide Accurate Information", "Ensure factual accuracy and avoid misinformation."],
+        ["Respect Copyrights", "Do not infringe on intellectual property rights."],
+        ["Protect Privacy", "Do not share personal or confidential information."],
         ["No Illegal Activities", "Adhere to all applicable laws."],
         ["Use Professional Language", "Maintain a respectful tone."],
-        [
-          "Engage Positively",
-          "Foster constructive and respectful interactions.",
-        ],
+        ["Engage Positively", "Foster constructive and respectful interactions."],
       ].map(([title, desc], i) => (
         <li key={i}>
           <strong>{title}:</strong> {desc}
@@ -185,14 +170,12 @@ function CreateBlog() {
         { ...blogData, images: imageUrls },
         { withCredentials: true }
       );
-      console.log("Blog post created:", res.data);
-      console.log("Submitting blogData:", blogData);
-      console.log("Submitting imageUrls:", imageUrls);
-      if (res?.data) {
+      if (res?.data?.success) {
+        toast.success("Blog published");
         navigate(`/profile/${currentUser?.userId}`);
       }
     } catch (error) {
-      console.error("Error creating blog:", error);
+      toast.error(error.response?.data?.message || "Unable to publish the blog");
     }
   };
 

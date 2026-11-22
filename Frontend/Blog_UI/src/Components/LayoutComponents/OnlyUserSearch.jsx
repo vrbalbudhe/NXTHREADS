@@ -1,11 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import UserCard from "../UserCard/UserCard";
 import { useFetchAllUsers } from "../../Loaders/users/useFetchAllUsers";
 
 function OnlyUserSearch() {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -24,8 +22,7 @@ function OnlyUserSearch() {
     } else {
       const filteredUsersData = users.filter(
         (user) =>
-          user.username?.toLowerCase().includes(term) ||
-          user.email?.toLowerCase().includes(term)
+          user.username?.toLowerCase().includes(term) || user.fullname?.toLowerCase().includes(term)
       );
       setFilteredUsers(filteredUsersData);
     }
@@ -37,7 +34,7 @@ function OnlyUserSearch() {
         <input
           className="w-[100%] h-10 border dark:bg-darkPostCardBackground dark:border-gray-700 pl-5 border-slate-400 text-gray-800 dark:text-white rounded-lg outline-none"
           type="search"
-          placeholder="Search by username or email"
+          placeholder="Search by username or name"
           value={searchTerm}
           onChange={handleSearch}
         />
@@ -52,9 +49,7 @@ function OnlyUserSearch() {
         {isSearching && (
           <div className="w-full h-fit flex justify-start items-center gap-2">
             {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <UserCard key={user.id} user={user} />
-              ))
+              filteredUsers.map((user) => <UserCard key={user.id} user={user} />)
             ) : (
               <div className="w-full min-h-[50px] flex justify-center items-center">
                 <h1 className="text-3xl flex items-center gap-2">

@@ -4,15 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const FormInput = ({
-  type,
-  placeholder,
-  value,
-  onChange,
-  showPassword,
-  togglePassword,
-  name,
-}) => {
+const FormInput = ({ type, placeholder, value, onChange, showPassword, togglePassword, name }) => {
   return (
     <div className="relative mb-4">
       <input
@@ -30,12 +22,7 @@ const FormInput = ({
           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
         >
           {showPassword ? (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -44,12 +31,7 @@ const FormInput = ({
               />
             </svg>
           ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -88,15 +70,14 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const { setCurrentUser } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
-    setError("");
     e.preventDefault();
     const formData = new FormData(e.target);
     const email = formData.get("email");
     const password = formData.get("password");
+    setIsLoading(true);
     try {
       const res = await axios.post(
         `${baseUrl}/api/auth/login`,
@@ -120,6 +101,8 @@ function Login() {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Login failed!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,12 +158,7 @@ function Login() {
                     animationDuration: `${15 + Math.random() * 10}s`,
                   }}
                 >
-                  <svg
-                    width="16"
-                    height="8"
-                    viewBox="0 0 16 8"
-                    className="text-white/30"
-                  >
+                  <svg width="16" height="8" viewBox="0 0 16 8" className="text-white/30">
                     <path
                       d="M2 4 C4 2, 6 2, 8 4 C10 2, 12 2, 14 4"
                       stroke="currentColor"
@@ -199,13 +177,11 @@ function Login() {
             </div>
 
             <div className="relative z-10 text-center">
-              <h2 className="text-2xl font-bold mb-4 text-white">
-                Welcome to NXTHREADS
-              </h2>
+              <h2 className="text-2xl font-bold mb-4 text-white">Welcome to NXTHREADS</h2>
 
               <p className="text-gray-300 text-center leading-relaxed max-w-sm">
-                Share your stories and connect with creative minds from around
-                the world. Your journey begins here.
+                Share your stories and connect with creative minds from around the world. Your
+                journey begins here.
               </p>
 
               <DotsIndicator />
@@ -215,18 +191,14 @@ function Login() {
           <div className="p-12 flex flex-col justify-center bg-gray-50">
             <div className="max-w-sm mx-auto w-full">
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                  NXTHREADS
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">NXTHREADS</h1>
                 <p className="text-gray-600">Welcome to NXTHREADS</p>
               </div>
 
               <div className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Users name or Email
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-2">Users name or Email</label>
                     <FormInput
                       type="text"
                       name="email"
@@ -237,9 +209,7 @@ function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">
-                      Password
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-2">Password</label>
                     <FormInput
                       type="password"
                       name="password"
@@ -250,10 +220,7 @@ function Login() {
                       togglePassword={togglePassword}
                     />
                     <div className="text-right mt-2">
-                      <a
-                        href="#"
-                        className="text-sm text-gray-500 hover:text-gray-700"
-                      >
+                      <a href="#" className="text-sm text-gray-500 hover:text-gray-700">
                         Forgot password?
                       </a>
                     </div>
@@ -278,10 +245,7 @@ function Login() {
                 <div className="text-center">
                   <p className="text-gray-600">
                     New to NXTHREADS?{" "}
-                    <a
-                      href="/register"
-                      className="text-blue-600 hover:text-blue-700 font-medium"
-                    >
+                    <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
                       Create Account
                     </a>
                   </p>

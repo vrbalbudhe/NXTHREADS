@@ -1,19 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../Context/AuthContext";
-import {
-  Home,
-  Search,
-  Users,
-  Info,
-  Sun,
-  Moon,
-  MessageSquare,
-  PenSquare,
-  ChevronDown,
-  User2,
-  LogOutIcon,
-} from "lucide-react";
+import { Home, Search, Users, MessageSquare, ChevronDown, User2, LogOutIcon } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import MobileNavbar from "./MobileNavbar";
@@ -24,10 +12,7 @@ const Api = `${import.meta.env.VITE_API_BASE_URL}/api`;
 const NavbarLogo = () => {
   const navigate = useNavigate();
   return (
-    <div
-      onClick={() => navigate("/")}
-      className="flex items-center space-x-2 select-none"
-    >
+    <div onClick={() => navigate("/")} className="flex items-center space-x-2 select-none">
       <img
         className="w-8 h-8 text-white rounded-full object-cover"
         src="/chat_darkmode.png"
@@ -102,17 +87,13 @@ const NavbarUserProfileSection = ({ currentUser }) => {
 
   const handleLogout = async () => {
     try {
-      const res = await axios.post(
-        `${Api}/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${Api}/auth/logout`, {}, { withCredentials: true });
 
       if (res.status === 200) {
         toast.success("Logout successfully!");
         navigate("/login");
       }
-    } catch (error) {
+    } catch {
       toast.error("Logout failed!");
     }
   };

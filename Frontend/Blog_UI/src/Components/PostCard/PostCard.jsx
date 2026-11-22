@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import PostHeader from "./PostHeader";
 import PostMidLayout from "./PostMidLayout";
 import PostActionButtons from "./PostActionButtons";
@@ -19,9 +18,7 @@ function PostCard({ post, currentUser }) {
       <PostHeader post={post} setShowEditor={setShowEditor} />
       <PostMidLayout post={post} />
       <PostActionButtons post={post} currentUser={currentUser} />
-      {showEditor && (
-        <UpdatePostModal post={post} onClose={() => setShowEditor(false)} />
-      )}
+      {showEditor && <UpdatePostModal post={post} onClose={() => setShowEditor(false)} />}
     </div>
   );
 }
